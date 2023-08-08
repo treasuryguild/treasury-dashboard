@@ -7,11 +7,15 @@ export async function getOrgs() {
       try {
         const { data, error, status } = await supabase
         .from("groups")
-        .select('group_name, logo_url, group_id, projects(project_name, project_type, project_id)')
+        .select('group_name, logo_url, group_id, projects(project_name, project_type, project_id, archived)')
         
         if (error && status !== 406) throw error
         if (data) {
-          group = data
+          group = data.map(item => {
+            // Filter out the archived projects from each group
+            item.projects = item.projects.filter(project => !project.archived);
+            return item;
+          });
           if (group.length == 0) {
             groupname = ''
             groupInfo = {}

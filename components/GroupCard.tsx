@@ -14,15 +14,14 @@ const GroupCard: React.FC<GroupCardProps> = ({ groupName, logoUrl, numberOfWalle
     const defaultLogoUrl = process.env.NEXT_PUBLIC_DEFAULT_LOGO;
   
     return (
-        <Link href={`/groups/${encodeURIComponent(groupName)}`} className={styles['group-card']}>
+        <Link href={`/${encodeURIComponent(groupName)}`} className={styles['group-card']}>
                 <div className={styles['group-card-content']}>
                     <img 
                         src={logoUrl || defaultLogoUrl}
                         alt={`${groupName} logo`} 
                         className={styles['group-logo']} 
                     />
-                    <h2>{groupName}</h2>
-                    <p>Number of wallets: {numberOfWallets}</p>
+                    <h4>{groupName}</h4>
                 </div>
         </Link>
     );

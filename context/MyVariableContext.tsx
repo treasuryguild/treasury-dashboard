@@ -1,31 +1,19 @@
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
-interface MyVariable {
-  group: string;
-  project: string;
+interface Project {
   project_id: string;
-  project_website: string;
-  project_type:string;
-  logo_url: string;
-  wallet: string;
-  txHash: string;
-  monthly_budget_balance: any;
-  monthly_wallet_budget_string: string;
-  totalAmountsString: string;
-  txamounts: any;
-  fee: any;
-  totalAmounts: any;
-  walletTokens: any;
-  walletBalanceAfterTx: any;
-  balanceString: string;
-  txdescription: string;
-  formattedDate: string;
-  tokenRates: any;
-  txtype: string;
-  budget_month: string;
-  send_message: boolean;
-  // other properties of myVariable...
+  project_name: string;
+  project_type: string;
 }
+
+interface Group {
+  group_id: string;
+  group_name: string;
+  logo_url: string;
+  projects: Project[];
+}
+
+type MyVariable = Group[];
 
 interface MyVariableContextProps {
   myVariable: MyVariable;
@@ -39,32 +27,7 @@ interface MyVariableProviderProps {
 }
 
 export const MyVariableProvider: React.FC<MyVariableProviderProps> = ({ children }) => {
-  const [myVariable, setMyVariable] = useState<MyVariable>({ 
-  group: '',
-  project:'',
-  project_id:'',
-  project_website:'',
-  project_type:'',
-  logo_url:'',
-  wallet:'',
-  txHash:'',
-  monthly_budget_balance: {},
-  monthly_wallet_budget_string:'',
-  totalAmountsString:'',
-  txamounts:{},
-  fee:'',
-  totalAmounts:{},
-  walletTokens:{},
-  walletBalanceAfterTx:{},
-  balanceString:'',
-  txdescription:'',
-  formattedDate:'',
-  tokenRates:{},
-  txtype:'',
-  budget_month: new Date().toISOString().slice(0, 7),
-  send_message:true,
-   /* initialize other properties as needed */ 
-  });
+  const [myVariable, setMyVariable] = useState<MyVariable>([]);
 
   return (
     <MyVariableContext.Provider value={{ myVariable, setMyVariable }}>

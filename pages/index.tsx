@@ -3,6 +3,7 @@ import type { NextPage } from "next";
 import { getOrgs } from '../utils/getOrgs';
 import { useMyVariable } from '../context/MyVariableContext';
 import GroupCard from '../components/GroupCard';
+import styles from '../styles/GroupCard.module.css';
 
 type HomeProps = {
   groupInfo: any;  
@@ -10,11 +11,12 @@ type HomeProps = {
 
 const Home: NextPage<HomeProps> = ({ groupInfo }) => {
   const { myVariable, setMyVariable } = useMyVariable();
+  setMyVariable(groupInfo);
   console.log("Rendering serversideprops", groupInfo)
   
   return (
     <div>
-      <h1>Home</h1>
+      <div className={styles.groupscontainer}>
       {groupInfo.map((group: any) => (
         <GroupCard 
           key={group.group_id} 
@@ -23,7 +25,7 @@ const Home: NextPage<HomeProps> = ({ groupInfo }) => {
           numberOfWallets={group.projects.length} 
         />
       ))}
-      {/* Render your groupInfo data here */}
+      </div>
     </div>
   );
 };

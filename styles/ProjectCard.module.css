@@ -1,11 +1,11 @@
 /* GroupCard.module.css */
 
-.group-card {
+.project-card {
   border: 1px solid #ccc;
   padding: 20px;
-  margin: 5px;
+  margin: 10px;
   display: inline-block;
-  box-shadow: 0px 2px 10px rgba(27, 211, 243, 0.1);
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   transition: transform 0.3s ease;
   width: 150px;   /* Set a fixed width */
@@ -15,11 +15,11 @@
   text-align: center; 
 }
 
-.group-card:hover {
+.project-card:hover {
   transform: translateY(-5px);
 }
 
-.group-logo {
+.project-logo {
   width: 100px;
   height: 100px;
   object-fit: contain;
@@ -30,15 +30,9 @@
 }
 
 /* Optional: You can add this to ensure the content is centered vertically */
-.group-card-content {
+.project-card-content {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-}
-
-.groupscontainer {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
 }
