@@ -1,3 +1,4 @@
+// /context/MyVariableContext.tsx
 import React, { createContext, useState, useContext, ReactNode } from 'react';
 
 interface Project {
@@ -13,7 +14,12 @@ interface Group {
   projects: Project[];
 }
 
-type MyVariable = Group[];
+type MyVariable = {
+  groupInfo: Group[];
+  projectInfo?: any;
+  transactions?: any;
+  // other keys go here
+};
 
 interface MyVariableContextProps {
   myVariable: MyVariable;
@@ -27,7 +33,7 @@ interface MyVariableProviderProps {
 }
 
 export const MyVariableProvider: React.FC<MyVariableProviderProps> = ({ children }) => {
-  const [myVariable, setMyVariable] = useState<MyVariable>([]);
+  const [myVariable, setMyVariable] = useState<MyVariable>({ groupInfo: [], projectInfo: undefined, transactions: undefined });
 
   return (
     <MyVariableContext.Provider value={{ myVariable, setMyVariable }}>

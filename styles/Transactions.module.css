@@ -1,0 +1,42 @@
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: Arial, sans-serif;
+}
+
+.styled-table th,
+.styled-table td {
+    
+    padding: 8px;
+}
+
+.styled-table th {
+    background-color: #3d4e6c;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.align-right {
+    text-align: right;
+}
+.incoming-row {
+    background-color: #104715; /* Choose the shade of green you prefer */
+}
+
+.header-align-left {
+    text-align: left;
+}
+
+.header-align-center {
+    text-align: center;
+}
+
+.header-align-right {
+    text-align: right;
+}

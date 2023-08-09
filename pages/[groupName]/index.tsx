@@ -1,4 +1,3 @@
-// pages/groups/[groupName].tsx
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useMyVariable } from '../../context/MyVariableContext';
@@ -27,17 +26,18 @@ const GroupPage = () => {
 
     useEffect(() => {
         const fetchGroupData = async (groupName: string) => {
-            // If myVariable is empty, fetch the groupInfo
-            if (myVariable.length === 0) {
-                const groupInfo = await getOrgs();
-                setMyVariable(groupInfo);
+            let groupInfo = myVariable.groupInfo;
+            // If myVariable.groupInfo is empty, fetch the groupInfo
+            if (!groupInfo || groupInfo.length === 0) {
+                groupInfo = await getOrgs();
+                setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo }));
             }
-            
-            // Find the group from the updated myVariable
-            const foundGroup = myVariable.find(group => group.group_name === groupName);
+    
+            // Find the group from the updated groupInfo
+            const foundGroup = groupInfo?.find(group => group.group_name === groupName);
             setGroupData(foundGroup || null);
         };
-
+    
         if (groupName) {
             fetchGroupData(groupName as string);
         }
@@ -45,7 +45,7 @@ const GroupPage = () => {
 
     const treasuryWalletProjects = groupData?.projects.filter(p => p.project_type === "Treasury Wallet") || [];
     const otherProjects = groupData?.projects.filter(p => p.project_type !== "Treasury Wallet") || [];
-    console.log(otherProjects);
+    console.log("myVariable", myVariable);
     if (!groupData) return <div>Loading...</div>;
     
     return (

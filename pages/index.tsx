@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { NextPage } from "next";
 import { getOrgs } from '../utils/getOrgs';
 import { useMyVariable } from '../context/MyVariableContext';
@@ -11,9 +11,12 @@ type HomeProps = {
 
 const Home: NextPage<HomeProps> = ({ groupInfo }) => {
   const { myVariable, setMyVariable } = useMyVariable();
-  setMyVariable(groupInfo);
-  console.log("Rendering serversideprops", groupInfo)
-  
+
+  useEffect(() => {
+    setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo, transactions: [] }));
+  }, [groupInfo, setMyVariable]);
+
+  console.log("Rendering serversideprops", groupInfo);
   return (
     <div>
       <div className={styles.groupscontainer}>
