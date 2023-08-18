@@ -1,0 +1,17 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+
+.navbar {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+.backButton {
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+}

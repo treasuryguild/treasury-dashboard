@@ -6,6 +6,10 @@ import { getMonthlyBudget } from '../../../utils/getMonthlyBudget';
 import { getTransactions } from '../../../utils/getTransactions';
 import Link from 'next/link';
 import styles from '../../../styles/Transactions.module.css';
+import TransactionsTable from '../../../components/TransactionsTable'; 
+import Balance from '../../../components/Balance';
+import Report from '../../../components/Report';
+
 
 interface Project {
     project_id: string;
@@ -14,10 +18,11 @@ interface Project {
 }
 
 const ProjectPage = () => {
+    const [activeTab, setActiveTab] = useState<'transactions' | 'balance' | 'report'>('transactions');
     const { myVariable, setMyVariable } = useMyVariable();
     const router = useRouter();
     const { groupName, projectName } = router.query;
-    
+    const [loading, setLoading] = useState<boolean>(false);
     const [projectData, setProjectData] = useState<Project | null>(null);
 
     useEffect(() => {
@@ -47,104 +52,48 @@ const ProjectPage = () => {
     
             // If foundProject exists, fetch the monthly budget
             if (projectData) {
+                setLoading(true);
                 projectInfo = await getMonthlyBudget(projectData.project_id);
                 transactions = await getTransactions(projectData.project_id);
                 setMyVariable(prevState => ({ ...prevState, projectInfo, transactions }));
+                setLoading(false);
             }
         };
     
         fetchProjectData();
     }, [projectData]);    
     
-    const formatDate = (timestamp: string) => {
-        const date = new Date(Number(timestamp));
-        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-    };
 
-    const renderTableHeaders = () => {
-        const baseHeaders = ['Date', 'Tx Type', 'Recipients', 'Metadata', 'txView', 'Fee', 'Wallet Balance'];
-        const tokenHeaders = myVariable.transactions?.[0]?.total_tokens || [];
-        
-        // Define alignment classes for each header
-        const headerAlignments = [
-            styles['header-align-left'], // Date
-            styles['header-align-center'], // Tx Type
-            styles['header-align-center'], // Recipients
-            styles['header-align-center'], // Metadata
-            styles['header-align-center'], // txView
-            styles['header-align-center'], // Fee
-            styles['header-align-right'], // Wallet Balance
-        ];
-    
-        const headersWithAlignment = [...baseHeaders, ...tokenHeaders].map((header, index) => {
-            const alignmentClass = headerAlignments[index] || styles['header-align-right']; // Default to right align
-            return <th key={header} className={alignmentClass}>{header}</th>;
-        });
-    
-        return headersWithAlignment;
-    };
-    
-    const renderTokenColumns = (transaction: any) => {
-        const tokenHeaders = myVariable.transactions?.[0]?.total_tokens || [];
-        const totalTokenColumns = tokenHeaders.length;
-    
-        return Array.from({ length: totalTokenColumns }, (_, i) => {
-            if (transaction.total_tokens?.[i]) {
-                return (
-                    <td key={i} className={styles['align-right']}>
-                        {transaction.total_tokens[i] === 'ADA' ? Number(transaction.total_amounts[i]).toFixed(2) : transaction.total_amounts[i] || '\u00A0'}
-                    </td>
-                );
-            }
-            return <td key={i} className={styles['align-right']}>&nbsp;</td>; // Placeholder for missing token
-        });
-    };
-
-    const uniqueTokenNames = Array.from(new Set(myVariable.transactions?.flatMap((transaction: any) => transaction.total_tokens) || []));
     console.log("myVariable", myVariable);
-    if (!projectData) return <div>Loading...</div>;
+    if (!projectData) return <div className={styles['main']}>Loading...</div>;
 
     return (
-        <div>
+        <div className={styles['main']}>
             <div>
-              <h1>{projectData.project_name}</h1>
+                <h1>{projectData.project_name}</h1>
+                <div className={styles.navbar}>
+                    <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
+                    <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? styles.active : styles.notactive}>Transactions</button>
+                    <button onClick={() => setActiveTab('balance')} className={activeTab === 'balance' ? styles.active : styles.notactive}>Balance</button>
+                    <button onClick={() => setActiveTab('report')} className={activeTab === 'report' ? styles.active : styles.notactive}>Report</button>
+                </div>
             </div>
-            <div>
-                <table className={styles['styled-table']}> {/* Added class for overall table styling */}
-                    <thead>
-                        <tr>
-                            {renderTableHeaders()}
-                        </tr>
-                    </thead>
-                    <tbody>
-                    {myVariable.transactions?.sort((a, b) => Number(b.transaction_date) - Number(a.transaction_date)).map((transaction: any, index: any) => (
-                            <tr key={index} className={transaction.tx_type === 'Incoming' ? styles['incoming-row'] : ''}>
-                                <td className={styles['align-left']}>{formatDate(transaction.transaction_date)}</td> {/* Center align */}
-                                <td className={styles['align-center']}>{transaction.tx_type}</td> {/* Right align */}
-                                <td className={styles['align-center']}>{transaction.recipients}</td> {/* Left align */}
-                                <td className={styles['align-center']}><a href={transaction.tx_json_url} target="_blank" rel="noopener noreferrer">Link</a></td>
-                                <td className={styles['align-center']}><Link href={`/${groupName}/${projectName}/${transaction.transaction_id}`}>View</Link></td>
-                                <td className={styles['align-center']}>{transaction.fee}</td>
-                                <td className={styles['align-right']}>{Number(transaction.wallet_balance_after).toFixed(2)}</td>
-                                {uniqueTokenNames.map((tokenName, i) => {
-                                    // Find the index of the token in the current transaction
-                                    const tokenIndex = transaction.total_tokens?.indexOf(tokenName);
-                                    // If the token is found in the current transaction, render its value
-                                    if (tokenIndex !== -1 && tokenIndex !== undefined) {
-                                        return (
-                                            <td key={i} className={styles['align-right']}>
-                                                {tokenName === 'ADA' ? Number(transaction.total_amounts[tokenIndex]).toFixed(2) : transaction.total_amounts[tokenIndex] || '\u00A0'}
-                                            </td>
-                                        );
-                                    }
-                                    // If the token is not found in the current transaction, render a placeholder
-                                    return <td key={i} className={styles['align-right']}>&nbsp;</td>;
-                                })}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            {loading && (
+                <div>
+                    <div className={styles.loading}>Loading...</div>
+                </div>
+            )}
+            {!loading && (
+                activeTab === 'transactions' ? (
+                    <TransactionsTable transactions={myVariable.transactions} groupName={groupName as string} projectName={projectName as string} />
+                ) : activeTab === 'balance' ? (
+                    <Balance />
+                ) : activeTab === 'report' ? (
+                    <Report />
+                ) : (
+                    <div>nothing selected</div> 
+                )
+            )}
         </div>
     );
 };

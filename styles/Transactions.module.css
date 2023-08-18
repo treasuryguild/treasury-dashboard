@@ -1,7 +1,21 @@
+.main {
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}
+.table-container {
+    margin: 50px; 
+    margin-top: 10px;
+    overflow-x: auto;
+    width: 100%; 
+    text-align: center;
+}
 .styled-table {
+    margin: 0 auto;
     width: 100%;
     border-collapse: collapse;
     font-family: Arial, sans-serif;
+    min-width: 800px; 
 }
 
 .styled-table th,
@@ -39,4 +53,43 @@
 
 .header-align-right {
     text-align: right;
+}
+
+.link-as-text {
+    text-decoration: none;
+    color: rgb(0, 157, 255); /* You can set any color you prefer */
+    cursor: pointer;
+}
+
+@keyframes fade-in-out {
+    0% { opacity: 0; } /* Start with 0% opacity */
+    50% { opacity: 1; } /* Fade in to 100% opacity */
+    100% { opacity: 0; } /* Fade out to 0% opacity */
+}
+.loading {
+    margin: 0.5em;
+    font-size: 1.5em;
+    animation: fade-in-out 2s ease-in-out infinite; 
+  }
+.navbar {
+    display: flex;
+    justify-content: center;
+    padding: 10px;
+}
+
+.active {
+    font-weight: bold;
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+}
+.notactive {
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+}
+.backButton {
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
 }

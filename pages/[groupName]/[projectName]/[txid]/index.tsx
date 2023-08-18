@@ -2,6 +2,7 @@ import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useMyVariable } from '../../../../context/MyVariableContext'; 
 import { getOrgs } from '../../../../utils/getOrgs';
+import styles from '../../../../styles/Txid.module.css';
 
 const TxidPage = () => {
     const { myVariable, setMyVariable } = useMyVariable();
@@ -14,8 +15,16 @@ const TxidPage = () => {
     //if (!txidData) return <div>Loading...</div>;
     
     return (
-        <div>
-            <h1>{txid}</h1>
+        <div className={styles['main']}>
+            <div>
+                <h1>{projectName}</h1>
+                <div className={styles.navbar}>
+                    <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
+                </div>
+            </div>
+            <div>
+              <h3>{txid}</h3>
+            </div>
         </div>
     );
 };
