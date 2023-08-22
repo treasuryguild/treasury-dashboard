@@ -4,10 +4,12 @@ import { MeshProvider } from "@meshsdk/react";
 import { CardanoWallet } from '@meshsdk/react';
 import Nav from '../components/nav'
 import { MeshBadge } from '@meshsdk/react';
-import { MyVariableProvider } from '../context/MyVariableContext';  // Add this line
+import { MyVariableProvider } from '../context/MyVariableContext';  
+import { useRouter } from 'next/router';
 
 function MyApp({ Component, pageProps }: AppProps) {
-
+  const router = useRouter();
+  const { groupName, projectName, txid } = router.query;
   return (
     <MyVariableProvider>  
       <MeshProvider>
@@ -15,6 +17,12 @@ function MyApp({ Component, pageProps }: AppProps) {
           <div className="nav">
             <div>
               <Nav />
+            </div>
+            <div>
+              {projectName && (
+              <h2 className="page">{projectName}</h2>)}
+              {!projectName && (
+              <h2 className="page">{groupName}</h2>)}
             </div>
             <div className="walletbutton">
               <CardanoWallet />  

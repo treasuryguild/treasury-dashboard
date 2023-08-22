@@ -1,11 +1,16 @@
 .main {
-    display: flex;
-    flex-direction: column;
+    display: flex; /* Horizontal layout */
+    align-items: flex-start; /* Align content to the top */
     text-align: center;
 }
+
+.main > div:nth-child(2) { /* Select the second div within .main, which is your content */
+    margin-left: 185px; /* Adjust this value according to the width of your navbar */
+}
+
 .table-container {
     margin: 50px; 
-    margin-top: 10px;
+    margin-top: 20px;
     overflow-x: auto;
     width: 100%; 
     text-align: center;
@@ -73,8 +78,13 @@
   }
 .navbar {
     display: flex;
+    flex-direction: column; /* Vertical alignment of buttons */
     justify-content: center;
     padding: 10px;
+    position: fixed; /* Make navbar sticky */
+    top: 80px; /* Position from the top of the viewport */
+    z-index: 1000; /* Ensure it appears above other content */
+    width: 180px; /* You can adjust this value */
 }
 
 .active {

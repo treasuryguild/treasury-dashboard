@@ -17,7 +17,9 @@ interface Group {
 type MyVariable = {
   groupInfo: Group[];
   projectInfo?: any;
+  budgetInfo?: any;
   transactions?: any;
+  report?: any;
   // other keys go here
 };
 
@@ -33,7 +35,7 @@ interface MyVariableProviderProps {
 }
 
 export const MyVariableProvider: React.FC<MyVariableProviderProps> = ({ children }) => {
-  const [myVariable, setMyVariable] = useState<MyVariable>({ groupInfo: [], projectInfo: undefined, transactions: undefined });
+  const [myVariable, setMyVariable] = useState<MyVariable>({ groupInfo: [], projectInfo: undefined, budgetInfo: undefined, transactions: undefined, report: undefined });
 
   return (
     <MyVariableContext.Provider value={{ myVariable, setMyVariable }}>

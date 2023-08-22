@@ -17,7 +17,6 @@ const TxidPage = () => {
     return (
         <div className={styles['main']}>
             <div>
-                <h1>{projectName}</h1>
                 <div className={styles.navbar}>
                     <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
                 </div>

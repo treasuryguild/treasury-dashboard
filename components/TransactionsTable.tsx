@@ -9,6 +9,9 @@ interface TransactionsTableProps {
 
 const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, groupName, projectName }) => {
   
+  const allTokens: string[] = transactions?.flatMap((transaction: any) => transaction.total_tokens.filter((token: string) => token.length <= 5)) || [];
+  const tokenHeaders = Array.from(new Set(allTokens));
+
   const formatDate = (timestamp: string) => {
     const date = new Date(Number(timestamp));
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -16,7 +19,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, gro
 
   const renderTableHeaders = () => {
     const baseHeaders = ['Date', 'Tx Type', 'Recipients', 'Metadata', 'txView', 'Fee', 'Wallet Balance', 'NFTs'];
-    const tokenHeaders = transactions?.[0]?.total_tokens || [];
     
     const headerAlignments = [
       styles['header-align-left'],
@@ -38,7 +40,6 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, gro
   };
 
   const renderTokenColumns = (transaction: any) => {
-    const tokenHeaders = transactions?.[0]?.total_tokens.filter((token: string) => token.length <= 5) || [];
     const nftCount = transaction.total_tokens.filter((token: string) => token.length > 5).length;
 
     const tokenAmounts = transaction.total_tokens.reduce((acc: any, token: string, i: number) => {

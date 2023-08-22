@@ -6,6 +6,7 @@ import { useRouter } from 'next/router';
 
 const Nav = () => {
   const router = useRouter();
+  const { groupName, projectName, txid } = router.query;
   const [session, setSession] = useState<Session | null>(null)
   const [isAdmin, setIsAdmin] = useState(false)
 

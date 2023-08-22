@@ -51,9 +51,7 @@ const GroupPage = () => {
     return (
         <div>
             <h1>{groupName}</h1>
-            <hr /> {/* Breakline */}
-            {treasuryWalletProjects.length > 0 && <h2>Treasury wallets</h2>}
-            {/* Render Treasury Wallet projects */}
+            {treasuryWalletProjects.length > 0 && <h2>Treasury wallets</h2>} 
             {treasuryWalletProjects.map((project) => (
                 <ProjectCard 
                     key={project.project_id}
@@ -65,10 +63,8 @@ const GroupPage = () => {
                 />
             ))}
 
-            <hr /> {/* Breakline */}
+            
             {otherProjects.length > 0 && <h2>Proposal wallets</h2>}
-
-            {/* Render other projects */}
             {otherProjects.map((project) => (
                 <ProjectCard 
                     key={project.project_id}

@@ -47,15 +47,15 @@ const ProjectPage = () => {
     
     useEffect(() => {
         const fetchProjectData = async () => {
-            let projectInfo = myVariable.projectInfo;
+            let budgetInfo = myVariable.projectInfo;
             let transactions = myVariable.transactions;
     
             // If foundProject exists, fetch the monthly budget
             if (projectData) {
                 setLoading(true);
-                projectInfo = await getMonthlyBudget(projectData.project_id);
+                budgetInfo = await getMonthlyBudget(projectData.project_id);
                 transactions = await getTransactions(projectData.project_id);
-                setMyVariable(prevState => ({ ...prevState, projectInfo, transactions }));
+                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions }));
                 setLoading(false);
             }
         };
@@ -70,7 +70,6 @@ const ProjectPage = () => {
     return (
         <div className={styles['main']}>
             <div>
-                <h1>{projectData.project_name}</h1>
                 <div className={styles.navbar}>
                     <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
                     <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? styles.active : styles.notactive}>Transactions</button>
