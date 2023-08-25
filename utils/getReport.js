@@ -1,7 +1,8 @@
-let report = {}
+let report = {};
 export async function getReport(txs) {
 
   async function generateReport() {
+    report = {};
     txs.forEach(tx => {
       if (tx.tx_type === "Outgoing") { // Only process Outgoing transactions
         tx.contributions.forEach(contribution => {
