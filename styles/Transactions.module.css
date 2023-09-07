@@ -1,11 +1,11 @@
 .main {
-    display: flex; /* Horizontal layout */
-    align-items: flex-start; /* Align content to the top */
+    display: flex; 
+    align-items: flex-start; 
     text-align: center;
 }
 
-.main > div:nth-child(2) { /* Select the second div within .main, which is your content */
-    margin-left: 185px; /* Adjust this value according to the width of your navbar */
+.main > div:nth-child(2) { 
+    margin-left: 185px; 
 }
 
 .table-container {
@@ -45,7 +45,7 @@
     text-align: right;
 }
 .incoming-row {
-    background-color: #104715; /* Choose the shade of green you prefer */
+    background-color: #104715; 
 }
 
 .header-align-left {
@@ -62,14 +62,14 @@
 
 .link-as-text {
     text-decoration: none;
-    color: rgb(0, 157, 255); /* You can set any color you prefer */
+    color: rgb(0, 157, 255); 
     cursor: pointer;
 }
 
 @keyframes fade-in-out {
-    0% { opacity: 0; } /* Start with 0% opacity */
-    50% { opacity: 1; } /* Fade in to 100% opacity */
-    100% { opacity: 0; } /* Fade out to 0% opacity */
+    0% { opacity: 0; } 
+    50% { opacity: 1; } 
+    100% { opacity: 0; } 
 }
 .loading {
     margin: 0.5em;
@@ -78,13 +78,13 @@
   }
 .navbar {
     display: flex;
-    flex-direction: column; /* Vertical alignment of buttons */
+    flex-direction: column; 
     justify-content: center;
     padding: 10px;
-    position: fixed; /* Make navbar sticky */
-    top: 80px; /* Position from the top of the viewport */
-    z-index: 1000; /* Ensure it appears above other content */
-    width: 180px; /* You can adjust this value */
+    position: fixed; 
+    top: 80px; 
+    z-index: 1000; 
+    width: 180px; 
 }
 
 .active {
