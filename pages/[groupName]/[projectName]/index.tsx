@@ -10,7 +10,6 @@ import TransactionsTable from '../../../components/TransactionsTable';
 import Balance from '../../../components/Balance';
 import Report from '../../../components/Report';
 
-
 interface Project {
     project_id: string;
     project_name: string;

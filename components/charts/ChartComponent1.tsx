@@ -24,7 +24,7 @@ const ChartComponent1: React.FC<ChartComponent1Props> = ({ chartData }) => {
             labels,
             datasets: [
                 {
-                    label: "total tasks",
+                    label: "total AGIX",
                     data,
                     backgroundColor,
                     borderColor,
@@ -55,12 +55,12 @@ const ChartComponent1: React.FC<ChartComponent1Props> = ({ chartData }) => {
                 },
             },
         };
-        const ctx: any = document.getElementById("myChart2");
+        const ctx: any = document.getElementById("myChart1");
         chartRef.current = new Chart(ctx, config);
     }, [labels, data]);
 
     return (
-            <canvas id="myChart2"></canvas>
+            <canvas id="myChart1"></canvas>
     );
 };
 

@@ -4,11 +4,11 @@ import { Colors } from "chart.js";
 
 Chart.register(Colors);
 
-interface ChartComponent2Props {
+interface ChartComponent3Props {
   chartData: any;
 }
 
-const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
+const ChartComponent3: React.FC<ChartComponent3Props> = ({ chartData }) => {
     const labels = chartData.labels;
     const data = chartData.data;
     const chartRef = useRef<Chart | null>(null);
@@ -55,13 +55,13 @@ const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
                 },
             },
         };
-        const ctx: any = document.getElementById("myChart2");
+        const ctx: any = document.getElementById("myChart3");
         chartRef.current = new Chart(ctx, config);
     }, [labels, data]);
 
     return (
-            <canvas id="myChart2"></canvas>
+            <canvas id="myChart3"></canvas>
     );
 };
 
-export default ChartComponent2;
+export default ChartComponent3;
