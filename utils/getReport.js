@@ -4,7 +4,7 @@ export async function getReport(txs) {
   let localReport = {};
   txs.forEach(tx => {
     const taskDate = new Date(parseInt(tx.transaction_date));
-    const monthYear = `${taskDate.getMonth() + 1}.${taskDate.getFullYear()}`;
+    let monthYear = `${taskDate.getMonth() + 1}.${taskDate.getFullYear()}`;
 
     if (!localReport[monthYear]) {
       localReport[monthYear] = {};
@@ -14,14 +14,30 @@ export async function getReport(txs) {
       tx.contributions.forEach(contribution => {
         let workgroup = contribution.task_sub_group || "not-recorded";
         workgroup = workgroup.replace(/ /g, '-').toLowerCase();
-      
+        
+        let taskDateStr = contribution.task_date || tx.transaction_date.toString();
+        if(contribution.task_date) {
+          const [day, month, year] = taskDateStr.split('.');
+          taskDateStr = new Date(`20${year}`, month - 1, day).getTime().toString();
+          const taskDate = new Date(parseInt(taskDateStr));
+          monthYear = `${taskDate.getMonth() + 1}.${taskDate.getFullYear()}`;
+        }
+
+        if (!localReport[monthYear]) {
+          localReport[monthYear] = {};
+        }
+
         if (!localReport[monthYear][workgroup]) {
           localReport[monthYear][workgroup] = { totalAmounts: {}, labels: {}, tasks: {} };
+        }
+        if (!localReport[monthYear]['total-distribution']) {
+          localReport[monthYear]['total-distribution'] = { totalAmounts: {}, labels: {}, tasks: {}, totalTasks: 0 };
         }
         if (!localReport[monthYear][workgroup]['totalTasks']) {
           localReport[monthYear][workgroup]['totalTasks'] = 0;
         }
         localReport[monthYear][workgroup]['totalTasks']++;
+        localReport[monthYear]['total-distribution']['totalTasks']++;
         const labelsArray = contribution.task_label.split(',');
         
         labelsArray.forEach(label => {
@@ -41,6 +57,10 @@ export async function getReport(txs) {
               localReport[monthYear][workgroup]['totalAmounts'][token] = 0;
             }
             localReport[monthYear][workgroup]['totalAmounts'][token] += Number(amount);
+            if (!localReport[monthYear]['total-distribution']['totalAmounts'][token]) {
+              localReport[monthYear]['total-distribution']['totalAmounts'][token] = 0;
+            }
+            localReport[monthYear]['total-distribution']['totalAmounts'][token] += Number(amount);
           });
       
           labelsArray.forEach(label => {
@@ -56,47 +76,6 @@ export async function getReport(txs) {
                 localReport[monthYear][workgroup]['labels'][label][token] = 0;
               }
               localReport[monthYear][workgroup]['labels'][label][token] += Number(amount);
-            });
-          });
-        });
-      });      
-    }
-
-    // Adding total-distribution
-    if (tx.tx_type !== "Incoming") {
-      if (!localReport[monthYear]['total-distribution']) {
-        localReport[monthYear]['total-distribution'] = { totalAmounts: {}, labels: {}, tasks: {} };
-      }
-      if (!localReport[monthYear]['total-distribution']['totalTasks']) {
-        localReport[monthYear]['total-distribution']['totalTasks'] = 0;
-      }
-      tx.total_tokens.forEach((token, index) => {
-        const amount = tx.total_amounts[index];
-        
-        // Aggregating total amounts
-        if (!localReport[monthYear]['total-distribution']['totalAmounts'][token]) {
-          localReport[monthYear]['total-distribution']['totalAmounts'][token] = 0;
-        }
-        localReport[monthYear]['total-distribution']['totalAmounts'][token] += Number(amount);
-      });
-      
-      tx.contributions.forEach(contribution => {
-        localReport[monthYear]['total-distribution']['totalTasks']++;
-        const labelsArray = contribution.task_label.split(',');
-        labelsArray.forEach(label => {
-          // Incrementing task count for each label inside total-distribution
-          if (!localReport[monthYear]['total-distribution']['tasks'][label]) {
-            localReport[monthYear]['total-distribution']['tasks'][label] = 0;
-          }
-          localReport[monthYear]['total-distribution']['tasks'][label]++;
-        });
-        
-        labelsArray.forEach(label => {
-          contribution.distributions.forEach(distribution => {
-            distribution.tokens.forEach((token, index) => {
-              const amount = distribution.amounts[index];
-              
-              // Aggregating labels
               if (!localReport[monthYear]['total-distribution']['labels'][label]) {
                 localReport[monthYear]['total-distribution']['labels'][label] = {};
               }
@@ -107,9 +86,18 @@ export async function getReport(txs) {
             });
           });
         });
-      });
+      });      
     }
   });
+
+  for (const monthYear in localReport) {
+    const sortedWorkgroups = {};
+    Object.keys(localReport[monthYear]).sort().forEach(workgroup => {
+      sortedWorkgroups[workgroup] = localReport[monthYear][workgroup];
+    });
+    localReport[monthYear] = sortedWorkgroups;
+  }
+
   return localReport;
 }
 

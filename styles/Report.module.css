@@ -14,6 +14,7 @@
 
 .chartType2 {
     padding: 0.1em;
+    padding-left: 1em;
 }
 
 .chart1 {
@@ -31,4 +32,30 @@
     margin-bottom: 4em;
     max-height: 300px;
     min-width: 520px;
+}
+
+.numbers table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.numbers th, .numbers td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+  font-size: 0.8rem; /* Adjust the value as needed */
+}
+
+.numbers th {
+  text-align: left;
+}
+
+.numbers td:nth-child(2), .numbers td:nth-child(3) {
+  text-align: right;
+}
+.dropdown {
+    margin: 5px;
+}
+.dropdownSelect {
+    padding: 0.2em;
 }
