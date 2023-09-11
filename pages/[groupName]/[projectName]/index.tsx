@@ -4,20 +4,22 @@ import { useMyVariable } from '../../../context/MyVariableContext';
 import { getOrgs } from '../../../utils/getOrgs';
 import { getMonthlyBudget } from '../../../utils/getMonthlyBudget';
 import { getTransactions } from '../../../utils/getTransactions';
+import { getWalletBalance } from '../../../utils/getWalletBalance';
 import Link from 'next/link';
 import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
-import Balance from '../../../components/Balance';
+import Signup from '../../../components/Signup';
 import Report from '../../../components/Report';
 
 interface Project {
     project_id: string;
     project_name: string;
     project_type: string;
+    wallet: string;
 }
 
 const ProjectPage = () => {
-    const [activeTab, setActiveTab] = useState<'transactions' | 'balance' | 'report'>('transactions');
+    const [activeTab, setActiveTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
     const { myVariable, setMyVariable } = useMyVariable();
     const router = useRouter();
     const { groupName, projectName } = router.query;
@@ -54,7 +56,9 @@ const ProjectPage = () => {
                 setLoading(true);
                 budgetInfo = await getMonthlyBudget(projectData.project_id);
                 transactions = await getTransactions(projectData.project_id);
-                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions }));
+                let balance = await getWalletBalance(projectData.wallet) || {};
+                console.log(balance)
+                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance }));
                 setLoading(false);
             }
         };
@@ -62,6 +66,15 @@ const ProjectPage = () => {
         fetchProjectData();
     }, [projectData]);    
     
+    // Function to scroll to top
+    const scrollToTop = () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Function to scroll to bottom
+    const scrollToBottom = () => {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    };
 
     console.log("myVariable", myVariable);
     if (!projectData) return <div className={styles['main']}>Loading...</div>;
@@ -72,8 +85,46 @@ const ProjectPage = () => {
                 <div className={styles.navbar}>
                     <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
                     <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? styles.active : styles.notactive}>Transactions</button>
-                    <button onClick={() => setActiveTab('balance')} className={activeTab === 'balance' ? styles.active : styles.notactive}>Balance</button>
+                    <button onClick={() => setActiveTab('signup')} className={activeTab === 'signup' ? styles.active : styles.notactive}>Signup</button>
                     {projectName == "Singularity Net Ambassador Wallet" && (<button onClick={() => setActiveTab('report')} className={activeTab === 'report' ? styles.active : styles.notactive}>Report</button>)}
+                    {!loading && activeTab === 'transactions' && (
+                        <>
+                            {myVariable.balance && (
+                            <>
+                            <div className={styles.walletDetails}>
+                              <div>Wallet Balance</div>
+                              <table className={styles.tokenTable}>
+                                <tbody>
+                                  <tr>
+                                    <td style={{ textAlign: 'left' }}>ADA</td>
+                                    <td style={{ textAlign: 'right' }}>{(myVariable.balance.lovelaces/10**6).toFixed(2)}</td>
+                                  </tr>
+                                  {
+                                    myVariable.balance.tokens
+                                      .filter((token: any) => token.minted_quantity > 1)
+                                      .map((token: any) => {
+                                        const decimals = token.metadata.decimals || 0;
+                                        const name = token.metadata.ticker || token.name;
+                                        const quantity = token.quantity / (10 ** decimals);
+                                  
+                                        return (
+                                          <tr key={token.fingerprint}>
+                                            <td style={{ textAlign: 'left' }}>{name}</td>
+                                            <td style={{ textAlign: 'right' }}>{quantity.toFixed(2)}</td>
+                                          </tr>
+                                        );
+                                      })
+                                  }
+                                </tbody>
+                              </table>
+                            </div>
+                            </>
+                            )}
+                            <div>Table buttons</div>
+                            <button className={styles.notactive} onClick={scrollToTop}>Scroll to Top</button>
+                            <button className={styles.notactive} onClick={scrollToBottom}>Scroll to Bottom</button>
+                        </>
+                    )}
                 </div>
             </div>
             {loading && (
@@ -84,8 +135,8 @@ const ProjectPage = () => {
             {!loading && (
                 activeTab === 'transactions' ? (
                     <TransactionsTable transactions={myVariable.transactions} groupName={groupName as string} projectName={projectName as string} />
-                ) : activeTab === 'balance' ? (
-                    <Balance />
+                ) : activeTab === 'signup' ? (
+                    <Signup />
                 ) : activeTab === 'report' ? (
                     <Report />
                 ) : (

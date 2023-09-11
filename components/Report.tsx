@@ -74,9 +74,6 @@ const Report = () => {
                 <div className={styles.chart}>
                   <ChartComponent1 chartData={filteredData} />
                 </div>
-                {selectedMonth != "All months" && (<div className={styles.chart}>
-                  <ChartComponent2 chartData={filteredData2} />
-                </div>)}
                 <div className={styles.chart}>
                   <ChartComponent3 chartData={filteredData3} />
                 </div>

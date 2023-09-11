@@ -8,25 +8,16 @@ const Nav = () => {
   const router = useRouter();
   const { groupName, projectName, txid } = router.query;
   const [session, setSession] = useState<Session | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
 
     useEffect(() => {
       supabase.auth.getSession().then(({ data: { session } }) => {
         setSession(session)
-        if (session?.user?.id === process.env.NEXT_PUBLIC_TREASURY_ADMIN) {
-          setIsAdmin(true)
-        }
       })
 
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         setSession(session)
-        if (session?.user?.id === process.env.NEXT_PUBLIC_TREASURY_ADMIN) {
-          setIsAdmin(true)
-        } else {
-          setIsAdmin(false)
-        }
       })
       
       return () => subscription.unsubscribe()
@@ -47,7 +38,6 @@ const Nav = () => {
           <Link href="/" className="navitems">
             Home
           </Link>
-          {isAdmin && <Link href='/admin' className="navitems">Admin</Link>}
           {!session && (<button onClick={signInWithDiscord} className="navitems">
           Sign In with Discord
         </button>)}
