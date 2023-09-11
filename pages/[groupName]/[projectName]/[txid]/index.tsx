@@ -36,7 +36,7 @@ const TxidPage = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [projectData, setProjectData] = useState<Project | null>(null);
     const [txidData, setTxidData] = useState<Contribution[] | null>(null);
-    const [wallets, setWallets] = useState([]);
+    const [wallets, setWallets] = useState<string[]>([]);
 
     async function getWallets() {
         if (connected) {
@@ -89,34 +89,40 @@ const TxidPage = () => {
     }, [projectData]);    
 
     const filterContributions = (ids: string[]): Contribution[] | null => {
-        if (!txidData) return null;
-    
-        if (ids.length === 0) return txidData; // If wallets array is empty, return all contributions
-    
-        return txidData.filter((contribution: Contribution) => {
-            return contribution.distributions?.some((distribution: Distribution) => {
-                return ids.some(id => {
-                    const walletSuffix = id.slice(-6); // Get the last 6 digits of the wallet address
-                    return distribution.contributor_id.endsWith(walletSuffix);
-                });
+    if (!txidData) return null;
+
+    if (ids.length === 0) return txidData;
+
+    return txidData.filter((contribution: Contribution) => {
+        return contribution.distributions?.some((distribution: Distribution) => {
+            return ids.some(id => {
+                const walletSuffix = id.slice(-6);
+                return distribution.contributor_id.endsWith(walletSuffix);
             });
         });
-    };       
-    
-      const renderCards = (filteredContributions: Contribution[] | null) => {
-        console.log("test", filteredContributions)
-        if (!filteredContributions) return null;
-        return filteredContributions.map((contribution, index) => (
-          <div key={index} style={{ border: '1px solid #ccc', margin: '10px', padding: '10px' }}>
-            <h3>{contribution.task_name}</h3>
-            {contribution.distributions?.map((distribution, index) => (
-              <p key={index}>
-                ID: {distribution.contributor_id} - Amounts: {distribution.amounts.join(', ')} - Tokens: {distribution.tokens.join(', ')}
+    });
+};       
+
+const renderCards = (filteredContributions: Contribution[] | null) => {
+  console.log("test", filteredContributions);
+  if (!filteredContributions) return null;
+
+  return filteredContributions.map((contribution, index) => (
+      <div key={index} className={styles.taskCard}>
+          <h3 className={styles.taskName}>{contribution.task_name}</h3>
+          {contribution.distributions?.map((distribution, index) => (
+              <p key={index} 
+                 className={wallets.some(wallet => wallet.slice(-6) === distribution.contributor_id) ? styles.highlight : ''}>
+                  ID: {distribution.contributor_id} -&nbsp;
+                  {distribution.amounts.map((amount, idx) => (
+                      `${amount} ${distribution.tokens[idx]}`
+                  )).join(', ')}
               </p>
-            ))}
-          </div>
-        ));
-      };
+          ))}
+      </div>
+  ));
+};
+
     
     console.log("myVariable", myVariable.transactions?myVariable:0);
     if (!myVariable.transactions) return <div className={styles['main']}>Loading...</div>;
@@ -129,7 +135,9 @@ const TxidPage = () => {
             </div>
           </div>
           <div>
-            <h3>{txid}</h3>
+            {!connected && (<h2>Connect your wallet to view your rewards</h2>)}
+            {connected && (<h2>Rewards sent to this wallet in this transaction</h2>)}
+            <p>txid: {txid}</p>
             <div>
               {!loading && renderCards(filterContributions(wallets))} 
             </div>

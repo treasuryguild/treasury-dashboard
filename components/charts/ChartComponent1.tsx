@@ -1,8 +1,10 @@
 import React, { useEffect, useRef } from 'react';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Chart } from "chart.js/auto";
 import { Colors } from "chart.js";
 
 Chart.register(Colors);
+Chart.register(ChartDataLabels);
 
 interface ChartComponent1Props {
   chartData: any;
@@ -37,11 +39,6 @@ const ChartComponent1: React.FC<ChartComponent1Props> = ({ chartData }) => {
             data: chartData,
             options: {
                 scales: {
-                    y: {
-                        ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
-                        },
-                    },
                     x: {
                         ticks: {
                             color: "rgba(255, 255, 255, 0.87)",
@@ -52,6 +49,15 @@ const ChartComponent1: React.FC<ChartComponent1Props> = ({ chartData }) => {
                     legend: {
                         display: false,
                     },
+                    datalabels: {
+                        color: 'white',
+                        display: true,
+                        align: 'end',
+                        anchor: 'end',
+                        formatter: (value:any, context: any) => {
+                            return value;
+                        }
+                    }
                 },
             },
         };
@@ -60,7 +66,11 @@ const ChartComponent1: React.FC<ChartComponent1Props> = ({ chartData }) => {
     }, [labels, data]);
 
     return (
+        <div>
+             <h2>Rewards</h2>
             <canvas id="myChart1"></canvas>
+        </div>
+           
     );
 };
 

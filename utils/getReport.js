@@ -28,10 +28,10 @@ export async function getReport(txs) {
         }
 
         if (!localReport[monthYear][workgroup]) {
-          localReport[monthYear][workgroup] = { totalAmounts: {}, labels: {}, tasks: {} };
+          localReport[monthYear][workgroup] = { totalAmounts: {}, labels: {}, tasks: {}, contributors: new Set()  };
         }
         if (!localReport[monthYear]['total-distribution']) {
-          localReport[monthYear]['total-distribution'] = { totalAmounts: {}, labels: {}, tasks: {}, totalTasks: 0 };
+          localReport[monthYear]['total-distribution'] = { totalAmounts: {}, labels: {}, tasks: {}, totalTasks: 0, contributors: new Set()  };
         }
         if (!localReport[monthYear][workgroup]['totalTasks']) {
           localReport[monthYear][workgroup]['totalTasks'] = 0;
@@ -51,16 +51,18 @@ export async function getReport(txs) {
         contribution.distributions.forEach(distribution => {
           distribution.tokens.forEach((token, index) => {
             const amount = distribution.amounts[index];
-      
+            
             // Aggregating total amounts
             if (!localReport[monthYear][workgroup]['totalAmounts'][token]) {
               localReport[monthYear][workgroup]['totalAmounts'][token] = 0;
             }
             localReport[monthYear][workgroup]['totalAmounts'][token] += Number(amount);
+            localReport[monthYear][workgroup].contributors.add(distribution.contributor_id);
             if (!localReport[monthYear]['total-distribution']['totalAmounts'][token]) {
               localReport[monthYear]['total-distribution']['totalAmounts'][token] = 0;
             }
             localReport[monthYear]['total-distribution']['totalAmounts'][token] += Number(amount);
+            localReport[monthYear]['total-distribution'].contributors.add(distribution.contributor_id);
           });
       
           labelsArray.forEach(label => {

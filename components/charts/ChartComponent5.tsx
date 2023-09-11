@@ -24,31 +24,17 @@ const ChartComponent5: React.FC<ChartComponent5Props> = ({ chartData }) => {
                 labels: data.map((item: any) => item.x),
                 datasets: [
                     {
-                        label: 'Tasks Created',
+                        label: 'Tasks',
                         data,
                         parsing: {
-                            yAxisKey: 'created'
+                            yAxisKey: 'tasks'
                         }
                     },
                     {
-                        label: 'Tasks Done',
+                        label: 'Contributors',
                         data,
                         parsing: {
-                            yAxisKey: 'done'
-                        }
-                    },
-                    {
-                        label: 'Task Movements',
-                        data,
-                        parsing: {
-                            yAxisKey: 'moved'
-                        }
-                    },
-                    {
-                        label: 'Idle Tasks',
-                        data,
-                        parsing: {
-                            yAxisKey: 'not_moved'
+                            yAxisKey: 'contributors'
                         }
                     }
                 ]
@@ -79,7 +65,10 @@ const ChartComponent5: React.FC<ChartComponent5Props> = ({ chartData }) => {
     }, [labels, data]);
 
     return (
-            <canvas id="myChart5"></canvas>
+        <div>
+          <h2>Tasks</h2>
+          <canvas id="myChart5"></canvas>
+        </div>
     );
 };
 

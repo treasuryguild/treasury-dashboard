@@ -5,43 +5,52 @@ import { Colors } from "chart.js";
 Chart.register(Colors);
 
 interface ChartComponent3Props {
-  chartData: any;
+  chartData?: any;
 }
 
 const ChartComponent3: React.FC<ChartComponent3Props> = ({ chartData }) => {
     const labels = chartData.labels;
     const data = chartData.data;
     const chartRef = useRef<Chart | null>(null);
-    let backgroundColor = ["rgba(255, 99, 132, 0.2)", "rgba(54, 162, 235, 0.2)", "rgba(255, 206, 86, 0.2)"];
-    let borderColor = ["rgba(255, 99, 132, 1)", "rgba(54, 162, 235, 1)", "rgba(255, 206, 86, 1)"];
-    
+    let backgroundColor1 = ["rgba(255, 99, 132, 0.2)"];
+    let backgroundColor2 = ["rgba(54, 162, 235, 0.2)"];
+    let borderColor1 = ["rgba(255, 99, 132, 1)"];
+    let borderColor2 = ["rgba(54, 162, 235, 1)"];
+
     useEffect(() => {
         if (chartRef.current) {
             chartRef.current.destroy();
         }
 
-        const chartData = {
-            labels,
-            datasets: [
-                {
-                    label: "total tasks",
-                    data,
-                    backgroundColor,
-                    borderColor,
-                    borderWidth: 1,
-                },
-            ],
-        };
         const config: any = {
-            type: "bar",
-            data: chartData,
+            type: 'bar',
+            data: {
+                labels: data.map((item: any) => item.x),
+                datasets: [
+                    {
+                        label: 'Tasks',
+                        data,
+                        parsing: {
+                            yAxisKey: 'tasks'
+                        },
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Contributors',
+                        data,
+                        parsing: {
+                            yAxisKey: 'contributors'
+                        },
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1
+                    }
+                ]
+            },
             options: {
                 scales: {
-                    y: {
-                        ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
-                        },
-                    },
                     x: {
                         ticks: {
                             color: "rgba(255, 255, 255, 0.87)",
@@ -50,17 +59,33 @@ const ChartComponent3: React.FC<ChartComponent3Props> = ({ chartData }) => {
                 },
                 plugins: {
                     legend: {
-                        display: false,
+                        display: true,
+                        labels: {
+                            color: 'white', // Change to any color you want
+                        }
                     },
+                    datalabels: {
+                        color: 'white',
+                        display: true,
+                        align: 'end',
+                        anchor: 'end',
+                        formatter: (value: any, context: any) => {
+                            return value[context.dataset.parsing.yAxisKey]; 
+                          }
+                    }
                 },
             },
         };
+        
         const ctx: any = document.getElementById("myChart3");
         chartRef.current = new Chart(ctx, config);
     }, [labels, data]);
 
     return (
-            <canvas id="myChart3"></canvas>
+        <div>
+          <h2>Tasks and Contributors</h2>
+          <canvas id="myChart3"></canvas>
+        </div>
     );
 };
 

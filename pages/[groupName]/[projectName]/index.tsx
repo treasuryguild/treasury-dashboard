@@ -73,7 +73,7 @@ const ProjectPage = () => {
                     <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
                     <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? styles.active : styles.notactive}>Transactions</button>
                     <button onClick={() => setActiveTab('balance')} className={activeTab === 'balance' ? styles.active : styles.notactive}>Balance</button>
-                    <button onClick={() => setActiveTab('report')} className={activeTab === 'report' ? styles.active : styles.notactive}>Report</button>
+                    {projectName == "Singularity Net Ambassador Wallet" && (<button onClick={() => setActiveTab('report')} className={activeTab === 'report' ? styles.active : styles.notactive}>Report</button>)}
                 </div>
             </div>
             {loading && (

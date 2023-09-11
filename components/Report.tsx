@@ -5,6 +5,7 @@ import { getReport } from '../utils/getReport';
 import { createCharts } from '../utils/createCharts';
 import ChartComponent1 from '../components/charts/ChartComponent1';
 import ChartComponent2 from '../components/charts/ChartComponent2';
+import ChartComponent3 from '../components/charts/ChartComponent3';
 
 interface FilteredDataType {
   data: number[];
@@ -17,6 +18,7 @@ const Report = () => {
   const [selectedMonth, setSelectedMonth] = useState('9.2023');
   const [filteredData, setFilteredData] = useState<FilteredDataType | null>(null);
   const [filteredData2, setFilteredData2] = useState<FilteredDataType | null>(null);
+  const [filteredData3, setFilteredData3] = useState<FilteredDataType | null>(null);
   const [uniqueMonths, setUniqueMonths] = useState(['9.2023']);
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
 
@@ -36,6 +38,7 @@ const Report = () => {
       let { chartData1, chartData2, chartData3, chartData4 }: any = createCharts(myVariable.report, selectedMonth);
       setFilteredData(chartData1);
       setFilteredData2(chartData2);
+      setFilteredData3(chartData3);
 
       const selectedMonthReport = myVariable.report[selectedMonth];
       if (selectedMonthReport) {
@@ -68,23 +71,26 @@ const Report = () => {
           <>
             {filteredData && filteredData2 && (
               <div className={styles.chartType1}>
-                <h3>Charts</h3>
                 <div className={styles.chart}>
                   <ChartComponent1 chartData={filteredData} />
                 </div>
-                <div className={styles.chart}>
+                {selectedMonth != "All months" && (<div className={styles.chart}>
                   <ChartComponent2 chartData={filteredData2} />
+                </div>)}
+                <div className={styles.chart}>
+                  <ChartComponent3 chartData={filteredData3} />
                 </div>
               </div>
             )}
             {filteredData && filteredData2 && (
               <div className={styles.chartType2}>
-                <h3>Numbers</h3>
+                <h2>Numbers</h2>
                 <div className={styles.numbers}>
                   <table>
                     <thead>
                       <tr>
-                        <th>Workgroup</th>
+                        {selectedMonth != "All months" && (<th>Workgroup</th>)}
+                        {selectedMonth == "All months" && (<th>Month</th>)}
                         <th>AGIX</th>
                         <th>Tasks</th>
                       </tr>

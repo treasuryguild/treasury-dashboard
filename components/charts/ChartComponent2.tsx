@@ -60,7 +60,10 @@ const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
     }, [labels, data]);
 
     return (
-            <canvas id="myChart2"></canvas>
+        <div>
+          <h2>Tasks</h2>
+          <canvas id="myChart2"></canvas>
+        </div>
     );
 };
 
