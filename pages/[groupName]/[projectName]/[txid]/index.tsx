@@ -37,12 +37,21 @@ const TxidPage = () => {
     const [projectData, setProjectData] = useState<Project | null>(null);
     const [txidData, setTxidData] = useState<Contribution[] | null>(null);
     const [wallets, setWallets] = useState<string[]>([]);
+    const [totalTokensReceived, setTotalTokensReceived] = useState({});
+
+    useEffect(() => {
+        if(txidData) {
+          const aggregatedTokens = aggregateTokens(txidData, wallets);
+          setTotalTokensReceived(aggregatedTokens);
+        }
+    }, [txidData, wallets]);
+    
 
     async function getWallets() {
         if (connected) {
             const usedAddresses = await wallet.getUsedAddresses();
             setWallets(usedAddresses);
-            console.log("Connected", usedAddresses)
+            //console.log("Connected", usedAddresses)
         } 
       }
       
@@ -50,7 +59,7 @@ const TxidPage = () => {
           if (connected) {
               getWallets()
           }
-          console.log("useEffect", connected)
+          //console.log("useEffect", connected)
       }, [connected]);
 
     useEffect(() => {
@@ -79,7 +88,7 @@ const TxidPage = () => {
                 setLoading(true);
                 transactions = await getSingleTransaction(projectData.project_id, txid);
                 setMyVariable(prevState => ({ ...prevState, projectInfo: projectData, transactions }));
-                console.log("TEst", transactions[0].contributions)
+                //console.log("TEst", transactions[0].contributions)
                 setTxidData(transactions[0].contributions)
                 setLoading(false);
             }
@@ -104,7 +113,7 @@ const TxidPage = () => {
 };       
 
 const renderCards = (filteredContributions: Contribution[] | null) => {
-  console.log("test", filteredContributions);
+  //console.log("test", filteredContributions);
   if (!filteredContributions) return null;
 
   return filteredContributions.map((contribution, index) => (
@@ -123,8 +132,29 @@ const renderCards = (filteredContributions: Contribution[] | null) => {
   ));
 };
 
+function aggregateTokens(txidData: Contribution[] | null, walletIds: string[]) {
+    const tokenAggregates: { [key: string]: number } = {};
+  
+    txidData?.forEach((contribution) => {
+      contribution.distributions?.forEach((distribution) => {
+        const walletSuffix = distribution.contributor_id.slice(-6);
+        if(walletIds.length === 0 || walletIds.some(walletId => walletId.slice(-6) === walletSuffix)) {
+          distribution.tokens.forEach((token, index) => {
+            if (tokenAggregates[token]) {
+              tokenAggregates[token] += distribution.amounts[index];
+            } else {
+              tokenAggregates[token] = distribution.amounts[index];
+            }
+          });
+        }
+      });
+    });
+  
+    return tokenAggregates;
+}
+
     
-    console.log("myVariable", myVariable.transactions?myVariable:0);
+    //console.log("myVariable", myVariable.transactions?myVariable:0);
     if (!myVariable.transactions) return <div className={styles['main']}>Loading...</div>;
     
     return (
@@ -134,13 +164,22 @@ const renderCards = (filteredContributions: Contribution[] | null) => {
               <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
             </div>
           </div>
-          <div>
-            {!connected && (<h2>Connect your wallet to view your rewards</h2>)}
-            {connected && (<h2>Rewards sent to this wallet in this transaction</h2>)}
-            <p>txid: {txid}</p>
+          <div className={styles.txWindow}>
             <div>
-              {!loading && renderCards(filterContributions(wallets))} 
-            </div>
+              {!connected && (<h2>Connect your wallet to view your rewards</h2>)}    
+              {connected && (<h2>Rewards sent to this wallet in this transaction</h2>)}
+              <p>txid: {txid}</p>
+                <div className={styles.taskCard}>
+                    {!connected && (<h2>Total rewards distributed</h2>)} 
+                    {connected && (<h2>Total rewards received</h2>)} 
+                    <p className={styles.highlight}>
+                      {Object.entries(totalTokensReceived).map(([token, amount]) => `${amount} ${token}`).join(', ')}
+                    </p>
+                </div>
+              <div>
+                {!loading && renderCards(filterContributions(wallets))} 
+              </div>
+            </div> 
           </div>  
         </div>
       );

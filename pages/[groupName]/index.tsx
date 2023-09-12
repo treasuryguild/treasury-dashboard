@@ -45,7 +45,7 @@ const GroupPage = () => {
 
     const treasuryWalletProjects = groupData?.projects.filter(p => p.project_type === "Treasury Wallet") || [];
     const otherProjects = groupData?.projects.filter(p => p.project_type !== "Treasury Wallet") || [];
-    console.log("myVariable", myVariable);
+    //console.log("myVariable", myVariable);
     if (!groupData) return <div>Loading...</div>;
     
     return (

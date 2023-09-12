@@ -8,4 +8,8 @@
 
 .button {
     margin-top: 20px;
+    background-color: #646cff;
+    color: white;
+    cursor: pointer;
+    padding: 0.5em;
 }

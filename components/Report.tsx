@@ -51,7 +51,7 @@ const Report = () => {
 
       setLoading(false);
     }
-    console.log(filteredData)
+    //console.log(filteredData)
 }, [selectedMonth, myVariable.report]);
 
      

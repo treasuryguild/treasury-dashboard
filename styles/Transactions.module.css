@@ -93,27 +93,30 @@
     margin: 5px;
     cursor: pointer;
     background-color: black;
+    color: white;
 }
 .notactive {
     padding: 5px;
     margin: 5px;
     cursor: pointer;
     background-color: black;
+    color: white;
 }
 .notactive:hover {
-    background-color: rgb(74, 68, 68);
+    background-color: rgb(41, 20, 91);
 }
 .active:hover {
-    background-color: rgb(74, 68, 68);
+    background-color: rgb(41, 20, 91);
 }
 .backButton:hover {
-    background-color: rgb(74, 68, 68);
+    background-color: rgb(41, 20, 91);
 }
 .backButton {
     padding: 5px;
     margin: 5px;
     cursor: pointer;
     background-color: black;
+    color: white;
 }
 
 .walletDetails {

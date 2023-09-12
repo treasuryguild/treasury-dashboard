@@ -57,9 +57,9 @@ const ProjectPage = () => {
                 budgetInfo = await getMonthlyBudget(projectData.project_id);
                 transactions = await getTransactions(projectData.project_id);
                 let balance = await getWalletBalance(projectData.wallet) || {};
-                console.log(balance)
                 setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance }));
                 setLoading(false);
+                //console.log("myVariable", myVariable);
             }
         };
     
@@ -76,7 +76,6 @@ const ProjectPage = () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     };
 
-    console.log("myVariable", myVariable);
     if (!projectData) return <div className={styles['main']}>Loading...</div>;
 
     return (

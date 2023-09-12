@@ -64,7 +64,7 @@ export function createCharts(report, month) {
     for (let [key, value] of Object.entries(report)) {
       if(value['total-distribution'] && value['total-distribution'].totalAmounts) {
         chartData1.labels.push(key);
-        chartData1.data.push((value['total-distribution'].totalAmounts.AGIX).toFixed(0));
+        chartData1.data.push(Number(value['total-distribution'].totalAmounts.AGIX).toFixed(0));
       } else {
         chartData1.labels.push(key);
         chartData1.data.push(0);
@@ -131,6 +131,6 @@ export function createCharts(report, month) {
     chartData4 = {};
   }
   
-  console.log("createCharts", month, chartData1, chartData2)
+  //console.log("createCharts", month, chartData1, chartData2)
   return { chartData1, chartData2, chartData3, chartData4 };
 }

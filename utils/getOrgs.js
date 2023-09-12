@@ -19,14 +19,10 @@ export async function getOrgs() {
           if (group.length == 0) {
             groupname = ''
             groupInfo = {}
-          } else {
-            console.log(group)
           }
         }
       } catch (error) {
         if (error) {
-          alert(error.message);
-        } else {
           console.error('Unknown error:', error);
         }
       }

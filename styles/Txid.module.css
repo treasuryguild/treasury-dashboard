@@ -23,6 +23,12 @@
     padding: 5px;
     margin: 5px;
     cursor: pointer;
+    background-color: black;
+    color: white;
+}
+
+.backButton:hover {
+    background-color: rgb(41, 20, 91);
 }
 
 .highlight {
@@ -36,6 +42,11 @@
 }
 .taskName {
     color: rgb(217, 240, 250);
+}
+
+.txWindow {
+    display: flex;
+    flex-wrap: wrap;
 }
 
   
