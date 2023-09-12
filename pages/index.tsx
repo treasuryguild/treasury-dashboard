@@ -16,7 +16,6 @@ const Home: NextPage<HomeProps> = ({ groupInfo }) => {
     setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo, transactions: [] }));
   }, [groupInfo, setMyVariable]);
 
-  console.log("Rendering serversideprops", groupInfo);
   return (
     <div>
       <div className={styles.groupscontainer}>
