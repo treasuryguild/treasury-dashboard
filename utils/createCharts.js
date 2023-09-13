@@ -9,7 +9,7 @@ export function createCharts(report, month) {
     for (let [key, value] of Object.entries(report[month])) {
       if(value.totalAmounts && key != "total-distribution") {
         chartData1.labels.push(key);
-        chartData1.data.push(value.totalAmounts.AGIX);
+        chartData1.data.push(value.totalAmounts.AGIX || 0);
       }
     }
 
@@ -50,9 +50,20 @@ export function createCharts(report, month) {
   }
   
 
-  function createChartData4() { 
-    let chartData4 = {};
-    return chartData4;
+  function createTokenData() { 
+    let tokenData = {
+      labels: [],
+      data: []
+    };
+
+    for (let [key, value] of Object.entries(report[month])) {
+      if(value.totalAmounts && key != "total-distribution") {
+        tokenData.labels.push(key);
+        tokenData.data.push(value.totalAmounts || {});
+      }
+    }
+
+    return tokenData;
   }
 
   function createAllMonthsChartData1() { 
@@ -74,7 +85,6 @@ export function createCharts(report, month) {
     return chartData1;
   }
   
-
   function createAllMonthsChartData2() { 
     let chartData2 = {
       labels: [],
@@ -114,23 +124,43 @@ export function createCharts(report, month) {
     return chartData3;
   }
 
+  function createAllMonthsTokenData() { 
+    let tokenData = {
+      labels: [],
+      data: []
+    };
+  
+    for (let [key, value] of Object.entries(report)) {
+      if(value['total-distribution'] && value['total-distribution'].totalAmounts) {
+        tokenData.labels.push(key);
+        tokenData.data.push(value['total-distribution'].totalAmounts);
+      } else {
+        tokenData.labels.push(key);
+        tokenData.data.push({});
+      }
+    }
+
+    return tokenData;
+  }
+
   let chartData1 = {};
   let chartData2 = {};
   let chartData3 = {};
-  let chartData4 = {};
+  let tokenData = {};
+  
 
   if (month != 'All months') {
     chartData1 = createChartData1();
     chartData2 = createChartData2();
     chartData3 = createChartData3();
-    chartData4 = createChartData4();
+    tokenData = createTokenData();
   } else {
     chartData1 = createAllMonthsChartData1();
     chartData2 = createAllMonthsChartData2();
     chartData3 = createAllMonthsChartData3();
-    chartData4 = {};
+    tokenData = createAllMonthsTokenData();
   }
   
-  //console.log("createCharts", month, chartData1, chartData2)
-  return { chartData1, chartData2, chartData3, chartData4 };
+  console.log("createCharts", month, chartData1, tokenData, report)
+  return { chartData1, chartData2, chartData3, tokenData };
 }

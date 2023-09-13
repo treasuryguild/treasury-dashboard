@@ -12,10 +12,6 @@ const ChartComponent3: React.FC<ChartComponent3Props> = ({ chartData }) => {
     const labels = chartData.labels;
     const data = chartData.data;
     const chartRef = useRef<Chart | null>(null);
-    let backgroundColor1 = ["rgba(255, 99, 132, 0.2)"];
-    let backgroundColor2 = ["rgba(54, 162, 235, 0.2)"];
-    let borderColor1 = ["rgba(255, 99, 132, 1)"];
-    let borderColor2 = ["rgba(54, 162, 235, 1)"];
 
     useEffect(() => {
         if (chartRef.current) {

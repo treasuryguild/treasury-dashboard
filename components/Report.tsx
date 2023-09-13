@@ -11,6 +11,10 @@ interface FilteredDataType {
   data: number[];
   labels: string[];
 }
+interface FilteredDataType2 {
+  data: any;
+  labels: string[];
+}
 
 const Report = () => {
   const [loading, setLoading] = useState(true);
@@ -19,7 +23,9 @@ const Report = () => {
   const [filteredData, setFilteredData] = useState<FilteredDataType | null>(null);
   const [filteredData2, setFilteredData2] = useState<FilteredDataType | null>(null);
   const [filteredData3, setFilteredData3] = useState<FilteredDataType | null>(null);
+  const [filteredData4, setFilteredData4] = useState<FilteredDataType2 | null>(null);
   const [uniqueMonths, setUniqueMonths] = useState(['9.2023']);
+  const [excludedTokens, setExcludedTokens] = useState<string[]>(['ADA']);
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
 
 
@@ -35,11 +41,12 @@ const Report = () => {
 
   useEffect(() => {
     if (myVariable.report) {
-      let { chartData1, chartData2, chartData3, chartData4 }: any = createCharts(myVariable.report, selectedMonth);
+      let { chartData1, chartData2, chartData3, tokenData }: any = createCharts(myVariable.report, selectedMonth);
       setFilteredData(chartData1);
       setFilteredData2(chartData2);
       setFilteredData3(chartData3);
-
+      setFilteredData4(tokenData);
+      console.log("tokenData", tokenData)
       const selectedMonthReport = myVariable.report[selectedMonth];
       if (selectedMonthReport) {
         const totalTasks = selectedMonthReport['total-distribution'].totalTasks || 0;
@@ -54,6 +61,10 @@ const Report = () => {
     //console.log(filteredData)
 }, [selectedMonth, myVariable.report]);
 
+function getAllKeys(data: any) {
+  return Array.from(new Set(data.flatMap(Object.keys)));
+}
+const allKeys = filteredData4?.data ? getAllKeys(filteredData4.data).filter((key: any) => !excludedTokens.includes(key)) : [];
      
   return (
     <div className={styles.main}>
@@ -84,29 +95,31 @@ const Report = () => {
                 <h2>Numbers</h2>
                 <div className={styles.numbers}>
                   <table>
-                    <thead>
-                      <tr>
-                        {selectedMonth != "All months" && (<th>Workgroup</th>)}
-                        {selectedMonth == "All months" && (<th>Month</th>)}
-                        <th>AGIX</th>
-                        <th>Tasks</th>
-                      </tr>
-                    </thead>
+                  <thead>
+                    <tr>
+                      <th>Workgroup</th>
+                      {allKeys.map((key: any) => (
+                        <th key={key}>{key}</th>
+                      ))}
+                    </tr>
+                  </thead>
                     <tbody>
-                      {filteredData.data.map((amount, index) => (
+                      {filteredData4 && filteredData4.data.map((item: any, index: any) => (
                         <tr key={index}>
-                          <td>{filteredData.labels[index]}</td>
-                          <td>{amount}</td>
-                          <td>{filteredData2.data[index]}</td>
+                          <td>{filteredData4.labels[index]}</td>
+                          {allKeys.map((key: any) => (
+                            <td key={key}>{item[key] ? parseInt(item[key]) : 0}</td>
+                          ))}
                         </tr>
                       ))}
-                      {totalReportData && (
-                        <tr>
-                          <td>Total</td>
-                          <td>{totalReportData.totalAGIX}</td>
-                          <td>{totalReportData.totalTasks}</td>
-                        </tr>
-                      )}
+                      <tr>
+                      <td>Total</td>
+                      {allKeys.map((key: any) => (
+                          <td key={key}>
+                              {filteredData4?.data.reduce((sum: any, item: any) => sum + (excludedTokens.includes(key) ? 0 : (item[key] || 0)), 0).toFixed(0)}
+                          </td>
+                      ))}
+                    </tr>
                     </tbody>
                   </table>
                 </div>

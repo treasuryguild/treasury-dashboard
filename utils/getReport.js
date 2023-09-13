@@ -51,7 +51,7 @@ export async function getReport(txs) {
         contribution.distributions.forEach(distribution => {
           distribution.tokens.forEach((token, index) => {
             const amount = distribution.amounts[index];
-            
+            if (token == "ada") {token = "ADA"}
             // Aggregating total amounts
             if (!localReport[monthYear][workgroup]['totalAmounts'][token]) {
               localReport[monthYear][workgroup]['totalAmounts'][token] = 0;
@@ -72,7 +72,7 @@ export async function getReport(txs) {
       
             distribution.tokens.forEach((token, index) => {
               const amount = distribution.amounts[index];
-      
+              if (token == "ada") {token = "ADA"}
               // Aggregating labels
               if (!localReport[monthYear][workgroup]['labels'][label][token]) {
                 localReport[monthYear][workgroup]['labels'][label][token] = 0;
