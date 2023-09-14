@@ -27,7 +27,6 @@ const Report = () => {
   const [uniqueMonths, setUniqueMonths] = useState(['9.2023']);
   const [excludedTokens, setExcludedTokens] = useState<string[]>(['ADA']);
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
-console.log("Report load", myVariable)
 
   async function generateReport() {
       let report: any = await getReport(myVariable.transactions);

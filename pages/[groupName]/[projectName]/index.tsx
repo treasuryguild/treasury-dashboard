@@ -28,6 +28,19 @@ const ProjectPage = () => {
   const [previousTab, setPreviousTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
 
   useEffect(() => {
+    const handleRouteChange = (url: string) => {
+        const tab = new URLSearchParams(window.location.search).get('tab');
+        if (tab) {
+            setActiveTab(tab as 'transactions' | 'signup' | 'report');
+        }
+    };
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => {
+        router.events.off('routeChangeComplete', handleRouteChange);
+    };
+}, [router.events]);
+
+  useEffect(() => {
     if (activeTab !== 'signup') {
       setPreviousTab(activeTab);
     }
