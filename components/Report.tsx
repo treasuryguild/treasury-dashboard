@@ -27,7 +27,7 @@ const Report = () => {
   const [uniqueMonths, setUniqueMonths] = useState(['9.2023']);
   const [excludedTokens, setExcludedTokens] = useState<string[]>(['ADA']);
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
-
+console.log("Report load", myVariable)
 
   async function generateReport() {
       let report: any = await getReport(myVariable.transactions);
@@ -36,17 +36,19 @@ const Report = () => {
   }
 
   useEffect(() => {
+    if (myVariable.transactions) {
       generateReport();
+    }     
   }, []);
 
   useEffect(() => {
-    if (myVariable.report) {
+    if (myVariable.report && Object.keys(myVariable.report).length > 0) {
       let { chartData1, chartData2, chartData3, tokenData }: any = createCharts(myVariable.report, selectedMonth);
       setFilteredData(chartData1);
       setFilteredData2(chartData2);
       setFilteredData3(chartData3);
       setFilteredData4(tokenData);
-      console.log("tokenData", tokenData)
+      //console.log("tokenData", tokenData)
       const selectedMonthReport = myVariable.report[selectedMonth];
       if (selectedMonthReport) {
         const totalTasks = selectedMonthReport['total-distribution'].totalTasks || 0;
@@ -97,7 +99,8 @@ const allKeys = filteredData4?.data ? getAllKeys(filteredData4.data).filter((key
                   <table>
                   <thead>
                     <tr>
-                      <th>Workgroup</th>
+                      {selectedMonth != 'All months' && (<th>Workgroup</th>)}
+                      {selectedMonth == 'All months' && (<th>Month</th>)}
                       {allKeys.map((key: any) => (
                         <th key={key}>{key}</th>
                       ))}

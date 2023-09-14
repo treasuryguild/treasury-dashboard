@@ -32,10 +32,14 @@ const Signup = () => {
         <div className={styles.container}>
             <h2>To sign up and receive rewards from this group, you need to:</h2>
             <br />
-                <p>Login with Discord</p>
-                <p>Connect the wallet where you want to receive the rewards</p>
+                <p>Click on the Sign In with Discord button in the top navigation bar</p>
+                <p>Connect your wallet in the top right of the Navigation bar</p>
                 <p>Hit the submit button</p>
             <br />
+            <h3>Steps left to do</h3>
+            {!connected && (<p>Please connect your wallet</p>)}
+            {!session && (<p>Please Sign in to Discord</p>)}
+            {session && connected && (<p>Click Submit</p>)}
             <button className={styles.button} onClick={handleSubmit} disabled={!connected || !session}>Submit</button>
         </div>
     );

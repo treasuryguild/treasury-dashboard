@@ -161,6 +161,6 @@ export function createCharts(report, month) {
     tokenData = createAllMonthsTokenData();
   }
   
-  console.log("createCharts", month, chartData1, tokenData, report)
+  //console.log("createCharts", month, chartData1, tokenData, report)
   return { chartData1, chartData2, chartData3, tokenData };
 }

@@ -12,59 +12,73 @@ import Signup from '../../../components/Signup';
 import Report from '../../../components/Report';
 
 interface Project {
-    project_id: string;
-    project_name: string;
-    project_type: string;
-    wallet: string;
+  project_id: string;
+  project_name: string;
+  project_type: string;
+  wallet: string;
 }
 
 const ProjectPage = () => {
-    const [activeTab, setActiveTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
-    const { myVariable, setMyVariable } = useMyVariable();
-    const router = useRouter();
-    const { groupName, projectName } = router.query;
-    const [loading, setLoading] = useState<boolean>(false);
-    const [projectData, setProjectData] = useState<Project | null>(null);
+  const [activeTab, setActiveTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
+  const { myVariable, setMyVariable } = useMyVariable();
+  const router = useRouter();
+  const { groupName, projectName } = router.query;
+  const [loading, setLoading] = useState<boolean>(false);
+  const [projectData, setProjectData] = useState<Project | null>(null);
+  const [previousTab, setPreviousTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
 
-    useEffect(() => {
-        const fetchGroupData = async (groupName: string, projectName: string) => {
-            let groupInfo = myVariable.groupInfo;
-            // If myVariable.groupInfo is empty, fetch the groupInfo
-            if (!groupInfo || groupInfo.length === 0) {
-                groupInfo = await getOrgs();
-                setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo }));
-            }
-    
-            // Find the project from the updated groupInfo
-            const foundGroup = groupInfo?.find(group => group.group_name === groupName);
-            const foundProject = foundGroup?.projects.find(project => project.project_name === projectName);
-            setProjectData(foundProject || null);
-        };
-    
-        if (groupName && projectName) {
-            fetchGroupData(groupName as string, projectName as string);
-        }
-    }, [groupName, projectName]);  // Removed myVariable and setMyVariable from the dependency array
-    
-    useEffect(() => {
-        const fetchProjectData = async () => {
-            let budgetInfo = myVariable.projectInfo;
-            let transactions = myVariable.transactions;
-    
-            // If foundProject exists, fetch the monthly budget
-            if (projectData) {
-                setLoading(true);
-                budgetInfo = await getMonthlyBudget(projectData.project_id);
-                transactions = await getTransactions(projectData.project_id);
-                let balance = await getWalletBalance(projectData.wallet) || {};
-                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance }));
-                setLoading(false);
-                //console.log("myVariable", myVariable);
-            }
-        };
-    
-        fetchProjectData();
-    }, [projectData]);    
+  useEffect(() => {
+    if (activeTab !== 'signup') {
+      setPreviousTab(activeTab);
+    }
+  }, [activeTab]);
+  // Hook to set activeTab from URL parameters
+  useEffect(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    if (tab) {
+      setActiveTab(tab as 'transactions' | 'signup' | 'report');
+    }
+  }, []);
+
+  // Hook to fetch group data
+  useEffect(() => {
+    const fetchGroupData = async () => {
+      let groupInfo = myVariable.groupInfo;
+      if (!groupInfo || groupInfo.length === 0) {
+        groupInfo = await getOrgs();
+        setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo }));
+      }
+      
+      const foundGroup = groupInfo?.find(group => group.group_name === groupName);
+      const foundProject = foundGroup?.projects.find(project => project.project_name === projectName);
+      setProjectData(foundProject || null);
+    };
+
+    if (groupName && projectName) {
+      fetchGroupData();
+    }
+  }, [groupName, projectName]);
+
+  // Hook to fetch project data
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      let budgetInfo = myVariable.projectInfo;
+      let transactions = myVariable.transactions;
+
+      if (projectData) {
+        setLoading(true);
+        budgetInfo = await getMonthlyBudget(projectData.project_id);
+        transactions = await getTransactions(projectData.project_id);
+        let balance = await getWalletBalance(projectData.wallet) || router.push('/newemptywallet');
+        setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance }));
+        setLoading(false);
+      }
+    };
+
+    if (projectData && (!myVariable.budgetInfo || myVariable.transactions.length == 0) && (activeTab === 'transactions' || activeTab === 'report')) {
+      fetchProjectData();
+    }
+  }, [projectData, activeTab]);
     
     // Function to scroll to top
     const scrollToTop = () => {
@@ -76,19 +90,42 @@ const ProjectPage = () => {
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     };
 
+    const handleTabChange = (tab: 'transactions' | 'signup' | 'report') => {
+        setActiveTab(tab);
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        router.push(url.toString(), undefined, { shallow: true });
+      };
+
     if (!projectData) return <div className={styles['main']}>Loading...</div>;
 
     return (
         <div className={styles['main']}>
             <div>
                 <div className={styles.navbar}>
-                    <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
-                    <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? styles.active : styles.notactive}>Transactions</button>
-                    <button onClick={() => setActiveTab('signup')} className={activeTab === 'signup' ? styles.active : styles.notactive}>Signup</button>
-                    {projectName == "Singularity Net Ambassador Wallet" && (<button onClick={() => setActiveTab('report')} className={activeTab === 'report' ? styles.active : styles.notactive}>Report</button>)}
+                    <button 
+                      onClick={() => handleTabChange('transactions')}
+                      className={activeTab === 'transactions' ? styles.active : styles.notactive}
+                    >
+                      Transactions
+                    </button>
+                    <button 
+                      onClick={() => handleTabChange('signup')}
+                      className={activeTab === 'signup' ? styles.active : styles.notactive}
+                    >
+                      Signup
+                    </button>
+                    {projectName === "Singularity Net Ambassador Wallet" && (
+                      <button 
+                        onClick={() => handleTabChange('report')}
+                        className={activeTab === 'report' ? styles.active : styles.notactive}
+                      >
+                        Report
+                      </button>
+                    )}
                     {!loading && activeTab === 'transactions' && (
                         <>
-                            {myVariable.balance && (
+                            {myVariable?.balance?.lovelaces && (
                             <>
                             <div className={styles.walletDetails}>
                               <div>Wallet Balance</div>

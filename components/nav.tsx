@@ -36,7 +36,10 @@ const Nav = () => {
   return (
     <nav className="routes">
           <Link href="/" className="navitems">
-            Home
+            Groups
+          </Link>
+          <Link href="/transaction" className="navitems">
+            Transaction
           </Link>
           {!session && (<button onClick={signInWithDiscord} className="navitems">
           Sign In with Discord

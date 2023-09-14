@@ -86,8 +86,8 @@ const TxidPage = () => {
             let transactions = myVariable.transactions;
             if (projectData) {
                 setLoading(true);
-                transactions = await getSingleTransaction(projectData.project_id, txid);
-                setMyVariable(prevState => ({ ...prevState, projectInfo: projectData, transactions }));
+                transactions = await getSingleTransaction(txid, projectData.project_id);
+                setMyVariable(prevState => ({ ...prevState, projectInfo: projectData }));
                 //console.log("TEst", transactions[0].contributions)
                 setTxidData(transactions[0].contributions)
                 setLoading(false);
@@ -179,7 +179,7 @@ function aggregateTokens(txidData: Contribution[] | null, walletIds: string[]) {
               <div>
                 {!loading && renderCards(filterContributions(wallets))} 
               </div>
-            </div> 
+            </div>
           </div>  
         </div>
       );

@@ -15,7 +15,6 @@ export async function getWalletBalance(wallet) {
         }
       }
     }
-
     await getBalance();
 
     return balance;
