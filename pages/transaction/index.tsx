@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import type { NextPage } from 'next';
 import { useMyVariable } from '../../context/MyVariableContext';
 import { getSingleTransaction } from '../../utils/getSingleTransaction';
-import styles from '../../styles/tx.module.css';
+import styles from '../../styles/Tx.module.css';
 
 interface Project {
   project_id: string;
