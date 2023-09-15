@@ -1,14 +1,21 @@
 import React from 'react';
+import { useRouter } from 'next/router';
 import { useState, useEffect } from "react";
 import { useWallet } from '@meshsdk/react';
 import { supabase } from '../lib/supabaseClient';
 import { Session } from "@supabase/supabase-js";
 import styles from '../styles/Signup.module.css';
+import { updateWallet } from '../utils/updateWallet'
+
+
 
 const Signup = () => {
     const { connected, wallet } = useWallet();
     const [session, setSession] = useState<Session | null>(null)
-    const [username, setUsername] = useState("");
+    const [firstWallet, setFirstWallet] = useState("");
+    const router = useRouter();
+    const { groupName, projectName } = router.query;
+    //let firstWallet = '';
 
     useEffect(() => {
         supabase.auth.getSession().then(({ data: { session } }) => {
@@ -24,8 +31,27 @@ const Signup = () => {
         return () => subscription.unsubscribe()
     }, [])
 
-    const handleSubmit = () => {
-        console.log(session);
+    useEffect(() => {
+        if (connected) {
+          getWalletAddress()
+          console.log(firstWallet);
+        }
+      }, [connected]);
+
+    async function getWalletAddress() {
+        const usedAddresses = await wallet.getUsedAddresses();
+        setFirstWallet(usedAddresses[0])
+    }
+
+    const handleSubmit = async () => {
+        let username = session?.user?.user_metadata.custom_claims.global_name
+        let wallet = firstWallet;
+        let user_id = session?.user?.id
+        let project = projectName;
+        let full_username = session?.user?.user_metadata.name
+        let data = await updateWallet(username, wallet, user_id, project, full_username);
+        console.log("Testing values", session, data)
+        //update wallets table with wallet
     }
 
     return (

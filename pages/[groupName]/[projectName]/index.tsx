@@ -5,7 +5,6 @@ import { getOrgs } from '../../../utils/getOrgs';
 import { getMonthlyBudget } from '../../../utils/getMonthlyBudget';
 import { getTransactions } from '../../../utils/getTransactions';
 import { getWalletBalance } from '../../../utils/getWalletBalance';
-import Link from 'next/link';
 import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
 import Signup from '../../../components/Signup';
@@ -122,12 +121,12 @@ const ProjectPage = () => {
                     >
                       Transactions
                     </button>
-                    <button 
+                    {projectName === "Test Wallet132" && (<button 
                       onClick={() => handleTabChange('signup')}
                       className={activeTab === 'signup' ? styles.active : styles.notactive}
                     >
                       Signup
-                    </button>
+                    </button>)}
                     {projectName === "Singularity Net Ambassador Wallet" && (
                       <button 
                         onClick={() => handleTabChange('report')}
