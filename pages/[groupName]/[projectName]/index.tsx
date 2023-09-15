@@ -28,12 +28,10 @@ const ProjectPage = () => {
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-      const tab = new URLSearchParams(window.location.search).get('tab');
-      if (tab) {
-        setActiveTab(tab as 'transactions' | 'signup' | 'report');
-      } else {
-        setActiveTab('transactions');
-      }
+        const tab = new URLSearchParams(window.location.search).get('tab');
+        if (tab) {
+            setActiveTab(tab as 'transactions' | 'signup' | 'report');
+        }
     };
     router.events.on('routeChangeComplete', handleRouteChange);
     return () => {
@@ -123,7 +121,7 @@ const ProjectPage = () => {
                     >
                       Transactions
                     </button>
-                    {projectName === "Test Wallet123" && (<button 
+                    {projectName === "Singularity Net Ambassador Wallet" && (<button 
                       onClick={() => handleTabChange('signup')}
                       className={activeTab === 'signup' ? styles.active : styles.notactive}
                     >
