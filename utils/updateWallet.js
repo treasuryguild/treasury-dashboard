@@ -6,16 +6,16 @@ export async function updateWallet(username, wallet, user_id, project, full_user
       .from('wallets')
       .upsert([
         { username: username, wallet: wallet, user_id: user_id, project: project, full_username: full_username }
-      ])
+      ], { onConflict: ['project', 'user_id'] })
 
     if (error) {
       throw error;
     }
-    if (data) {
-        return username;
-    }
+    
+    return { success: true, data: data, message: "Wallet update successful!" };
+    
   } catch (error) {
     console.log("Upload error: ", error.message);
-    return null;
+    return { success: false, data: null, message: "Upload failed!" };
   }
 }

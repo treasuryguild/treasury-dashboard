@@ -28,10 +28,12 @@ const ProjectPage = () => {
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
-        const tab = new URLSearchParams(window.location.search).get('tab');
-        if (tab) {
-            setActiveTab(tab as 'transactions' | 'signup' | 'report');
-        }
+      const tab = new URLSearchParams(window.location.search).get('tab');
+      if (tab) {
+        setActiveTab(tab as 'transactions' | 'signup' | 'report');
+      } else {
+        setActiveTab('transactions');
+      }
     };
     router.events.on('routeChangeComplete', handleRouteChange);
     return () => {
@@ -81,7 +83,7 @@ const ProjectPage = () => {
         setLoading(true);
         budgetInfo = await getMonthlyBudget(projectData.project_id);
         transactions = await getTransactions(projectData.project_id);
-        let balance = await getWalletBalance(projectData.wallet) || router.push('/newemptywallet');
+        let balance = await getWalletBalance(projectData.wallet);
         setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance }));
         setLoading(false);
       }
@@ -121,7 +123,7 @@ const ProjectPage = () => {
                     >
                       Transactions
                     </button>
-                    {projectName === "Test Wallet132" && (<button 
+                    {projectName === "Test Wallet123" && (<button 
                       onClick={() => handleTabChange('signup')}
                       className={activeTab === 'signup' ? styles.active : styles.notactive}
                     >
