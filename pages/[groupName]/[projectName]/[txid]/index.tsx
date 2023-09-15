@@ -77,7 +77,7 @@ const TxidPage = () => {
         };
     
         if (groupName && projectName) {
-            fetchGroupData(groupName as string, projectName as string);
+          fetchGroupData(groupName as string, projectName as string);
         }
     }, [groupName, projectName]);  
     
@@ -153,9 +153,7 @@ function aggregateTokens(txidData: Contribution[] | null, walletIds: string[]) {
     return tokenAggregates;
 }
 
-    
-    //console.log("myVariable", myVariable.transactions?myVariable:0);
-    if (!myVariable.transactions) return <div className={styles['main']}>Loading...</div>;
+    if (!groupName || !projectName) return <div className={styles['main']}>Loading...</div>;
     
     return (
         <div className={styles['main']}>
