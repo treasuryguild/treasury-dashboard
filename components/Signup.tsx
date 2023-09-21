@@ -65,13 +65,13 @@ const Signup = () => {
                 <p>Hit the submit button</p>
             <br />
             {!notification && (<h3>Steps left to do</h3>)}
-            {!session && (<p>Please sign in to Discord</p>)}
+            {!session && (<p>Please sign into Discord</p>)}
             {!connected && (<p>Please connect your wallet</p>)}
             {session && connected && !notification &&(<p>Click Submit</p>)}
             {session && connected && notification && (
             <div className={styles.notification}>
                     <p>{notification}</p>
-                    <p>New rewards will be sent to this wallet</p>
+                    <p>Future rewards will be sent to this wallet</p>
                 </div>
             )}
             <button className={styles.button} onClick={handleSubmit} disabled={!connected || !session}>Submit</button>
