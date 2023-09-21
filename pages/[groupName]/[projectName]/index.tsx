@@ -121,11 +121,11 @@ const ProjectPage = () => {
                     >
                       Transactions
                     </button>
-                    {projectName === "Test Wallet 123" && (<button 
+                    {projectName === "Singularity Net Ambassador Wallet" && (<button 
                       onClick={() => handleTabChange('signup')}
                       className={activeTab === 'signup' ? styles.active : styles.notactive}
                     >
-                      Signup
+                      Register Wallet
                     </button>)}
                     {projectName === "Singularity Net Ambassador Wallet" && (
                       <button 

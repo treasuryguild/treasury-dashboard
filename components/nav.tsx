@@ -26,6 +26,9 @@ const Nav = () => {
     async function signInWithDiscord() {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
+        options: {
+          redirectTo: 'https://treasuryguild.com/Singularity%20Net/Singularity%20Net%20Ambassador%20Wallet?tab=signup',
+        },
       })
     }
   
