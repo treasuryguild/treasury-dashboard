@@ -60,7 +60,7 @@ const Report = () => {
       setLoading(false);
     }
     //console.log(filteredData)
-    console.log("myVariable", myVariable)
+    //console.log("myVariable", myVariable)
 }, [selectedMonth, myVariable.report]);
 
 function getAllKeys(data: any) {
