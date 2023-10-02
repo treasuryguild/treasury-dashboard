@@ -141,15 +141,14 @@ function aggregateTokens(txidData: Contribution[] | null, walletIds: string[]) {
         if(walletIds.length === 0 || walletIds.some(walletId => walletId.slice(-6) === walletSuffix)) {
           distribution.tokens.forEach((token, index) => {
             if (tokenAggregates[token]) {
-              tokenAggregates[token] += distribution.amounts[index];
+              tokenAggregates[token] += Number(distribution.amounts[index]);
             } else {
-              tokenAggregates[token] = distribution.amounts[index];
+              tokenAggregates[token] = Number(distribution.amounts[index]);
             }
           });
         }
       });
     });
-  
     return tokenAggregates;
 }
 
