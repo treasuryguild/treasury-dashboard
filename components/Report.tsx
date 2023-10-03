@@ -19,7 +19,7 @@ interface FilteredDataType2 {
 const Report = () => {
   const [loading, setLoading] = useState(true);
   const { myVariable, setMyVariable } = useMyVariable();
-  const [selectedMonth, setSelectedMonth] = useState('9.2023');
+  const [selectedMonth, setSelectedMonth] = useState('All months');
   const [filteredData, setFilteredData] = useState<FilteredDataType | null>(null);
   const [filteredData2, setFilteredData2] = useState<FilteredDataType | null>(null);
   const [filteredData3, setFilteredData3] = useState<FilteredDataType | null>(null);
@@ -176,7 +176,7 @@ if (selectedMonth === 'All months') {
                           {allKeys.map((key: any) => {
                             if (key === 'AGIX') {
                               const totalBudget: any = Object.values(myVariable.report).reduce((acc: any, report: any) => {
-                                return acc + (report['monthly-budget'].AGIX || 0);
+                                return acc + ((report['monthly-budget']?.AGIX) || 0);  // Added optional chaining here
                               }, 0);
                               const totalExpenses = filteredData4?.data.reduce((sum: any, item: any) => sum + (item.AGIX || 0), 0) || 0;
                               return <td key={key}>{(totalBudget - totalExpenses).toFixed(0)}</td>;
