@@ -6,6 +6,8 @@ import { createCharts } from '../utils/createCharts';
 import ChartComponent1 from '../components/charts/ChartComponent1';
 import ChartComponent2 from '../components/charts/ChartComponent2';
 import ChartComponent3 from '../components/charts/ChartComponent3';
+import DataTable from '../components/DataTable';
+import SpecificWorkgroupComponent from'../components/SpecificWorkgroupComponent';
 
 interface FilteredDataType {
   data: number[];
@@ -27,6 +29,8 @@ const Report = () => {
   const [uniqueMonths, setUniqueMonths] = useState(['9.2023']);
   const [excludedTokens, setExcludedTokens] = useState<string[]>(['ADA']);
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
+  const [workgroups, setWorkgroups] = useState<string[]>([]);
+  const [selectedWorkgroup, setSelectedWorkgroup] = useState<string>("all workgroups");
 
   async function generateReport() {
       let report: any = await getReport(myVariable.transactions);
@@ -59,14 +63,37 @@ const Report = () => {
 
       setLoading(false);
     }
+    if (myVariable.report) {
+      setWorkgroups(extractWorkgroups(myVariable.report, selectedMonth));
+    }
     //console.log(filteredData)
-    //console.log("myVariable", myVariable)
+    console.log("myVariable", myVariable)
 }, [selectedMonth, myVariable.report]);
 
-function getAllKeys(data: any) {
+function extractWorkgroups(report: any, month: string): string[] {
+  if (month === 'All months') {
+    // If "All months" is selected, combine all workgroup names across all months
+    const allWorkgroups = Object.values(report).flatMap((monthData: any) => Object.keys(monthData));
+    const uniqueWorkgroups = Array.from(new Set(allWorkgroups));  // Remove duplicates
+
+    // Filtering out specific keys and only leaving the workgroup names
+    return uniqueWorkgroups.filter(key => key !== 'monthly-budget' && key !== 'total-distribution' && key !== 'not-recorded');
+  }
+
+  const monthData = report[month];
+  if (!monthData) return [];
+
+  // Filtering out specific keys and only leaving the workgroup names for a specific month
+  return Object.keys(monthData).filter(key => key !== 'monthly-budget' && key !== 'total-distribution' && key !== 'not-recorded');
+}
+
+function getAllKeys(data: any): string[] {
   return Array.from(new Set(data.flatMap(Object.keys)));
 }
-const allKeys = filteredData4?.data ? getAllKeys(filteredData4.data).filter((key: any) => !excludedTokens.includes(key)) : [];
+
+const allKeys: string[] = filteredData4?.data 
+  ? getAllKeys(filteredData4.data).filter((key: any) => !excludedTokens.includes(key)) 
+  : [];
 
 if (selectedMonth === 'All months') {
   allKeys.push('Monthly Budget');
@@ -75,125 +102,57 @@ if (selectedMonth === 'All months') {
   return (
     <div className={styles.main}>
         <h2>Monthly Data</h2>
-        <p>Select the date</p>
-        <div className={styles.dropdown}>
-          <select className={styles.dropdownSelect} value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
-            {uniqueMonths.map((month: any) => <option key={month} value={month}>{month}</option>)}
-          </select>
-        </div> 
+        <div className={styles.dropdownContainer}>
+          <div className={styles.dropdownbox}>
+          <p>Select the date</p>
+            <div className={styles.dropdown}>
+              <select className={styles.dropdownSelect} value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+                {uniqueMonths.map((month: any) => <option key={month} value={month}>{month}</option>)}
+              </select>
+            </div> 
+          </div>
+          <div className={styles.dropdownbox}>
+            <p>Select the workgroup</p>
+            <div className={styles.dropdown}>
+            <select className={styles.dropdownSelect} value={selectedWorkgroup} onChange={(e) => setSelectedWorkgroup(e.target.value)}>
+              <option value="all workgroups">all workgroups</option>
+              {workgroups.map(workgroup => <option key={workgroup} value={workgroup}>{workgroup}</option>)}
+            </select>
+            </div> 
+          </div>
+        </div>
         <div className={styles.chartsContainer}>
-        {loading ? (
-          <p>Loading...</p>  
-        ) : (
-          <>
-            {filteredData && filteredData2 && (
-              <div className={styles.chartType1}>
-                <div className={styles.chart}>
-                  <ChartComponent1 chartData={filteredData} />
+          {loading ? (
+            <p>Loading...</p>  
+          ) : selectedWorkgroup === "all workgroups" ? (
+            <>
+              {filteredData && filteredData2 && (
+                <div className={styles.chartType1}>
+                  <div className={styles.chart}>
+                    <ChartComponent1 chartData={filteredData} />
+                  </div>
+                  <div className={styles.chart}>
+                    <ChartComponent3 chartData={filteredData3} />
+                  </div>
                 </div>
-                <div className={styles.chart}>
-                  <ChartComponent3 chartData={filteredData3} />
+              )}
+              {filteredData && filteredData2 && (
+                <div className={styles.chartType2}>
+                  <h2>Numbers</h2>
+                  <DataTable 
+                    myVariable={myVariable}
+                    selectedMonth={selectedMonth}
+                    allKeys={allKeys}
+                    excludedTokens={excludedTokens}
+                    filteredData4={filteredData4}
+                  />
                 </div>
-              </div>
-            )}
-            {filteredData && filteredData2 && (
-              <div className={styles.chartType2}>
-                <h2>Numbers</h2>
-                <div className={styles.numbers}>
-                  <table>
-                  <thead>
-                    <tr>
-                      {selectedMonth != 'All months' && (<th>Workgroup</th>)}
-                      {selectedMonth == 'All months' && (<th>Month</th>)}
-                      {allKeys.map((key: any) => (
-                        <th key={key}>{key}</th>
-                      ))}
-                      {selectedMonth === 'All months' && (<th>Balance</th>)}
-                    </tr>
-                  </thead>
-                    <tbody>
-                    {filteredData4 && filteredData4.data.map((item: any, index: any) => (
-                        <tr key={index}>
-                          <td>{filteredData4.labels[index]}</td>
-                          {allKeys.map((key: any) => (
-                            <td key={key}>
-                              {key === 'Monthly Budget' ?
-                                myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX.toFixed(0) || 'N/A'
-                              : item[key] ? parseInt(item[key]) : 0
-                              }
-                            </td>
-                          ))}
-                          {selectedMonth === 'All months' && (
-                            <td>
-                              {((myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX || 0) - (item.AGIX || 0)).toFixed(2)}
-                            </td>
-                          )}
-                        </tr>
-                      ))}
-                      <tr>
-                        <td>Total</td>
-                        {allKeys.map((key: any) => {
-                          if (key === 'Monthly Budget' && selectedMonth === 'All months') {
-                            const totalMonthlyBudgets: any = Object.values(myVariable.report).reduce((acc: any, report: any) => {
-                              return acc + (report['monthly-budget']?.AGIX || 0);
-                            }, 0);
-                            return <td key={key}>{totalMonthlyBudgets.toFixed(0)}</td>;
-                          } else {
-                            return (
-                              <td key={key}>
-                                {filteredData4?.data.reduce((sum: any, item: any) => sum + (excludedTokens.includes(key) ? 0 : (item[key] || 0)), 0).toFixed(0)}
-                              </td>
-                            );
-                          }
-                        })}
-                      </tr>
-                      {selectedMonth != 'All months' && (
-                        <tr>
-                          <td>Monthly Budget</td>
-                          {allKeys.map((key: any) => (
-                            <td key={key}>
-                              {key === 'AGIX' ? 
-                                myVariable.report[selectedMonth]['monthly-budget'].AGIX.toFixed(0) 
-                                : 'N/A'}
-                            </td>
-                          ))}
-                        </tr>
-                      )}
-                      {selectedMonth != 'All months' && (<tr>
-                        <td>Balance</td>
-                        {allKeys.map((key: any) => (
-                          <td key={key}>
-                            {key === 'AGIX' ? 
-                              (myVariable.report[selectedMonth]['monthly-budget'].AGIX -
-                              filteredData4?.data.reduce((sum: any, item: any) => sum + (excludedTokens.includes(key) ? 0 : (item[key] || 0)), 0)).toFixed(0) 
-                              : 'N/A'}
-                          </td>
-                        ))}
-                      </tr>)}
-                      {selectedMonth === 'All months' && (
-                        <tr>
-                          <td>Balance</td>
-                          {allKeys.map((key: any) => {
-                            if (key === 'AGIX') {
-                              const totalBudget: any = Object.values(myVariable.report).reduce((acc: any, report: any) => {
-                                return acc + ((report['monthly-budget']?.AGIX) || 0);  // Added optional chaining here
-                              }, 0);
-                              const totalExpenses = filteredData4?.data.reduce((sum: any, item: any) => sum + (item.AGIX || 0), 0) || 0;
-                              return <td key={key}>{(totalBudget - totalExpenses).toFixed(0)}</td>;
-                            } else {
-                              return <td key={key}>N/A</td>;
-                            }
-                          })}
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+              )}
+            </>
+          ) : (
+            <SpecificWorkgroupComponent workgroup={selectedWorkgroup} myVariable={myVariable} selectedMonth={selectedMonth}/>
+          )}
+        </div>
     </div>
   );
 };

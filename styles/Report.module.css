@@ -55,6 +55,13 @@
 .numbers td:nth-child(2), .numbers td:nth-child(3) {
   text-align: right;
 }
+
+.dropdownContainer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
 .dropdown {
     margin: 5px;
 }
