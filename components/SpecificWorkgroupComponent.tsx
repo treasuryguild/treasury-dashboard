@@ -127,6 +127,7 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
         <div className={styles.workgroupBox}>
           <div className={styles.chart}>
             <ChartComponent1 chartData={chartData} />
+            <p>Please note tasks can have more than one label</p>
           </div>   
         </div>
         <div className={styles.workgroupBox}>
