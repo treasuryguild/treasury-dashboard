@@ -51,7 +51,7 @@ const Report = () => {
       setFilteredData2(chartData2);
       setFilteredData3(chartData3);
       setFilteredData4(tokenData);
-      console.log("chartData1", chartData1)
+      //console.log("chartData1", chartData1)
       const selectedMonthReport = myVariable.report[selectedMonth];
       if (selectedMonthReport) {
         const totalTasks = selectedMonthReport['total-distribution'].totalTasks || 0;
@@ -67,7 +67,7 @@ const Report = () => {
       setWorkgroups(extractWorkgroups(myVariable.report, selectedMonth));
     }
     //console.log(filteredData)
-    console.log("myVariable", myVariable)
+    //console.log("myVariable", myVariable)
 }, [selectedMonth, myVariable.report]);
 
 function extractWorkgroups(report: any, month: string): string[] {

@@ -116,7 +116,7 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
      labels: uniqueTaskLabels,
      data: uniqueTaskLabels.map((label: string) => aggregatedAGIXAmounts[label].toString())
    };
-   console.log("chartData", chartData)
+   //console.log("chartData", chartData)
 
    return (
     <div>
