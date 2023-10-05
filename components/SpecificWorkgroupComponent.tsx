@@ -97,6 +97,13 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
 
   const allTokens = Array.from(allTokensSet);
 
+  // Ensure AGIX appears first in the tokens array
+  allTokens.sort((a, b) => {
+    if (a === 'AGIX') return -1;
+    if (b === 'AGIX') return 1;
+    return a.localeCompare(b); // The natural order for the rest of the tokens
+  });
+
   curatedContributions.forEach((contribution: any) => {
     contribution.tokenAmounts = {};
     allTokens.forEach((token: string) => {
