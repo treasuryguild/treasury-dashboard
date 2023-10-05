@@ -51,7 +51,7 @@ const Report = () => {
       setFilteredData2(chartData2);
       setFilteredData3(chartData3);
       setFilteredData4(tokenData);
-      //console.log("tokenData", tokenData)
+      console.log("chartData1", chartData1)
       const selectedMonthReport = myVariable.report[selectedMonth];
       if (selectedMonthReport) {
         const totalTasks = selectedMonthReport['total-distribution'].totalTasks || 0;

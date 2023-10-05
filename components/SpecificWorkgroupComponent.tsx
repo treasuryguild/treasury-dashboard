@@ -1,4 +1,6 @@
 import React from 'react';
+import ChartComponent1 from '../components/charts/ChartComponent1'
+import styles from '../styles/Report.module.css';
 
 interface Props {
   workgroup: string;
@@ -37,7 +39,7 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
       }
       
       if (!contributionDate) {
-        return false; // If both task_date and transaction_date are missing, filter out this contribution
+        return false; 
       }
       
       // Extract month and year from the contribution's date (i.e., "15.09.23")
@@ -53,18 +55,106 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
     }) : []
   ); 
 
-  return (
+   // Extract unique task labels
+   const uniqueTaskLabelsSet: Set<string> = new Set();
+   curatedContributions.forEach((contribution: any) => {
+     contribution.task_label.split(',').forEach((label: string) => {
+       uniqueTaskLabelsSet.add(label.trim());
+     });
+   });
+   
+   // Convert Set to Array
+   const uniqueTaskLabels = Array.from(uniqueTaskLabelsSet);
+ 
+   // Calculate aggregated AGIX amounts for each task label
+   const aggregatedAGIXAmounts: { [key: string]: number } = {};
+   uniqueTaskLabels.forEach((label: string) => {
+     aggregatedAGIXAmounts[label] = 0;
+   });
+ 
+   curatedContributions.forEach((contribution: any) => {
+    contribution.task_label.split(',').forEach((label: string) => {
+      // Get the AGIX amounts from the distributions for the contribution
+      const agixAmount = contribution.distributions.reduce((acc: number, distribution: any) => {
+        const agixIndex = distribution.tokens.indexOf('AGIX');
+        if (agixIndex !== -1) {
+          acc += distribution.amounts[agixIndex];
+        }
+        return acc;
+      }, 0);
+      aggregatedAGIXAmounts[label.trim()] += agixAmount;
+    });
+  });  
+
+  const allTokensSet: Set<string> = new Set();
+  curatedContributions.forEach((contribution: any) => {
+    contribution.distributions.forEach((distribution: any) => {
+      distribution.tokens.forEach((token: string) => {
+        allTokensSet.add(token);
+      });
+    });
+  });
+
+  const allTokens = Array.from(allTokensSet);
+
+  curatedContributions.forEach((contribution: any) => {
+    contribution.tokenAmounts = {};
+    allTokens.forEach((token: string) => {
+      const amountForThisToken = contribution.distributions.reduce((acc: number, distribution: any) => {
+        const tokenIndex = distribution.tokens.indexOf(token);
+        if (tokenIndex !== -1) {
+          acc += distribution.amounts[tokenIndex];
+        }
+        return acc;
+      }, 0);
+      contribution.tokenAmounts[token] = amountForThisToken;
+    });
+  });
+ 
+   // Structure the data in the required format
+   const chartData = {
+     labels: uniqueTaskLabels,
+     data: uniqueTaskLabels.map((label: string) => aggregatedAGIXAmounts[label].toString())
+   };
+   console.log("chartData", chartData)
+
+   return (
     <div>
-        <h1>Work in Progress. To view charts again, select All workgroups</h1>
-      <h3>Details for {workgroup} {formattedSelectedMonth !== 'All months' ? 'in ' + formattedSelectedMonth : ''}</h3>
-      <p>Total Transactions for {workgroup}: {curatedContributions.length}</p> 
-      <ul>
-        {curatedContributions.map((contribution: any, index: any) => (
-          <li key={index}>
-            Task Name: {contribution.task_name}
-          </li>
-        ))}
-      </ul>
+      <h1>Work in Progress...</h1>
+      <h3>Details for {workgroup} {selectedMonth !== 'All months' ? 'in ' + selectedMonth : ''}</h3>
+      <p>Total transactions: {curatedContributions.length}</p> 
+      <div className={styles.workgroupContainer}>
+        <div className={styles.workgroupBox}>
+          <div className={styles.chart}>
+            <ChartComponent1 chartData={chartData} />
+          </div>   
+        </div>
+        <div className={styles.workgroupBox}>
+          <h2>Tasks</h2>
+          <table className={styles.workgroupTable}>
+            <thead>
+              <tr>
+                <th>Task Name</th>
+                {allTokens.map((token, index) => (
+                  <th key={index}>{token}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {curatedContributions.map((contribution: any, index: any) => {
+                return (
+                  <tr key={index}>
+                    <td>{contribution.task_name}</td>
+                    {allTokens.map((token, tokenIndex) => (
+                      <td key={tokenIndex} style={{textAlign: 'right'}}>{contribution.tokenAmounts[token]}</td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

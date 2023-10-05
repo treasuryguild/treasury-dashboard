@@ -70,3 +70,41 @@
     background-color: black;
     color: white;
 }
+
+.workgroupTable {
+  border-collapse: collapse;  /* Ensures borders between cells collapse into a single border */
+  border: 1px solid white;    /* Border around the entire table */
+  width: 100%;                /* Optional: Makes the table span the entire width of its container */
+}
+
+.workgroupTable th,
+.workgroupTable td {
+  border: 1px solid white;    /* Border for each cell */
+  padding: 4px 8px; 
+  font-size: 0.9rem;         /* Padding inside each cell */
+}
+
+.workgroupTable th:first-child,
+.workgroupTable td:first-child {
+  text-align: left;
+}
+
+.workgroupTable th:last-child,
+.workgroupTable td:last-child {
+  text-align: right;
+}
+
+.workgroupTable th:nth-child(2),
+.workgroupTable td:nth-child(2) {
+  text-align: right;
+}
+
+.workgroupContainer {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.workgroupBox {
+  display: flex;
+  flex-direction: column;
+}
