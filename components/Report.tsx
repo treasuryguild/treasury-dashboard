@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 import styles from '../styles/Report.module.css';
 import { useMyVariable } from '../context/MyVariableContext';
 import { getReport } from '../utils/getReport';
@@ -18,10 +19,18 @@ interface FilteredDataType2 {
   labels: string[];
 }
 
-const Report = () => {
+interface ReportProps {
+  query: {
+    month?: string;
+    workgroup?: string;
+  };
+}
+
+const Report: React.FC<ReportProps> = ({ query }) => {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const { myVariable, setMyVariable } = useMyVariable();
-  const [selectedMonth, setSelectedMonth] = useState('All months');
+  //const [selectedMonth, setSelectedMonth] = useState('All months');
   const [filteredData, setFilteredData] = useState<FilteredDataType | null>(null);
   const [filteredData2, setFilteredData2] = useState<FilteredDataType | null>(null);
   const [filteredData3, setFilteredData3] = useState<FilteredDataType | null>(null);
@@ -30,7 +39,9 @@ const Report = () => {
   const [excludedTokens, setExcludedTokens] = useState<string[]>(['ADA']);
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
   const [workgroups, setWorkgroups] = useState<string[]>([]);
-  const [selectedWorkgroup, setSelectedWorkgroup] = useState<string>("all workgroups");
+  const [selectedMonth, setSelectedMonth] = useState(query.month || 'All months');
+  const [selectedWorkgroup, setSelectedWorkgroup] = useState(query.workgroup || 'all workgroups');
+
 
   async function generateReport() {
       let report: any = await getReport(myVariable.transactions);
@@ -70,6 +81,23 @@ const Report = () => {
     //console.log("myVariable", myVariable)
 }, [selectedMonth, myVariable.report]);
 
+const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const newMonth = e.target.value;
+  setSelectedMonth(newMonth);
+  
+  const updatedQuery = { ...router.query, month: newMonth };
+  router.push({ pathname: router.pathname, query: updatedQuery });
+}
+
+const handleWorkgroupChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const newWorkgroup = e.target.value;
+  setSelectedWorkgroup(newWorkgroup);
+  
+  const updatedQuery = { ...router.query, workgroup: newWorkgroup };
+  router.push({ pathname: router.pathname, query: updatedQuery });
+}
+
+
 function extractWorkgroups(report: any, month: string): string[] {
   if (month === 'All months') {
     // If "All months" is selected, combine all workgroup names across all months
@@ -106,7 +134,7 @@ if (selectedMonth === 'All months') {
           <div className={styles.dropdownbox}>
           <p>Select the date</p>
             <div className={styles.dropdown}>
-              <select className={styles.dropdownSelect} value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)}>
+              <select className={styles.dropdownSelect} value={selectedMonth} onChange={handleMonthChange}>
                 {uniqueMonths.map((month: any) => <option key={month} value={month}>{month}</option>)}
               </select>
             </div> 
@@ -114,7 +142,7 @@ if (selectedMonth === 'All months') {
           <div className={styles.dropdownbox}>
             <p>Select the workgroup</p>
             <div className={styles.dropdown}>
-            <select className={styles.dropdownSelect} value={selectedWorkgroup} onChange={(e) => setSelectedWorkgroup(e.target.value)}>
+            <select className={styles.dropdownSelect} value={selectedWorkgroup} onChange={handleWorkgroupChange}>
               <option value="all workgroups">all workgroups</option>
               {workgroups.map(workgroup => <option key={workgroup} value={workgroup}>{workgroup}</option>)}
             </select>

@@ -123,18 +123,37 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
      labels: uniqueTaskLabels,
      data: uniqueTaskLabels.map((label: string) => aggregatedAGIXAmounts[label].toString())
    };
+   const calculateTokenTotals = () => {
+    const totals: { [token: string]: number } = {};
+
+    // Initialize the totals object with zeros
+    allTokens.forEach(token => {
+        totals[token] = 0;
+    });
+
+    // Sum the token amounts from each contribution
+    curatedContributions.forEach((contribution: any) => {
+        allTokens.forEach(token => {
+            totals[token] += contribution.tokenAmounts[token];
+        });
+    });
+
+    return totals;
+};
+
+const tokenTotals = calculateTokenTotals();
+
    //console.log("chartData", chartData)
 
    return (
     <div>
-      <h1>Work in Progress...</h1>
-      <h3>Details for {workgroup} {selectedMonth !== 'All months' ? 'in ' + selectedMonth : ''}</h3>
-      <p>Total transactions: {curatedContributions.length}</p> 
+      <h2>{workgroup} info for {selectedMonth}</h2>
+      <h3>Total contributions: {curatedContributions.length}</h3> 
       <div className={styles.workgroupContainer}>
         <div className={styles.workgroupBox}>
           <div className={styles.chart}>
             <ChartComponent1 chartData={chartData} />
-            <p>Please note tasks can have more than one label</p>
+            <p>Please note AGIX distribution reflects tasks that can have overlapping labels</p>
           </div>   
         </div>
         <div className={styles.workgroupBox}>
@@ -159,6 +178,12 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
                   </tr>
                 );
               })}
+              <tr>
+                  <td>Total</td>
+                  {allTokens.map((token, tokenIndex) => (
+                      <td key={tokenIndex} style={{textAlign: 'right'}}>{tokenTotals[token]}</td>
+                  ))}
+              </tr>
             </tbody>
           </table>
         </div>

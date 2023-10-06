@@ -115,7 +115,7 @@ const ProjectPage = () => {
         <div className={styles['main']}>
             <div>
                 <div className={styles.navbar}>
-                    <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
+                    <button onClick={() => router.push(`/${groupName}`)} className={styles.backButton}>Go Back</button>
                     <button 
                       onClick={() => handleTabChange('transactions')}
                       className={activeTab === 'transactions' ? styles.active : styles.notactive}
@@ -187,7 +187,7 @@ const ProjectPage = () => {
                 ) : activeTab === 'signup' ? (
                     <Signup />
                 ) : activeTab === 'report' ? (
-                    <Report />
+                  <Report query={router.query} />
                 ) : (
                     <div>nothing selected</div> 
                 )
