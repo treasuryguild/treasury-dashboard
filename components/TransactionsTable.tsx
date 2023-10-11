@@ -2,15 +2,22 @@ import styles from '../styles/Transactions.module.css';
 import Link from 'next/link';
 
 interface TransactionsTableProps {
-  transactions: any;
+  myVariable: any;
   groupName: string;
   projectName: string;
 }
 
-const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, groupName, projectName }) => {
-  
-  const allTokens: string[] = transactions?.flatMap((transaction: any) => transaction.total_tokens.filter((token: string) => token.length <= 5)) || [];
-  const tokenHeaders = Array.from(new Set(allTokens));
+const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, groupName, projectName }) => {
+
+  const getTokenType = (tokenName: string) => {
+    const tokenInfo = myVariable.balance.find(t => t.name === tokenName);
+    return tokenInfo ? tokenInfo.tokenType : null;
+  };
+
+  console.log("myVariable", myVariable)
+  const allTokens: string[] = myVariable.transactions?.flatMap((transaction: any) => transaction.total_tokens.filter((token: string) => getTokenType(token) === 'fungible')) || [];
+  const tokenHeaders = Array.from(new Set(allTokens)).sort((a, b) => a.length - b.length);
+
 
   const formatDate = (timestamp: string) => {
     const date = new Date(Number(timestamp));
@@ -40,10 +47,10 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, gro
   };
 
   const renderTokenColumns = (transaction: any) => {
-    const nftCount = transaction.total_tokens.filter((token: string) => token.length > 5).length;
+    const nftCount = transaction.total_tokens.filter((token: string) => getTokenType(token) === 'non-fungible').length;
 
     const tokenAmounts = transaction.total_tokens.reduce((acc: any, token: string, i: number) => {
-      if (token.length <= 5) {
+      if (getTokenType(token) === 'fungible') {
         acc[token] = transaction.total_amounts[i];
       }
       return acc;
@@ -84,7 +91,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ transactions, gro
           </tr>
         </thead>
         <tbody>
-          {transactions?.sort((a: any, b: any) => Number(b.transaction_date) - Number(a.transaction_date)).map((transaction: any, index: any) => {
+          {myVariable.transactions?.sort((a: any, b: any) => Number(b.transaction_date) - Number(a.transaction_date)).map((transaction: any, index: any) => {
             const { tokenColumns, nftCount } = renderTokenColumns(transaction);
             return (
               <tr key={index} className={transaction.tx_type === 'Incoming' ? styles['incoming-row'] : ''}>

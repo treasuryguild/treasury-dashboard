@@ -5,6 +5,7 @@ import { getOrgs } from '../../../utils/getOrgs';
 import { getMonthlyBudget } from '../../../utils/getMonthlyBudget';
 import { getTransactions } from '../../../utils/getTransactions';
 import { getWalletBalance } from '../../../utils/getWalletBalance';
+import { getAssetList } from '../../../utils/getAssetList'
 import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
 import Signup from '../../../components/Signup';
@@ -25,6 +26,7 @@ const ProjectPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [projectData, setProjectData] = useState<Project | null>(null);
   const [previousTab, setPreviousTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
+  const [balance2, setBalance2] = useState<Array<any>>([]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -81,7 +83,9 @@ const ProjectPage = () => {
         setLoading(true);
         budgetInfo = await getMonthlyBudget(projectData.project_id);
         transactions = await getTransactions(projectData.project_id);
-        let balance = await getWalletBalance(projectData.wallet);
+        let balance = await getAssetList(projectData.wallet);
+        //console.log("balance2", balance);
+        setBalance2(balance);
         setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance }));
         setLoading(false);
       }
@@ -110,7 +114,7 @@ const ProjectPage = () => {
       };
 
     if (!projectData) return <div className={styles['main']}>Loading...</div>;
-
+    //console.log(myVariable)
     return (
         <div className={styles['main']}>
             <div>
@@ -138,34 +142,26 @@ const ProjectPage = () => {
                     )}
                     {!loading && activeTab === 'transactions' && (
                         <>
-                            {myVariable?.balance?.lovelaces && (
+                            {myVariable?.balance && (
                             <>
                             <div className={styles.walletDetails}>
-                              <div>Wallet Balance</div>
-                              <table className={styles.tokenTable}>
-                                <tbody>
-                                  <tr>
-                                    <td style={{ textAlign: 'left' }}>ADA</td>
-                                    <td style={{ textAlign: 'right' }}>{(myVariable.balance.lovelaces/10**6).toFixed(2)}</td>
-                                  </tr>
-                                  {
-                                    myVariable.balance.tokens
-                                      .filter((token: any) => token.minted_quantity > 1)
-                                      .map((token: any) => {
-                                        const decimals = token.metadata.decimals || 0;
-                                        const name = token.metadata.ticker || token.name;
-                                        const quantity = token.quantity / (10 ** decimals);
-                                  
-                                        return (
-                                          <tr key={token.fingerprint}>
-                                            <td style={{ textAlign: 'left' }}>{name}</td>
-                                            <td style={{ textAlign: 'right' }}>{quantity.toFixed(2)}</td>
-                                          </tr>
-                                        );
-                                      })
-                                  }
-                                </tbody>
-                              </table>
+                            <div>Wallet Balance</div>
+                             <table className={styles.tokenTable}>
+                               <tbody>
+                                 {myVariable.balance.map((token: any) => {
+                                   const decimals = token.decimals || 0;
+                                   const name = token.displayname || token.name;
+                                   const amount = parseFloat(token.amount);
+                           
+                                   return (
+                                     <tr key={token.id}>
+                                       <td style={{ textAlign: 'left' }}>{name}</td>
+                                       <td style={{ textAlign: 'right' }}>{amount.toFixed(2)}</td>
+                                     </tr>
+                                   );
+                                 })}
+                               </tbody>
+                             </table>
                             </div>
                             </>
                             )}
@@ -183,7 +179,7 @@ const ProjectPage = () => {
             )}
             {!loading && (
                 activeTab === 'transactions' ? (
-                    <TransactionsTable transactions={myVariable.transactions} groupName={groupName as string} projectName={projectName as string} />
+                    <TransactionsTable myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
                 ) : activeTab === 'signup' ? (
                     <Signup />
                 ) : activeTab === 'report' ? (

@@ -16,6 +16,6 @@ export async function getWalletBalance(wallet) {
       }
     }
     await getBalance();
-
+    console.log("balance", balance)
     return balance;
 }
