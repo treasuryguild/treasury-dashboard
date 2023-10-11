@@ -10,7 +10,7 @@ interface TransactionsTableProps {
 const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, groupName, projectName }) => {
 
   const getTokenType = (tokenName: string) => {
-    const tokenInfo = myVariable.balance.find(t => t.name === tokenName);
+    const tokenInfo = myVariable.balance.find((t: any) => t.name === tokenName);
     return tokenInfo ? tokenInfo.tokenType : null;
   };
 
