@@ -14,7 +14,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, group
     return tokenInfo ? tokenInfo.tokenType : null;
   };
 
-  console.log("myVariable", myVariable)
+  //console.log("myVariable", myVariable)
   const allTokens: string[] = myVariable.transactions?.flatMap((transaction: any) => transaction.total_tokens.filter((token: string) => getTokenType(token) === 'fungible')) || [];
   const tokenHeaders = Array.from(new Set(allTokens)).sort((a, b) => a.length - b.length);
 
