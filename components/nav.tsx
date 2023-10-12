@@ -44,7 +44,7 @@ const Nav = () => {
           <Link href="/transaction" className="navitems">
             Transaction
           </Link>
-          {!session && router.asPath === '/Singularity%20Net/Singularity%20Net%20Ambassador%20Wallet?tab=signup' && (
+          {!session && router.asPath.startsWith('/Singularity%20Net/Singularity%20Net%20Ambassador%20Wallet?tab=signup') && (
             <button onClick={signInWithDiscord} className="navitems">
               Sign In with Discord
             </button>
