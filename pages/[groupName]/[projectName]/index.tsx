@@ -114,7 +114,7 @@ const ProjectPage = () => {
       };
 
     if (!projectData) return <div className={styles['main']}>Loading...</div>;
-    console.log(myVariable)
+    //console.log(myVariable)
     return (
         <div className={styles['main']}>
             <div>
