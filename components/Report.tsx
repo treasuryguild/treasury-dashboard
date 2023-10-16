@@ -126,7 +126,7 @@ const allKeys: string[] = filteredData4?.data
 if (selectedMonth === 'All months') {
   allKeys.push('Monthly Budget');
 }
-
+//console.log("filteredData3", filteredData3)
   return (
     <div className={styles.main}>
         <h2>Monthly Data</h2>

@@ -1,5 +1,6 @@
 import React from 'react';
 import ChartComponent1 from '../components/charts/ChartComponent1'
+import ChartComponent5 from '../components/charts/ChartComponent5'
 import styles from '../styles/Report.module.css';
 
 interface Props {
@@ -143,7 +144,41 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
 
 const tokenTotals = calculateTokenTotals();
 
-   //console.log("chartData", chartData)
+const aggregatedData: { [key: string]: { AGIX: number; GMBL: number } } = {};
+
+curatedContributions.forEach((contribution: any) => {
+  contribution.distributions.forEach((distribution: any) => {
+    const contributor_id = distribution.contributor_id;
+
+    if (!aggregatedData[contributor_id]) {
+      aggregatedData[contributor_id] = { AGIX: 0, GMBL: 0 };
+    }
+
+    const agixIndex = distribution.tokens.indexOf('AGIX');
+    const gmblIndex = distribution.tokens.indexOf('GMBL');
+    const agixAmount = agixIndex !== -1 ? distribution.amounts[agixIndex] : 0;
+    const gmblAmount = gmblIndex !== -1 ? distribution.amounts[gmblIndex] : 0;
+
+    aggregatedData[contributor_id].AGIX += agixAmount;
+    aggregatedData[contributor_id].GMBL += gmblAmount;
+  });
+});
+
+const finalData: any[] = [];
+const contLabels: string[] = [];
+
+Object.keys(aggregatedData).forEach((contributor_id) => {
+  finalData.push({
+    x: contributor_id,
+    AGIX: aggregatedData[contributor_id].AGIX,
+    GMBL: aggregatedData[contributor_id].GMBL,
+  });
+  contLabels.push(contributor_id);
+});
+
+const chartData2 = {data: finalData, labels: contLabels};
+
+   //console.log("chartData", chartData2)
 
    return (
     <div>
@@ -154,7 +189,10 @@ const tokenTotals = calculateTokenTotals();
           <div className={styles.chart}>
             <ChartComponent1 chartData={chartData} />
             <p>Please note AGIX distribution reflects tasks that can have overlapping labels</p>
-          </div>   
+          </div>  
+          <div className={styles.chart}>
+            <ChartComponent5 chartData={chartData2} />
+          </div>  
         </div>
         <div className={styles.workgroupBox}>
           <h2>Tasks</h2>

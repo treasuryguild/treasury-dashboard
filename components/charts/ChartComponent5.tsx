@@ -11,6 +11,8 @@ interface ChartComponent5Props {
 const ChartComponent5: React.FC<ChartComponent5Props> = ({ chartData }) => {
     const labels = chartData.labels;
     const data = chartData.data;
+    const agixData = data.map((item: any) => item.AGIX);
+    const gmblData = data.map((item: any) => item.GMBL);
     const chartRef = useRef<Chart | null>(null);
 
     useEffect(() => {
@@ -24,18 +26,24 @@ const ChartComponent5: React.FC<ChartComponent5Props> = ({ chartData }) => {
                 labels: data.map((item: any) => item.x),
                 datasets: [
                     {
-                        label: 'Tasks',
-                        data,
+                        label: 'AGIX',
+                        data: agixData,
                         parsing: {
-                            yAxisKey: 'tasks'
-                        }
+                            yAxisKey: 'AGIX'
+                        },
+                        backgroundColor: "rgba(54, 162, 235, 0.2)",
+                        borderColor: "rgba(54, 162, 235, 1)",
+                        borderWidth: 1
                     },
                     {
-                        label: 'Contributors',
-                        data,
+                        label: 'GMBL',
+                        data: gmblData,
                         parsing: {
-                            yAxisKey: 'contributors'
-                        }
+                            yAxisKey: 'GMBL'
+                        },
+                        backgroundColor: "rgba(255, 99, 132, 0.2)",
+                        borderColor: "rgba(255, 99, 132, 1)",
+                        borderWidth: 1
                     }
                 ]
             },
@@ -66,7 +74,7 @@ const ChartComponent5: React.FC<ChartComponent5Props> = ({ chartData }) => {
 
     return (
         <div>
-          <h2>Tasks</h2>
+          <h2>Contributors</h2>
           <canvas id="myChart5"></canvas>
         </div>
     );
