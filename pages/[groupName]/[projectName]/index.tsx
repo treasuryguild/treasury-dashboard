@@ -114,7 +114,7 @@ const ProjectPage = () => {
       };
 
     if (!projectData) return <div className={styles['main']}>Loading...</div>;
-    //console.log(myVariable)
+    console.log(myVariable)
     return (
         <div className={styles['main']}>
             <div>
@@ -148,19 +148,21 @@ const ProjectPage = () => {
                             <div>Wallet Balance</div>
                              <table className={styles.tokenTable}>
                                <tbody>
-                                 {myVariable.balance.map((token: any) => {
-                                   const decimals = token.decimals || 0;
-                                   const name = token.displayname || token.name;
-                                   const amount = parseFloat(token.amount);
-                           
-                                   return (
-                                     <tr key={token.id}>
-                                       <td style={{ textAlign: 'left' }}>{name}</td>
-                                       <td style={{ textAlign: 'right' }}>{amount.toFixed(2)}</td>
-                                     </tr>
-                                   );
-                                 })}
-                               </tbody>
+                                {myVariable.balance
+                                  .filter((token: any) => token.tokenType === 'fungible')
+                                  .map((token: any) => {
+                                    const decimals = token.decimals || 0;
+                                    const name = token.displayname || token.name;
+                                    const amount = parseFloat(token.amount);
+                                    return (
+                                      <tr key={token.id}>
+                                        <td style={{ textAlign: 'left' }}>{name}</td>
+                                        <td style={{ textAlign: 'right' }}>{amount.toFixed(2)}</td>
+                                      </tr>
+                                    );
+                                  })
+                                }
+                              </tbody>
                              </table>
                             </div>
                             </>
