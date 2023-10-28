@@ -67,11 +67,11 @@ export const formatNumberWithLeadingZero = (num: number): string => {
       const agixAmount = contribution.distributions.reduce((acc: number, distribution: any) => {
         const agixIndex = distribution.tokens.indexOf('AGIX');
         if (agixIndex !== -1) {
-          acc += distribution.amounts[agixIndex];
+          acc += Number(distribution.amounts[agixIndex]);
         }
         return acc;
       }, 0);
-      aggregatedAGIXAmounts[label.trim()] += agixAmount;
+      aggregatedAGIXAmounts[label.trim()] += Number(agixAmount);
     });
   });  
     return aggregatedAGIXAmounts;
@@ -101,11 +101,11 @@ export const formatNumberWithLeadingZero = (num: number): string => {
           const amountForThisToken = contribution.distributions.reduce((acc: number, distribution: any) => {
             const tokenIndex = distribution.tokens.indexOf(token);
             if (tokenIndex !== -1) {
-              acc += distribution.amounts[tokenIndex];
+              acc += Number(distribution.amounts[tokenIndex]);
             }
             return acc;
           }, 0);
-          contribution.tokenAmounts[token] = amountForThisToken;
+          contribution.tokenAmounts[token] = Number(amountForThisToken);
         });
       });
     return allTokens;
@@ -120,7 +120,7 @@ export const formatNumberWithLeadingZero = (num: number): string => {
       // Sum the token amounts from each contribution
       contributions.forEach((contribution: any) => {
           allTokens.forEach(token => {
-              totals[token] += contribution.tokenAmounts[token];
+              totals[token] += Number(contribution.tokenAmounts[token]);
           });
       });
     return totals;
@@ -138,11 +138,11 @@ export const formatNumberWithLeadingZero = (num: number): string => {
       
           const agixIndex = distribution.tokens.indexOf('AGIX');
           const gmblIndex = distribution.tokens.indexOf('GMBL');
-          const agixAmount = agixIndex !== -1 ? distribution.amounts[agixIndex] : 0;
-          const gmblAmount = gmblIndex !== -1 ? distribution.amounts[gmblIndex] : 0;
+          const agixAmount = agixIndex !== -1 ? Number(distribution.amounts[agixIndex]) : 0;
+          const gmblAmount = gmblIndex !== -1 ? Number(distribution.amounts[gmblIndex]) : 0;
       
-          aggregatedData[contributor_id].AGIX += agixAmount;
-          aggregatedData[contributor_id].GMBL += gmblAmount;
+          aggregatedData[contributor_id].AGIX += Number(agixAmount);
+          aggregatedData[contributor_id].GMBL += Number(gmblAmount);
         });
       });
     return aggregatedData;

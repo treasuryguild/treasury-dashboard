@@ -120,6 +120,7 @@ export async function getAssetList(wallet) {
     let transformedArray = transformArray(list[0].asset_list);
     let assetDetails = await getAssetDetails(transformedArray);
     let mappedAssetData = mapAssetData(assetDetails, list[0].asset_list);
+    //console.log("transformedArray", transformedArray, assetDetails, mappedAssetData)
 
     // Sort the array so that 'nft' items are at the end
     mappedAssetData.sort((a, b) => (a.tokenType === 'nft') - (b.tokenType === 'nft'));

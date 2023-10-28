@@ -68,9 +68,9 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
               {curatedContributions.map((contribution: any, index: any) => {
                 return (
                   <tr key={index}>
-                    <td>{contribution.task_name}</td>
+                    <td>{contribution.task_name || contribution.task_description}</td>
                     {allTokens.map((token, tokenIndex) => (
-                      <td key={tokenIndex} style={{textAlign: 'right'}}>{contribution.tokenAmounts[token]}</td>
+                      <td key={tokenIndex} style={{textAlign: 'right'}}>{(contribution.tokenAmounts[token]).toFixed(0)}</td>
                     ))}
                   </tr>
                 );
@@ -78,7 +78,7 @@ const SpecificWorkgroupComponent: React.FC<Props> = ({ workgroup, myVariable, se
               <tr>
                   <td>Total</td>
                   {allTokens.map((token, tokenIndex) => (
-                      <td key={tokenIndex} style={{textAlign: 'right'}}>{tokenTotals[token]}</td>
+                      <td key={tokenIndex} style={{textAlign: 'right'}}>{(tokenTotals[token]).toFixed(2)}</td>
                   ))}
               </tr>
             </tbody>
