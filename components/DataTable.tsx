@@ -25,7 +25,7 @@ const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, exclud
                             <th key={key}>{key}</th>
                         ))}
                         {selectedMonth === 'All months' && (<th>Balance</th>)}
-                        <th>Incoming Reserve</th> 
+                        {selectedMonth === 'All months' && (<th>Incoming Reserve</th> )}
                     </tr>
                 </thead>
                 <tbody>
@@ -45,9 +45,9 @@ const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, exclud
                               {((myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX || 0) - (item.AGIX || 0)).toFixed(2)}
                             </td>
                           )}
-                          <td> 
+                          {selectedMonth === 'All months' && (<td> 
                             {myVariable.report[filteredData4.labels[index]]?.['incoming-reserve']?.AGIX?.toFixed(0) || 'N/A'}
-                          </td>
+                          </td>)}
                         </tr>
                       ))}
                       <tr>
@@ -67,13 +67,13 @@ const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, exclud
                           }
                         })}
                         {selectedMonth === 'All months' && (
-            <td>{totalBalance.toFixed(2)}</td>
-          )}
-                        <td>
+                          <td>{totalBalance.toFixed(2)}</td>
+                        )}
+                        {selectedMonth === 'All months' && (<td>
                           {Object.values(myVariable.report as Record<string, any>).reduce((acc: any, report: any) => {
                             return acc + (report['incoming-reserve']?.AGIX || 0);
                           }, 0).toFixed(0)}
-                        </td>
+                        </td>)}
                       </tr>
                       {selectedMonth != 'All months' && (
                         <tr>
