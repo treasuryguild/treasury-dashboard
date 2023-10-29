@@ -105,14 +105,14 @@ function extractWorkgroups(report: any, month: string): string[] {
     const uniqueWorkgroups = Array.from(new Set(allWorkgroups));  // Remove duplicates
 
     // Filtering out specific keys and only leaving the workgroup names
-    return uniqueWorkgroups.filter(key => key !== 'monthly-budget' && key !== 'total-distribution' && key !== 'not-recorded');
+    return uniqueWorkgroups.filter(key => key !== 'monthly-budget' && key !== 'total-distribution' && key !== 'not-recorded' && key !== 'IncomingFromReserve');
   }
 
   const monthData = report[month];
   if (!monthData) return [];
 
   // Filtering out specific keys and only leaving the workgroup names for a specific month
-  return Object.keys(monthData).filter(key => key !== 'monthly-budget' && key !== 'total-distribution' && key !== 'not-recorded');
+  return Object.keys(monthData).filter(key => key !== 'monthly-budget' && key !== 'total-distribution' && key !== 'not-recorded' && key !== 'IncomingFromReserve');
 }
 
 function getAllKeys(data: any): string[] {

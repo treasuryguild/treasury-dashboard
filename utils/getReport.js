@@ -4,7 +4,7 @@ export async function getReport(txs) {
   let localReport = {};
   txs.forEach(tx => {
     const taskDate = new Date(parseInt(tx.transaction_date));
-    let monthYear = `${taskDate.getMonth() + 1}.${taskDate.getFullYear()}`;
+    let monthYear = `${(taskDate.getMonth() + 1).toString().padStart(2, '0')}.${taskDate.getFullYear()}`;
 
     if (!localReport[monthYear]) {
       localReport[monthYear] = {};
@@ -20,7 +20,7 @@ export async function getReport(txs) {
           const [day, month, year] = taskDateStr.split('.');
           taskDateStr = new Date(`20${year}`, month - 1, day).getTime().toString();
           const taskDate = new Date(parseInt(taskDateStr));
-          monthYear = `${taskDate.getMonth() + 1}.${taskDate.getFullYear()}`;
+          monthYear = `${(taskDate.getMonth() + 1).toString().padStart(2, '0')}.${taskDate.getFullYear()}`;
         }
 
         if (!localReport[monthYear]) {
@@ -118,13 +118,25 @@ export async function getReport(txs) {
             taskDate = transactionDate;
           }
 
-          const monthYear = `${taskDate.getMonth() + 1}.${taskDate.getFullYear()}`;
+          const monthYear = `${(taskDate.getMonth() + 1).toString().padStart(2, '0')}.${taskDate.getFullYear()}`;
           if (!localReport[monthYear]) localReport[monthYear] = {};
           if (!localReport[monthYear]['monthly-budget']) localReport[monthYear]['monthly-budget'] = {};
           if (!localReport[monthYear]['monthly-budget']['AGIX']) localReport[monthYear]['monthly-budget']['AGIX'] = 0;
           localReport[monthYear]['monthly-budget']['AGIX'] += Number(tx.total_amounts[AGIXIndex]);
         }
-      }
+      } else if (tx.tx_type === "Incoming Reserve") {
+        const AGIXIndex = tx.total_tokens.indexOf('AGIX');
+        if (AGIXIndex >= 0 && tx.total_amounts[AGIXIndex] > 10) {
+          const transactionDate = new Date(parseInt(tx.transaction_date));
+          let taskDate;
+            taskDate = transactionDate;
+          const monthYear = `${(taskDate.getMonth() + 1).toString().padStart(2, '0')}.${taskDate.getFullYear()}`;
+          if (!localReport[monthYear]) localReport[monthYear] = {};
+          if (!localReport[monthYear]['incoming-reserve']) localReport[monthYear]['incoming-reserve'] = {};
+          if (!localReport[monthYear]['incoming-reserve']['AGIX']) localReport[monthYear]['incoming-reserve']['AGIX'] = 0;
+          localReport[monthYear]['incoming-reserve']['AGIX'] += Number(tx.total_amounts[AGIXIndex]);
+        }
+      }// 'IncomingFromReserve'
     });
     return localReport;
   }

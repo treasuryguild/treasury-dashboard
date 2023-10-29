@@ -1,5 +1,16 @@
 export function createCharts(report, month) {
   
+  function sortDataByLabelsDescending(chartData) {
+    const pairs = chartData.labels.map((label, index) => {
+      return { label, data: chartData.data[index] };
+    });
+  
+    pairs.sort((a, b) => b.label.localeCompare(a.label));
+  
+    chartData.labels = pairs.map(pair => pair.label);
+    chartData.data = pairs.map(pair => pair.data);
+  }
+  
   function createChartData1() { 
     let chartData1 = {
       labels: [],
@@ -12,7 +23,7 @@ export function createCharts(report, month) {
         chartData1.data.push(value.totalAmounts.AGIX || 0);
       }
     }
-
+    sortDataByLabelsDescending(chartData1);
     return chartData1;
   }
 
@@ -28,7 +39,7 @@ export function createCharts(report, month) {
         chartData2.data.push(value.totalTasks);
       }
     }
-
+    sortDataByLabelsDescending(chartData2);
     return chartData2;
   }
 
@@ -45,7 +56,7 @@ export function createCharts(report, month) {
         chartData3.data.push({ tasks: value.totalTasks, contributors: contributorsCount, x: key });
       }
     }
-  
+    sortDataByLabelsDescending(chartData3);
     return chartData3;
   }
   
@@ -62,7 +73,7 @@ export function createCharts(report, month) {
         tokenData.data.push(value.totalAmounts || {});
       }
     }
-
+    sortDataByLabelsDescending(tokenData);
     return tokenData;
   }
 
@@ -81,7 +92,7 @@ export function createCharts(report, month) {
         chartData1.data.push(0);
       }
     }
-  
+    sortDataByLabelsDescending(chartData1);
     return chartData1;
   }
   
@@ -101,6 +112,7 @@ export function createCharts(report, month) {
         chartData2.data.push(0);
       }
     }
+    sortDataByLabelsDescending(chartData2);
     return chartData2;
   }
 
@@ -121,6 +133,7 @@ export function createCharts(report, month) {
         chartData3.data.push({ tasks: 0, contributors: 0, x: key });
       }
     }
+    sortDataByLabelsDescending(chartData3);
     return chartData3;
   }
 
@@ -139,7 +152,7 @@ export function createCharts(report, month) {
         tokenData.data.push({});
       }
     }
-
+    sortDataByLabelsDescending(tokenData);
     return tokenData;
   }
 

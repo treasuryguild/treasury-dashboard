@@ -10,6 +10,10 @@ interface Props {
 }
 
 const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, excludedTokens, filteredData4 }) => {
+  const totalBalance = filteredData4 ? filteredData4.data.reduce((acc: any, item: any, index: any) => {
+    return acc + ((myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX || 0) - (item.AGIX || 0));
+  }, 0) : 0;
+  //console.log("filteredData4", filteredData4)
     return (
         <div className={styles.numbers}>
             <table>
@@ -21,6 +25,7 @@ const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, exclud
                             <th key={key}>{key}</th>
                         ))}
                         {selectedMonth === 'All months' && (<th>Balance</th>)}
+                        <th>Incoming Reserve</th> 
                     </tr>
                 </thead>
                 <tbody>
@@ -40,6 +45,9 @@ const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, exclud
                               {((myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX || 0) - (item.AGIX || 0)).toFixed(2)}
                             </td>
                           )}
+                          <td> 
+                            {myVariable.report[filteredData4.labels[index]]?.['incoming-reserve']?.AGIX?.toFixed(0) || 'N/A'}
+                          </td>
                         </tr>
                       ))}
                       <tr>
@@ -58,6 +66,14 @@ const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, exclud
                             );
                           }
                         })}
+                        {selectedMonth === 'All months' && (
+            <td>{totalBalance.toFixed(2)}</td>
+          )}
+                        <td>
+                          {Object.values(myVariable.report as Record<string, any>).reduce((acc: any, report: any) => {
+                            return acc + (report['incoming-reserve']?.AGIX || 0);
+                          }, 0).toFixed(0)}
+                        </td>
                       </tr>
                       {selectedMonth != 'All months' && (
                         <tr>
@@ -88,7 +104,7 @@ const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, exclud
                           {allKeys.map((key: any) => {
                             if (key === 'AGIX') {
                               const totalBudget: any = Object.values(myVariable.report).reduce((acc: any, report: any) => {
-                                return acc + ((report['monthly-budget']?.AGIX) || 0);  // Added optional chaining here
+                                return acc + ((report['monthly-budget']?.AGIX) || 0) + ((report['incoming-reserve']?.AGIX) || 0);  // Added optional chaining here
                               }, 0);
                               const totalExpenses = filteredData4?.data.reduce((sum: any, item: any) => sum + (item.AGIX || 0), 0) || 0;
                               return <td key={key}>{(totalBudget - totalExpenses).toFixed(0)}</td>;
