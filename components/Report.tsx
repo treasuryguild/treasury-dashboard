@@ -119,9 +119,15 @@ function getAllKeys(data: any): string[] {
   return Array.from(new Set(data.flatMap(Object.keys)));
 }
 
-const allKeys: string[] = filteredData4?.data 
-  ? getAllKeys(filteredData4.data).filter((key: any) => !excludedTokens.includes(key)) 
-  : [];
+let allKeys: string[] = [];
+
+if (selectedMonth === 'All months') {
+  allKeys = ['AGIX'];  // Replace with any specific keys you want
+} else {
+  allKeys = filteredData4?.data 
+    ? getAllKeys(filteredData4.data).filter((key: any) => !excludedTokens.includes(key)) 
+    : [];
+}
 
 if (selectedMonth === 'All months') {
   allKeys.push('Monthly Budget');
