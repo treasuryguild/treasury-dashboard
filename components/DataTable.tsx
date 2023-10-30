@@ -9,111 +9,52 @@ interface Props {
     filteredData4: any;
 }
 
+const generateTableRows = (report: any) => {
+  let runningBalance = 0;
+  const rows: any = [];
+
+  // Make sure the months are in descending order
+  const months = Object.keys(report).sort(); 
+
+  months.forEach((month) => {
+      const monthlyReport = report[month];
+      const outgoing = monthlyReport['total-distribution']?.totalAmounts?.AGIX || 0;
+      const incoming = (monthlyReport['monthly-budget']?.AGIX || 0) + (monthlyReport['incoming-reserve']?.AGIX || 0);
+      runningBalance += (incoming - outgoing);
+
+      const row = (
+          <tr key={month}>
+              <td>{month}</td>
+              <td>{outgoing.toFixed(0)}</td>
+              <td>{incoming.toFixed(0)}</td>
+              <td>{runningBalance.toFixed(0)}</td>
+          </tr>
+      );
+
+      rows.unshift(row); // Adds each new row to the top
+  });
+
+  return rows;
+};
+
+
 const DataTable: React.FC<Props> = ({ myVariable, selectedMonth, allKeys, excludedTokens, filteredData4 }) => {
-  const totalBalance = filteredData4 ? filteredData4.data.reduce((acc: any, item: any, index: any) => {
-    return acc + ((myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX || 0) - (item.AGIX || 0));
-  }, 0) : 0;
-  //console.log("filteredData4", filteredData4)
+
+    const tableRows = generateTableRows(myVariable.report);
+
     return (
         <div className={styles.numbers}>
             <table>
                 <thead>
                     <tr>
-                        {selectedMonth !== 'All months' && (<th>Workgroup</th>)}
-                        {selectedMonth === 'All months' && (<th>Month</th>)}
-                        {allKeys.map((key: any) => (
-                            <th key={key}>{key}</th>
-                        ))}
-                        {selectedMonth === 'All months' && (<th>Balance</th>)}
-                        {selectedMonth === 'All months' && (<th>Incoming Reserve</th> )}
+                        <th>Month</th>
+                        <th>Outgoing</th>
+                        <th>Incoming</th>
+                        <th>Running Balance</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {filteredData4 && filteredData4.data.map((item: any, index: any) => (
-                        <tr key={index}>
-                          <td>{filteredData4.labels[index]}</td>
-                          {allKeys.map((key: any) => (
-                            <td key={key}>
-                              {key === 'Monthly Budget' ?
-                                myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX.toFixed(0) || 'N/A'
-                              : item[key] ? parseInt(item[key]) : 0
-                              }
-                            </td>
-                          ))}
-                          {selectedMonth === 'All months' && (
-                            <td>
-                              {((myVariable.report[filteredData4.labels[index]]?.['monthly-budget']?.AGIX || 0) - (item.AGIX || 0)).toFixed(2)}
-                            </td>
-                          )}
-                          {selectedMonth === 'All months' && (<td> 
-                            {myVariable.report[filteredData4.labels[index]]?.['incoming-reserve']?.AGIX?.toFixed(0) || 'N/A'}
-                          </td>)}
-                        </tr>
-                      ))}
-                      <tr>
-                        <td>Total</td>
-                        {allKeys.map((key: any) => {
-                          if (key === 'Monthly Budget' && selectedMonth === 'All months') {
-                            const totalMonthlyBudgets: any = Object.values(myVariable.report).reduce((acc: any, report: any) => {
-                              return acc + (report['monthly-budget']?.AGIX || 0);
-                            }, 0);
-                            return <td key={key}>{totalMonthlyBudgets.toFixed(0)}</td>;
-                          } else {
-                            return (
-                              <td key={key}>
-                                {filteredData4?.data.reduce((sum: any, item: any) => sum + (excludedTokens.includes(key) ? 0 : (item[key] || 0)), 0).toFixed(0)}
-                              </td>
-                            );
-                          }
-                        })}
-                        {selectedMonth === 'All months' && (
-                          <td>{totalBalance.toFixed(2)}</td>
-                        )}
-                        {selectedMonth === 'All months' && (<td>
-                          {Object.values(myVariable.report as Record<string, any>).reduce((acc: any, report: any) => {
-                            return acc + (report['incoming-reserve']?.AGIX || 0);
-                          }, 0).toFixed(0)}
-                        </td>)}
-                      </tr>
-                      {selectedMonth != 'All months' && (
-                        <tr>
-                          <td>Monthly Budget</td>
-                          {allKeys.map((key: any) => (
-                            <td key={key}>
-                              {key === 'AGIX' ? 
-                                myVariable.report[selectedMonth]['monthly-budget'].AGIX.toFixed(0) 
-                                : 'N/A'}
-                            </td>
-                          ))}
-                        </tr>
-                      )}
-                      {selectedMonth != 'All months' && (<tr>
-                        <td>Balance</td>
-                        {allKeys.map((key: any) => (
-                          <td key={key}>
-                            {key === 'AGIX' ? 
-                              (myVariable.report[selectedMonth]['monthly-budget'].AGIX -
-                              filteredData4?.data.reduce((sum: any, item: any) => sum + (excludedTokens.includes(key) ? 0 : (item[key] || 0)), 0)).toFixed(0) 
-                              : 'N/A'}
-                          </td>
-                        ))}
-                      </tr>)}
-                      {selectedMonth === 'All months' && (
-                        <tr>
-                          <td>Balance</td>
-                          {allKeys.map((key: any) => {
-                            if (key === 'AGIX') {
-                              const totalBudget: any = Object.values(myVariable.report).reduce((acc: any, report: any) => {
-                                return acc + ((report['monthly-budget']?.AGIX) || 0) + ((report['incoming-reserve']?.AGIX) || 0);  // Added optional chaining here
-                              }, 0);
-                              const totalExpenses = filteredData4?.data.reduce((sum: any, item: any) => sum + (item.AGIX || 0), 0) || 0;
-                              return <td key={key}>{(totalBudget - totalExpenses).toFixed(0)}</td>;
-                            } else {
-                              return <td key={key}>N/A</td>;
-                            }
-                          })}
-                        </tr>
-                    )}
+                    {tableRows}
                 </tbody>
             </table>
         </div>

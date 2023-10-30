@@ -8,6 +8,7 @@ import ChartComponent1 from '../components/charts/ChartComponent1';
 import ChartComponent2 from '../components/charts/ChartComponent2';
 import ChartComponent3 from '../components/charts/ChartComponent3';
 import DataTable from '../components/DataTable';
+import DataTable2 from '../components/DataTable2';
 import SpecificWorkgroupComponent from'../components/SpecificWorkgroupComponent';
 
 interface FilteredDataType {
@@ -172,8 +173,20 @@ if (selectedMonth === 'All months') {
               )}
               {filteredData && filteredData2 && (
                 <div className={styles.chartType2}>
-                  <h2>Numbers</h2>
-                  <DataTable 
+                  {selectedMonth === 'All months' && (
+                    <>
+                      <h2>Running Balance</h2>
+                      <DataTable 
+                        myVariable={myVariable}
+                        selectedMonth={selectedMonth}
+                        allKeys={allKeys}
+                        excludedTokens={excludedTokens}
+                        filteredData4={filteredData4}
+                      />
+                    </>
+                  )}
+                  <h2>Monthly Numbers</h2>
+                  <DataTable2 
                     myVariable={myVariable}
                     selectedMonth={selectedMonth}
                     allKeys={allKeys}

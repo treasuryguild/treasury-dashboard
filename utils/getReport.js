@@ -109,7 +109,7 @@ export async function getReport(txs) {
     txs.forEach(tx => {
       if (tx.tx_type === "Incoming") {
         const AGIXIndex = tx.total_tokens.indexOf('AGIX');
-        if (AGIXIndex >= 0 && tx.total_amounts[AGIXIndex] > 10) {
+        if (AGIXIndex >= 0 && tx.total_amounts[AGIXIndex] > 0) {
           const transactionDate = new Date(parseInt(tx.transaction_date));
           let taskDate;
           if (transactionDate.getDate() > (new Date(transactionDate.getFullYear(), transactionDate.getMonth() + 1, 0).getDate() - 10)) {
