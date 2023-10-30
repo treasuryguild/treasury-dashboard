@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import styles from '../styles/Report.module.css';
 import { useMyVariable } from '../context/MyVariableContext';
 import { getReport } from '../utils/getReport';
+import { txDenormalizer } from '../utils/txDenormalizer';
 import { createCharts } from '../utils/createCharts';
 import ChartComponent1 from '../components/charts/ChartComponent1';
 import ChartComponent2 from '../components/charts/ChartComponent2';
@@ -46,8 +47,10 @@ const Report: React.FC<ReportProps> = ({ query }) => {
 
   async function generateReport() {
       let report: any = await getReport(myVariable.transactions);
+      let distributionsArray: any = await txDenormalizer(myVariable.transactions);
       setMyVariable(prevState => ({ ...prevState, report }));
       setUniqueMonths(['All months', ...Array.from(new Set(Object.keys(report)))]);
+      //console.log("report2", distributionsArray, myVariable.transactions)
   }
 
   useEffect(() => {
