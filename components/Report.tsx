@@ -4,10 +4,12 @@ import styles from '../styles/Report.module.css';
 import { useMyVariable } from '../context/MyVariableContext';
 import { getReport } from '../utils/getReport';
 import { txDenormalizer } from '../utils/txDenormalizer';
+import { runningBalanceTableData } from '../utils/curatedDistributionData'
 import { createCharts } from '../utils/createCharts';
 import ChartComponent1 from '../components/charts/ChartComponent1';
 import ChartComponent2 from '../components/charts/ChartComponent2';
 import ChartComponent3 from '../components/charts/ChartComponent3';
+import RunningBalanceTable from '../components/tables/RunningBalanceTable'
 import DataTable from '../components/DataTable';
 import DataTable2 from '../components/DataTable2';
 import SpecificWorkgroupComponent from'../components/SpecificWorkgroupComponent';
@@ -27,6 +29,12 @@ interface ReportProps {
     workgroup?: string;
   };
 }
+interface DistributionItem {
+  date: string;
+  incoming: number;
+  outgoing: number;
+  runningBalance: number;
+}
 
 const Report: React.FC<ReportProps> = ({ query }) => {
   const router = useRouter();
@@ -41,6 +49,7 @@ const Report: React.FC<ReportProps> = ({ query }) => {
   const [excludedTokens, setExcludedTokens] = useState<string[]>(['ADA']);
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
   const [workgroups, setWorkgroups] = useState<string[]>([]);
+  const [runningBalanceTab, setRunningBalanceTab] = useState<DistributionItem[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(query.month || 'All months');
   const [selectedWorkgroup, setSelectedWorkgroup] = useState(query.workgroup || 'all workgroups');
 
@@ -48,9 +57,11 @@ const Report: React.FC<ReportProps> = ({ query }) => {
   async function generateReport() {
       let report: any = await getReport(myVariable.transactions);
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
+      let table: any = runningBalanceTableData(distributionsArray);
+      setRunningBalanceTab(table);
       setMyVariable(prevState => ({ ...prevState, report }));
       setUniqueMonths(['All months', ...Array.from(new Set(Object.keys(report)))]);
-      //console.log("report2", distributionsArray, myVariable.transactions)
+      //console.log("report2", distributionsArray, myVariable.transactions, table)
   }
 
   useEffect(() => {
@@ -179,13 +190,7 @@ if (selectedMonth === 'All months') {
                   {selectedMonth === 'All months' && (
                     <>
                       <h2>Running Balance</h2>
-                      <DataTable 
-                        myVariable={myVariable}
-                        selectedMonth={selectedMonth}
-                        allKeys={allKeys}
-                        excludedTokens={excludedTokens}
-                        filteredData4={filteredData4}
-                      />
+                      <RunningBalanceTable data={runningBalanceTab} />
                     </>
                   )}
                   <h2>Monthly Numbers</h2>

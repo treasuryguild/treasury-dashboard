@@ -4,12 +4,22 @@ export async function txDenormalizer(txs) {
         for (let tx of txs) {
             let { transaction_id, transaction_date, tx_type, tx_id, exchange_rate } = tx;
 
+            if (typeof transaction_date === 'string') {
+                transaction_date = parseInt(transaction_date, 10);
+            }            
             // Transforming Unix timestamp to DD.MM.YY format
-            let transformedDate = new Date(transaction_date * 1000).toLocaleDateString('en-GB', {
+            let transformedDate;
+            if (transaction_date > 1000000000000) {  // likely in milliseconds
+                transformedDate = new Date(transaction_date);
+            } else {  // likely in seconds
+                transformedDate = new Date(transaction_date * 1000);
+            }
+            //console.log("transformedDate", transformedDate)
+            transformedDate = transformedDate.toLocaleDateString('en-GB', {
                 day: '2-digit',
                 month: '2-digit',
                 year: '2-digit'
-            });
+            }).replace(/\//g, '.');
 
             if (tx.contributions) {
                 for (let contribution of tx.contributions) {
