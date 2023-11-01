@@ -10,11 +10,11 @@ const formatCamelCase = (str: string): string => {
     .join(' ');
 };
 
-interface RunningBalanceTableProps {
+interface DynamicTableProps {
   data: Record<string, any>[];
 }
 
-const RunningBalanceTable: React.FC<RunningBalanceTableProps> = ({ data }) => {
+const DynamicTable: React.FC<DynamicTableProps> = ({ data }) => {
   if (!data.length) return null;
 
   const columnHeaders = Object.keys(data[0]);
@@ -43,4 +43,4 @@ const RunningBalanceTable: React.FC<RunningBalanceTableProps> = ({ data }) => {
   );
 };
 
-export default RunningBalanceTable;
+export default DynamicTable;

@@ -94,7 +94,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, group
           {myVariable.transactions?.sort((a: any, b: any) => Number(b.transaction_date) - Number(a.transaction_date)).map((transaction: any, index: any) => {
             const { tokenColumns, nftCount } = renderTokenColumns(transaction);
             return (
-              <tr key={index} className={(transaction.tx_type === 'Incoming' || transaction.tx_type === 'Minting') ? styles['incoming-row'] : ''}>
+              <tr key={index} className={(transaction.tx_type === 'Incoming' || transaction.tx_type === 'Incoming Reserve' || transaction.tx_type === 'Minting') ? styles['incoming-row'] : ''}>
                 <td className={styles['align-left']}>{formatDate(transaction.transaction_date)}</td>
                 <td className={styles['align-center']}>{transaction.tx_type}</td>
                 <td className={styles['align-center']}>{transaction.recipients}</td>

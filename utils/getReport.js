@@ -103,6 +103,17 @@ export async function getReport(txs) {
   return localReport;
 }
 
+function ensureMonthlyBudgetAndTotalDistribution(localReport) {
+  Object.keys(localReport).forEach(monthYear => {
+    if (!localReport[monthYear]['monthly-budget']) {
+      localReport[monthYear]['monthly-budget'] = { AGIX: 0 };
+    }
+    if (!localReport[monthYear]['total-distribution']) {
+      localReport[monthYear]['total-distribution'] = { totalTasks: 0, totalAmounts: { AGIX: 0 } };
+    }
+  });
+  return localReport;
+}
 
   function processIncomingTransactions(txs, existingReport) {
     let localReport = { ...existingReport };
@@ -136,8 +147,10 @@ export async function getReport(txs) {
           if (!localReport[monthYear]['incoming-reserve']['AGIX']) localReport[monthYear]['incoming-reserve']['AGIX'] = 0;
           localReport[monthYear]['incoming-reserve']['AGIX'] += Number(tx.total_amounts[AGIXIndex]);
         }
-      }// 'IncomingFromReserve'
+      }
     });
+    localReport = ensureMonthlyBudgetAndTotalDistribution(localReport);
+    console.log("REPORT", localReport)
     return localReport;
   }
 

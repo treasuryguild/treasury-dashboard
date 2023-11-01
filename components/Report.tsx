@@ -9,7 +9,7 @@ import { createCharts } from '../utils/createCharts';
 import ChartComponent1 from '../components/charts/ChartComponent1';
 import ChartComponent2 from '../components/charts/ChartComponent2';
 import ChartComponent3 from '../components/charts/ChartComponent3';
-import RunningBalanceTable from '../components/tables/RunningBalanceTable'
+import DynamicTable from './tables/DynamicTable'
 import DataTable from '../components/DataTable';
 import DataTable2 from '../components/DataTable2';
 import SpecificWorkgroupComponent from'../components/SpecificWorkgroupComponent';
@@ -50,6 +50,7 @@ const Report: React.FC<ReportProps> = ({ query }) => {
   const [totalReportData, setTotalReportData] = useState<{totalTasks: number, totalAGIX: number} | null>(null);
   const [workgroups, setWorkgroups] = useState<string[]>([]);
   const [runningBalanceTab, setRunningBalanceTab] = useState<DistributionItem[]>([]);
+  const [testTable, setTestTable] = useState<DistributionItem[]>([]);
   const [selectedMonth, setSelectedMonth] = useState(query.month || 'All months');
   const [selectedWorkgroup, setSelectedWorkgroup] = useState(query.workgroup || 'all workgroups');
 
@@ -59,9 +60,10 @@ const Report: React.FC<ReportProps> = ({ query }) => {
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
       let table: any = runningBalanceTableData(distributionsArray);
       setRunningBalanceTab(table);
+      setTestTable(table);
       setMyVariable(prevState => ({ ...prevState, report }));
-      setUniqueMonths(['All months', ...Array.from(new Set(Object.keys(report)))]);
-      //console.log("report2", distributionsArray, myVariable.transactions, table)
+      setUniqueMonths(['All months', ...Array.from(new Set(Object.keys(report))).sort((a, b) => b.localeCompare(a))]);
+      console.log("report2", distributionsArray, myVariable, table)
   }
 
   useEffect(() => {
@@ -190,7 +192,7 @@ if (selectedMonth === 'All months') {
                   {selectedMonth === 'All months' && (
                     <>
                       <h2>Running Balance</h2>
-                      <RunningBalanceTable data={runningBalanceTab} />
+                      <DynamicTable data={runningBalanceTab} />
                     </>
                   )}
                   <h2>Monthly Numbers</h2>
