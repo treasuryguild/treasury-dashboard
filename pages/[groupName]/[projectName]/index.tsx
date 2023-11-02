@@ -10,6 +10,7 @@ import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
 import Signup from '../../../components/Signup';
 import Report from '../../../components/Report';
+import { getTokenTypes } from '../../../utils/getTokenTypes'
 
 interface Project {
   project_id: string;
@@ -84,9 +85,10 @@ const ProjectPage = () => {
         budgetInfo = await getMonthlyBudget(projectData.project_id);
         transactions = await getTransactions(projectData.project_id);
         let balance = await getAssetList(projectData.wallet);
+        let toke_types = await getTokenTypes();
         //console.log("balance2", balance);
         setBalance2(balance);
-        setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance }));
+        setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance, toke_types }));
         setLoading(false);
       }
     };
