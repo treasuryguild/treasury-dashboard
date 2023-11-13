@@ -1,0 +1,15 @@
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.flex-row{
+    display: flex;
+    flex-direction: row;
+}
+
+.components-conatiner {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}

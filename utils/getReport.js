@@ -150,7 +150,7 @@ function ensureMonthlyBudgetAndTotalDistribution(localReport) {
       }
     });
     localReport = ensureMonthlyBudgetAndTotalDistribution(localReport);
-    console.log("REPORT", localReport)
+    //console.log("REPORT", localReport)
     return localReport;
   }
 

@@ -10,6 +10,7 @@ import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
 import Signup from '../../../components/Signup';
 import Report from '../../../components/Report';
+import Dashboard from '../../../components/Dashboard';
 import { getTokenTypes } from '../../../utils/getTokenTypes'
 
 interface Project {

@@ -63,7 +63,7 @@ const Report: React.FC<ReportProps> = ({ query }) => {
       setTestTable(table);
       setMyVariable(prevState => ({ ...prevState, report }));
       setUniqueMonths(['All months', ...Array.from(new Set(Object.keys(report))).sort((a, b) => b.localeCompare(a))]);
-      console.log("report2", distributionsArray, myVariable, table)
+      //console.log("report2", distributionsArray, myVariable, table)
   }
 
   useEffect(() => {
