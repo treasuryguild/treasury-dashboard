@@ -39,6 +39,11 @@ const ChartComponent1: React.FC<ChartComponent1Props> = ({ chartData }) => {
             data: chartData,
             options: {
                 scales: {
+                    y: {
+                        ticks: {
+                            color: "rgba(255, 255, 255, 0.87)",
+                        },
+                    },
                     x: {
                         ticks: {
                             color: "rgba(255, 255, 255, 0.87)",

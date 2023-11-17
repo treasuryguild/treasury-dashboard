@@ -6,10 +6,20 @@
 .flex-row{
     display: flex;
     flex-direction: row;
+    flex-wrap: wrap;
 }
 
 .components-conatiner {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
+}
+
+.selected {
+    background-color: #007bff; 
+    color: white;     
+}
+
+.chartX {
+    width: 600px;
 }

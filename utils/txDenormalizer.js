@@ -23,22 +23,45 @@ export async function txDenormalizer(txs) {
 
             if (tx.contributions) {
                 for (let contribution of tx.contributions) {
-                    let { task_date, distributions, ...otherContributionData } = contribution;
+                    let { task_date, distributions, task_sub_group, ...otherContributionData } = contribution;
 
                     // If task_date is null or empty, use transformedDate
                     let taskTransformedDate = task_date || transformedDate;
 
+                    let formattedTaskSubGroup = task_sub_group
+                        ? task_sub_group.replace(/ /g, '-').toLowerCase()
+                        : '';
+
                     if (contribution.distributions) {
                         for (let distribution of contribution.distributions) {
+                            // Transform task_label into an array of formatted strings
+                            let formattedTaskLabels = [];
+                            if (contribution.task_label) {
+                                formattedTaskLabels = contribution.task_label.split(',').map(label => 
+                                    label.trim().replace(/ /g, '-').toLowerCase()
+                                );
+                            }
+                            let formattedTokens = distribution.tokens.map(token => {
+                                if (token.toLowerCase() === 'ada') {
+                                    return 'ADA';
+                                } else if (token.toLowerCase() === 'gimbal') {
+                                    return 'GMBL';
+                                } else {
+                                    return token;
+                                }
+                            });
                             distributionsArray.push({
                                 ...distribution,
                                 ...otherContributionData,
+                                task_sub_group: formattedTaskSubGroup,
                                 task_date: taskTransformedDate,
                                 transaction_id,
                                 transaction_date: transformedDate,
                                 tx_type,
                                 tx_id,
-                                exchange_rate
+                                exchange_rate,
+                                task_label: formattedTaskLabels,
+                                tokens: formattedTokens 
                             });
                         }
                     }
