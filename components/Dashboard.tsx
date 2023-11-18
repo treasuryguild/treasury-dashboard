@@ -9,6 +9,7 @@ import { extractDistributionData } from '../utils/extractDistributionData';
 import { processDashboardData } from '../utils/processDashboardData';
 import { createCharts } from '../utils/createCharts';
 import ChartComponent1 from '../components/charts/ChartComponent1';
+import ChartComponent2 from '../components/charts/ChartComponent2';
 import ChartComponentX from '../components/charts/ChartComponentX';
 import ChartComponentY from '../components/charts/ChartComponentY';
 import ChartComponentZ from '../components/charts/ChartComponentZ';
@@ -231,10 +232,11 @@ useEffect(() => {
       </div>
       <div className={styles['flex-column']}>
         <div className={styles['chartX']}>
-          {processedData.chart2 && processedData.chart2.data[0]?.x && (<ChartComponentX chartData={processedData.chart2} />)}
+        {processedData.chart1.labels.length > 1 && !processedData.chart1.data[0].x && (<ChartComponent1 chartData={processedData.chart1} />)}
+          {processedData.chart1 && processedData.chart1.data[0]?.x && (<ChartComponentX chartData={processedData.chart1} />)}
         </div>
         <div className={styles['chartX']}>
-          {processedData.chart2.labels.length > 1 && !processedData.chart2.data[0].x && (<ChartComponent1 chartData={processedData.chart2} />)}
+          {processedData.chart2.labels.length > 1 && !processedData.chart2.data[0].x && (<ChartComponent2 chartData={processedData.chart2} />)}
           {processedData.chart2 && processedData.chart2.data[0]?.x && (<ChartComponentY chartData={processedData.chart2} />)}
         </div>
         <div className={styles['chartX']}>

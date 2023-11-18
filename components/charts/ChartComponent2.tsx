@@ -24,7 +24,7 @@ const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
             labels,
             datasets: [
                 {
-                    label: "total tasks",
+                    label: "total AGIX",
                     data,
                     backgroundColor,
                     borderColor,

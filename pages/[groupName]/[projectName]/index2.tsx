@@ -61,7 +61,7 @@ const ProjectPage = () => {
     const queryParams = new URLSearchParams(window.location.search);
     const months: any = queryParams.get('months')?.split(',') || ['All months'];
     const workgroups: any = queryParams.get('workgroups')?.split(',') || ['All workgroups'];
-    const tokens: any = queryParams.get('tokens')?.split(',') || ['All tokens'];
+    const tokens: any = queryParams.get('tokens')?.split(',') || ['AGIX'];
     const labels: any = queryParams.get('labels')?.split(',') || ['All labels'];
   
     setSelectedMonths(months);

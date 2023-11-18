@@ -23,104 +23,17 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
     
     function extractAndSortTaskMonths(distributionsArray) {
         let months = new Set();
-
+    
         distributionsArray.forEach(item => {
             if (item.task_date) {
                 let [day, month, year] = item.task_date.split(".");
                 months.add(month + '.' + '20' + year);
             }
         });
-
-        // Convert the Set to an Array and sort in descending order
-        return Array.from(months).sort((a, b) => {
-            let [monthA, yearA] = a.split('.').map(Number);
-            let [monthB, yearB] = b.split('.').map(Number);
-
-            // Compare by year, then by month if the years are equal
-            if (yearA === yearB) {
-                return monthB - monthA;
-            }
-            return yearB - yearA;
-        });
+    
+        return Array.from(months).sort(descendingMonthSort);
     }
-
-    function chart1(filteredDistributions) {
-        return {};
-    }
-
-    function chart2(filteredDistributions) {
-        let dataByMonth = {};
-        let labels = new Set();
-        let allTokens = new Set();
     
-        // Identify all unique tokens
-        if (selectedTokens.includes('All tokens')) {
-            filteredDistributions.forEach(distribution => {
-                distribution.tokens.forEach(token => allTokens.add(token));
-            });
-        } else {
-            selectedTokens.forEach(token => allTokens.add(token));
-        }
-    
-        // Initialize labels for selected months
-        if (selectedMonths.includes('All months')) {
-            labels = extractAndSortTaskMonths(distributionsArray);
-        } else {
-            // Add specified selected months to labels
-            selectedMonths.forEach(month => labels.add(month));
-        }
-    
-        // Initialize dataByMonth for each month in labels for all tokens
-        labels.forEach(label => {
-            dataByMonth[label] = {};
-            allTokens.forEach(token => {
-                dataByMonth[label][token] = 0;
-            });
-        });
-    
-        // Process filtered distributions
-        filteredDistributions.forEach(distribution => {
-            if (distribution.tx_type === "Outgoing") {
-                const [day, month, year] = distribution.task_date.split('.');
-                const fullYear = year.length === 2 ? '20' + year : year;
-                const formattedTaskDate = month + '.' + fullYear;
-            
-                distribution.tokens.forEach((token, index) => {
-                    if (allTokens.has(token)) {
-                        // Ensure the date and token keys exist in dataByMonth
-                        if (!dataByMonth[formattedTaskDate]) {
-                            dataByMonth[formattedTaskDate] = {};
-                        }
-                        if (!dataByMonth[formattedTaskDate][token]) {
-                            dataByMonth[formattedTaskDate][token] = 0;
-                        }
-                        // Then proceed with the operation
-                        dataByMonth[formattedTaskDate][token] += Number(parseFloat(distribution.amounts[index]).toFixed(0));
-                    }
-                });
-            }
-        });
-    
-        let labelsArray = Array.from(labels);
-    
-        let data = [];
-        if (allTokens.size > 1) {
-            labelsArray.forEach(label => {
-                let tokenData = { x: label };
-                allTokens.forEach(token => {
-                    tokenData[token] = dataByMonth[label][token];
-                });
-                data.push(tokenData);
-            });
-        } else {
-            labelsArray.forEach(label => {
-                const token = allTokens.values().next().value;
-                data.push(dataByMonth[label][token]);
-            });
-        }
-    
-        return { labels: labelsArray, data };
-    }
     
     function chart3(filteredDistributions) {
         let labels = new Set();
@@ -130,7 +43,9 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
         if (selectedMonths.includes('All months')) {
             labels = new Set(extractAndSortTaskMonths(distributionsArray));
         } else {
+            // Add specified selected months to labels and sort
             selectedMonths.forEach(month => labels.add(month));
+            labels = new Set(Array.from(labels).sort(descendingMonthSort));
         }
     
         // Initialize monthData with labels
@@ -162,6 +77,92 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
     
         return { labels: Array.from(labels), data };
     }
+    
+    // Function to sort months in descending order
+    function descendingMonthSort(a, b) {
+        let [monthA, yearA] = a.split('.').map(Number);
+        let [monthB, yearB] = b.split('.').map(Number);
+    
+        // Compare by year, then by month if the years are equal
+        if (yearA === yearB) {
+            return monthB - monthA;
+        }
+        return yearB - yearA;
+    }
+
+    function generateChartData(filteredDistributions, groupBy) {
+    let dataByGroup = {};
+    let allTokens = new Set();
+    let groups = new Set();
+
+    // Identify all unique tokens
+    if (selectedTokens.includes('All tokens')) {
+        filteredDistributions.forEach(distribution => {
+            if (distribution.tx_type === "Outgoing") {
+                distribution.tokens.forEach(token => allTokens.add(token));
+            }
+        });
+    } else {
+        selectedTokens.forEach(token => allTokens.add(token));
+    }
+
+    // Initialize groups and dataByGroup
+    filteredDistributions.forEach(distribution => {
+        if (distribution.tx_type === "Outgoing") {
+            let groupValue = groupBy === 'workgroup' ? distribution.task_sub_group : getFormattedTaskDate(distribution.task_date);
+            groups.add(groupValue);
+            if (!dataByGroup[groupValue]) {
+                dataByGroup[groupValue] = {};
+                allTokens.forEach(token => {
+                    dataByGroup[groupValue][token] = 0;
+                });
+            }
+        }
+    });
+
+    // Aggregate token amounts by group
+    filteredDistributions.forEach(distribution => {
+        if (distribution.tx_type === "Outgoing") {
+            let groupValue = groupBy === 'workgroup' ? distribution.task_sub_group : getFormattedTaskDate(distribution.task_date);
+            distribution.tokens.forEach((token, index) => {
+                if (allTokens.has(token)) {
+                    dataByGroup[groupValue][token] += Number(parseFloat(distribution.amounts[index]).toFixed(0));
+                }
+            });
+        }
+    });
+
+    // Prepare data for chart
+    let labelsArray = Array.from(groups);
+    let data;
+
+    if (allTokens.size > 1) {
+        data = labelsArray.map(groupValue => {
+            let groupData = { x: groupValue };
+            allTokens.forEach(token => {
+                groupData[token] = dataByGroup[groupValue][token];
+            });
+            return groupData;
+        });
+    } else {
+        // When there is only one token
+        const token = allTokens.values().next().value;
+        data = labelsArray.map(groupValue => dataByGroup[groupValue][token]);
+    }
+
+    return { labels: labelsArray, data };
+}
+
+// Helper function to format task date
+function getFormattedTaskDate(taskDate) {
+    const [day, month, year] = taskDate.split('.');
+    const fullYear = year.length === 2 ? '20' + year : year;
+    return month + '.' + fullYear;
+}
+
+const chart1Data = generateChartData(filteredDistributions, 'workgroup');
+const chart2Data = generateChartData(filteredDistributions, 'month');
+console.log("chart1Data, chart2Data", chart1Data, chart2Data)
 
     function table1(filteredDistributions) {
         return {};
@@ -171,8 +172,8 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
     }
 
     const output = {
-        chart1: chart1(filteredDistributions), 
-        chart2: chart2(filteredDistributions), 
+        chart1: generateChartData(filteredDistributions, 'workgroup'), 
+        chart2: generateChartData(filteredDistributions, 'month'), 
         chart3: chart3(filteredDistributions), 
         table1: table1(filteredDistributions), 
         table2: table2(filteredDistributions), 
