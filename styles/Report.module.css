@@ -52,7 +52,11 @@
   text-align: left;
 }
 
-.numbers td:nth-child(2), .numbers td:nth-child(3) {
+.numbers th:nth-child(n+2) {
+  text-align: center;
+}
+
+.numbers td:nth-child(n+2) {
   text-align: right;
 }
 

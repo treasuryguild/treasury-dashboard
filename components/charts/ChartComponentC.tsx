@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Chart } from "chart.js/auto";
 
-const ChartComponentY: React.FC<{ chartData: any }> = ({ chartData }) => {
+const ChartComponentC: React.FC<{ chartData: any }> = ({ chartData }) => {
     const chartRef = useRef<Chart | null>(null);
 
     useEffect(() => {
@@ -64,6 +64,7 @@ const ChartComponentY: React.FC<{ chartData: any }> = ({ chartData }) => {
                         ticks: {
                             color: "rgba(255, 255, 255, 0.87)",
                         },
+                        display: true
                     },
                 },
                 plugins: {
@@ -72,7 +73,7 @@ const ChartComponentY: React.FC<{ chartData: any }> = ({ chartData }) => {
                     },
                     datalabels: {
                         color: 'white',
-                        display: true,
+                        display: false,
                         align: 'end',
                         anchor: 'end',
                         font: {
@@ -86,16 +87,16 @@ const ChartComponentY: React.FC<{ chartData: any }> = ({ chartData }) => {
             },
         };
         
-        const ctx: any = document.getElementById("myChartY");
+        const ctx: any = document.getElementById("myChartC");
         chartRef.current = new Chart(ctx, config);
     }, [chartData]);
 
     return (
         <div>
-          <h2>Monthly Distribution</h2>
-          <canvas id="myChartY"></canvas>
+          <h2>Contributors</h2>
+          <canvas id="myChartC"></canvas>
         </div>
     );
 };
 
-export default ChartComponentY;
+export default ChartComponentC;

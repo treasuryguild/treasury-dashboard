@@ -9,17 +9,88 @@
     flex-wrap: wrap;
 }
 
+.flex-row-half {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    max-width: 500px;
+    max-height: 45px;
+    min-width: 200px;
+    border: 1px solid #ccc;
+    padding: 10px;
+    border-radius: 5px;
+    flex-grow: 1;
+    transition: max-width 0.3s ease-in-out; /* Transition effect */
+    overflow: hidden;
+    margin: 0.2em;
+}
+
+.flex-row-half:hover {
+    max-width: 800px; 
+    max-height: 200px;
+    min-height: 35px;
+}
+
+.flex-row-half .filter-btn {
+    opacity: 0; /* Initially unselected buttons are transparent */
+    transition: opacity 0.7s ease; /* Transition for the fade-in effect */
+}
+
+.flex-row-half:hover .filter-btn {
+    opacity: 1; /* Unselected buttons become fully visible on hover */
+}
+
+/* Ensure that selected buttons always remain fully visible */
+.flex-row-half .selected, .flex-row-half:hover .selected {
+    opacity: 1;
+}
+
 .components-conatiner {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
 }
 
+.filter-btn{
+    background-color: rgb(45, 62, 94);
+    color: white;
+    margin: 0.08em;
+    border-radius: 5px;
+    padding: 0.2em;
+    cursor: pointer;
+}
+.filter-btn:hover{
+    background-color: rgb(99, 124, 171);
+}
 .selected {
     background-color: #007bff; 
-    color: white;     
+    color: white; 
+    margin: 0.08em;   
+    border-radius: 5px; 
+    padding: 0.2em;
+    cursor: pointer;
 }
+
+.selection-label {
+    display: block;
+    font-size: 14px;
+    margin-top: 4px;
+    margin-right: 5px;
+    font-weight: bold;
+    color: white;
+  }
+  
 
 .chartX {
     width: 600px;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 5px;
+    margin: 3px;
+}
+
+.tables {
+    max-width: 500px;
+    margin: 3px;
+    margin-bottom: 12px;
 }

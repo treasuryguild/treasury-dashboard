@@ -61,7 +61,7 @@ const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
 
     return (
         <div>
-          <h2>Tasks</h2>
+          <h2>Monthly Distribution</h2>
           <canvas id="myChart2"></canvas>
         </div>
     );

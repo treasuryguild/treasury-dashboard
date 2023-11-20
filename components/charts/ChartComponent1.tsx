@@ -72,7 +72,7 @@ const ChartComponent1: React.FC<ChartComponent1Props> = ({ chartData }) => {
 
     return (
         <div>
-             <h2>Rewards</h2>
+             <h2>Workgroup Distribution</h2>
             <canvas id="myChart1"></canvas>
         </div>
            

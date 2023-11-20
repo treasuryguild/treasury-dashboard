@@ -92,7 +92,7 @@ const ChartComponentX: React.FC<{ chartData: any }> = ({ chartData }) => {
 
     return (
         <div>
-          <h2>Workgroups</h2>
+          <h2>Workgroup Distribution</h2>
           <canvas id="myChartX"></canvas>
         </div>
     );

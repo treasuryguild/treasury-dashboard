@@ -27,7 +27,7 @@ export function extractDistributionData(distributions) {
         if (distribution.task_label) {
             distribution.task_label.forEach(label => {
                 const trimmedLabel = label.trim();
-                if (trimmedLabel) {
+                if (trimmedLabel && trimmedLabel !== "incoming" && trimmedLabel !== "staking" && trimmedLabel !== "swap" && trimmedLabel !== "internal-transfer" && trimmedLabel !== "minting") {
                     labelsSet.add(trimmedLabel);
                 }
             });

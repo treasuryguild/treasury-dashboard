@@ -29,10 +29,6 @@ const ProjectPage = () => {
   const [projectData, setProjectData] = useState<Project | null>(null);
   const [previousTab, setPreviousTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
   const [balance2, setBalance2] = useState<Array<any>>([]);
-  const [selectedMonths, setSelectedMonths] = useState([]);
-  const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
-  const [selectedTokens, setSelectedTokens] = useState([]);
-  const [selectedLabels, setSelectedLabels] = useState([]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -58,18 +54,7 @@ const ProjectPage = () => {
     if (tab) {
       setActiveTab(tab as 'transactions' | 'signup' | 'report');
     }
-    const queryParams = new URLSearchParams(window.location.search);
-    const months: any = queryParams.get('months')?.split(',') || ['All months'];
-    const workgroups: any = queryParams.get('workgroups')?.split(',') || ['All workgroups'];
-    const tokens: any = queryParams.get('tokens')?.split(',') || ['AGIX'];
-    const labels: any = queryParams.get('labels')?.split(',') || ['All labels'];
-  
-    setSelectedMonths(months);
-    setSelectedWorkgroup(workgroups);
-    setSelectedTokens(tokens);
-    setSelectedLabels(labels);
   }, []);
-  
 
   // Hook to fetch group data
   useEffect(() => {
@@ -125,20 +110,11 @@ const ProjectPage = () => {
     };
 
     const handleTabChange = (tab: 'transactions' | 'signup' | 'report') => {
-      setActiveTab(tab);
-      const url = new URL(window.location.href);
-    
-      url.searchParams.set('tab', tab);
-    
-      // Assuming you have state variables like `selectedMonths`, `selectedWorkgroup`
-      // Join the arrays into a comma-separated string
-      url.searchParams.set('months', selectedMonths.join(','));
-      url.searchParams.set('workgroups', selectedWorkgroup.join(','));
-      url.searchParams.set('tokens', selectedTokens.join(','));
-      url.searchParams.set('labels', selectedLabels.join(','));
-    
-      router.push(url.toString(), undefined, { shallow: true });
-    };    
+        setActiveTab(tab);
+        const url = new URL(window.location.href);
+        url.searchParams.set('tab', tab);
+        router.push(url.toString(), undefined, { shallow: true });
+      };
 
     if (!projectData) return <div className={styles['main']}>Loading...</div>;
     //console.log(myVariable)
@@ -212,7 +188,7 @@ const ProjectPage = () => {
                 ) : activeTab === 'signup' ? (
                     <Signup />
                 ) : activeTab === 'report' ? (
-                  <Dashboard query={router.query} />
+                  <Report query={router.query} />
                 ) : (
                     <div>nothing selected</div> 
                 )
