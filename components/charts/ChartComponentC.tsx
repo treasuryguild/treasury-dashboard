@@ -64,7 +64,7 @@ const ChartComponentC: React.FC<{ chartData: any }> = ({ chartData }) => {
                         ticks: {
                             color: "rgba(255, 255, 255, 0.87)",
                         },
-                        display: true
+                        display: false
                     },
                 },
                 plugins: {

@@ -46,7 +46,7 @@ const ChartComponent4: React.FC<ChartComponent4Props> = ({ chartData }) => {
                         ticks: {
                             color: "rgba(255, 255, 255, 0.87)",
                         },
-                        display: true
+                        display: false
                     },
                 },
                 plugins: {
