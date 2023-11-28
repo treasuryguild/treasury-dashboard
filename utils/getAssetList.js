@@ -41,65 +41,40 @@ function mapAssetData(assetDetails, assetList) {
         unit: `${matchingAsset.policy_id}${matchingAsset.asset_name}`,
         fingerprint: asset.fingerprint,
         decimals: decimals,
-        tokenType: tokenType
+        tokenType: tokenType,
+        policy_id: matchingAsset.policy_id
     };
   });
 }
 
 export async function getAssetList(wallet) {
     
-    async function getBalance() {
-        const url = "https://api.koios.rest/api/v0/address_info?select=balance";
-        const data = {
-          _addresses: [wallet],
-        };
-    
-        const response = await axios.post(url, data, {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-        return response.data;
-    }
+  async function getBalance() {
+    const response = await axios.post('/api/getBalance', { wallet });
+    return response.data;
+}
 
-    async function getList() {
-      const url = "https://api.koios.rest/api/v0/address_assets";
-      const data = {
-        _addresses: [wallet],
-      };
-  
-      const response = await axios.post(url, data, {
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
-    }
+async function getList() {
+  const response = await axios.post('/api/getList', { wallet });
+  //console.log("getList response:", response.data);
+  return response.data;
+}
+
 
     function transformArray(assetList) {
-        return assetList.map(asset => [asset.policy_id, asset.asset_name]);
-    }
+  // Directly mapping over the provided array
+  return assetList.map(asset => [asset.policy_id, asset.asset_name]);
+}
+
 
     async function getAssetDetails(transformedArray) {
-        const url = "https://api.koios.rest/api/v0/asset_info?select=fingerprint,asset_name_ascii,total_supply,token_registry_metadata";
-        const data = {     
-          _asset_list: transformedArray,
-        };
-    
-        const response = await axios.post(url, data, {
-          headers: {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        });
-        //console.log(response.data)
-        return response.data;
-    }
+      const response = await axios.post('/api/getAssetDetails', { transformedArray });
+      return response.data;
+  }
 
     let balance = await getBalance();
     let list = await getList();
+    //console.log("List:", list);
     if (list.length === 0) {
       // The list is empty.
       // Create ADA item
@@ -111,16 +86,22 @@ export async function getAssetList(wallet) {
         unit: "lovelace",
         fingerprint: "", 
         decimals: 6,
-        tokenType: "fungible"  
+        tokenType: "fungible",
+        policy_id: "" 
       };
       // Return an array that contains only the ADA item
       return [adaItem];
     }
     //console.log(list);
-    let transformedArray = transformArray(list[0].asset_list);
+    let transformedArray = [];
+    if (list && Array.isArray(list)) {
+      transformedArray = transformArray(list);
+    } else {
+      // Handle case where list[0].asset_list is not an array
+      console.error('Asset list is not an array or is undefined');
+    }
     let assetDetails = await getAssetDetails(transformedArray);
-    let mappedAssetData = mapAssetData(assetDetails, list[0].asset_list);
-    //console.log("transformedArray", transformedArray, assetDetails, mappedAssetData)
+    let mappedAssetData = mapAssetData(assetDetails, list);
 
     // Sort the array so that 'nft' items are at the end
     mappedAssetData.sort((a, b) => (a.tokenType === 'nft') - (b.tokenType === 'nft'));
@@ -134,7 +115,8 @@ export async function getAssetList(wallet) {
       unit: "lovelace",
       fingerprint: "", 
       decimals: 6,
-      tokenType: "fungible"  
+      tokenType: "fungible",
+      policy_id: ""  
     };
     
     // Add ADA item to the start of the array
@@ -144,6 +126,6 @@ export async function getAssetList(wallet) {
     for (let i = 1; i < mappedAssetData.length; i++) {
       mappedAssetData[i].id = String(i + 1);
     }
-
+    //console.log("mappedAssetData", mappedAssetData)
     return mappedAssetData;
 }
