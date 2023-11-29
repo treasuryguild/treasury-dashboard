@@ -13,7 +13,7 @@ export default async function handler(req, res) {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_KOIOS_API_KEY}`
+          'Authorization': `Bearer ${process.env.KOIOS_API_KEY}`
         },
       });
       res.status(200).json(response.data);
