@@ -60,6 +60,7 @@ interface ProcessedDataType {
 
 const Dashboard: React.FC<DashboardProps> = ({ query }) => {
   const router = useRouter();
+  const { groupName, projectName } = router.query;
   const [loading, setLoading] = useState(true);
   const { myVariable, setMyVariable } = useMyVariable();
   const [uniqueMonths, setUniqueMonths] = useState(['9.2023']);
@@ -134,7 +135,11 @@ useEffect(() => {
     // Update state based on URL parameters
     setSelectedMonths(months.length > 0 ? months : ['All months']);
     setSelectedWorkgroups(workgroups.length > 0 ? workgroups : ['All workgroups']);
-    setSelectedTokens(tokens.length > 0 ? tokens : ['All tokens']);
+    if (projectName === "Singularity Net Ambassador Wallet") {
+      setSelectedTokens(tokens.length > 0 ? tokens : ['AGIX']);
+    } else {
+      setSelectedTokens(tokens.length > 0 ? tokens : ['All tokens']);
+    }
     setSelectedLabels(labels.length > 0 ? labels : ['All labels']);
 
     setLoading(false); // Set loading to false after initialization
