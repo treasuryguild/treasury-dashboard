@@ -349,10 +349,10 @@ useEffect(() => {
       </div>
       <div className={styles['flex-row']}>
         <div className={styles['flex-row-half']}>
-          <span className={styles['selection-label']}>Balance of current Quarter: {currentQuarterBalance}</span>
+          <span className={styles['selection-label']}>AGIX Balance of current Quarter: {currentQuarterBalance}</span>
         </div>
         <div className={styles['flex-row-half']}>
-          <span className={styles['selection-label']}>Balance of previous Quarter: {previousQuarterBalance}</span>
+          <span className={styles['selection-label']}>AGIX Balance of previous Quarter: {previousQuarterBalance}</span>
         </div>
       </div>
       <div className={styles['components-conatiner']}> 
