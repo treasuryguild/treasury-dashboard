@@ -319,7 +319,14 @@ function createTable1Data(filteredDistributions) {
     }
 
     let sortedData = Object.values(monthlyData).sort((a, b) => {
-        return b.month.localeCompare(a.month);
+        const [monthA, yearA] = a.month.split('.').map(Number);
+        const [monthB, yearB] = b.month.split('.').map(Number);
+
+        // First compare by year, then by month
+        if (yearA !== yearB) {
+            return yearB - yearA; // Descending order of year
+        }
+        return monthB - monthA; // Descending order of month
     });
 
     // Calculate totals
