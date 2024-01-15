@@ -89,6 +89,10 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
     workgroups: false,
     labels: false,
   });
+  const [currentQuarterBalance, setCurrentQuarterBalance] = useState(0);
+  const [previousQuarterBalance, setPreviousQuarterBalance] = useState(0);
+
+
 
   const handleHover = (box: string, status: boolean) => {
     setHoverStatus(prev => ({ ...prev, [box]: status }));
@@ -98,7 +102,18 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
       let report: any = await getReport(myVariable.transactions);
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
       let distData: any = extractDistributionData(distributionsArray);
-      setUniqueMonths(['All months', ...distData.months]);
+      // Sort the months in descending order
+      const sortedMonths = distData.months.sort((a: any, b: any) => {
+          const [monthA, yearA] = a.split('.').map(Number);
+          const [monthB, yearB] = b.split('.').map(Number);
+    
+          if (yearA !== yearB) {
+              return yearB - yearA; // Descending order of year
+          }
+          return monthB - monthA; // Descending order of month
+      });
+
+      setUniqueMonths(['All months', ...sortedMonths]);
       setWorkgroups(['All workgroups', ...distData.workgroups])
       setUniqueTokens(['All tokens', ...distData.tokens])
       setUniqueLabels(['All labels', ...distData.labels])
@@ -107,6 +122,9 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
       setTestTable(table);
       setMyVariable(prevState => ({ ...prevState, report }));
       //console.log("report2", distributionsArray, myVariable, table, distData)
+      if (distributionsArray && distributionsArray.length > 0) {
+        calculateQuarterBalances(distributionsArray);
+      }
   }
 
   useEffect(() => {
@@ -200,6 +218,58 @@ const processData = async () => {
   //console.log("processedData", processedData)
 };
 
+const getQuarters = () => {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+  let currentQuarter, previousQuarter, previousYear;
+
+  if (currentMonth <= 3) {
+      currentQuarter = ['01', '02', '03'];
+      previousQuarter = ['10', '11', '12'];
+      previousYear = currentYear - 1;
+  } else if (currentMonth <= 6) {
+      currentQuarter = ['04', '05', '06'];
+      previousQuarter = ['01', '02', '03'];
+      previousYear = currentYear;
+  } else if (currentMonth <= 9) {
+      currentQuarter = ['07', '08', '09'];
+      previousQuarter = ['04', '05', '06'];
+      previousYear = currentYear;
+  } else {
+      currentQuarter = ['10', '11', '12'];
+      previousQuarter = ['07', '08', '09'];
+      previousYear = currentYear;
+  }
+
+  return { currentQuarter, currentYear, previousQuarter, previousYear };
+};
+
+const calculateQuarterBalances = (distributionsArray: any) => {
+  const { currentQuarter, currentYear, previousQuarter, previousYear } = getQuarters();
+
+  const calculateBalance = (quarter: any, year: any) => {
+      return 172944 - distributionsArray
+          .filter((distribution: any
+          ) => {
+            if (distribution.tx_type !== 'Outgoing') return false;
+            const [day, month, yearShort] = distribution.task_date.split('.');
+            const fullYear = `20${yearShort}`; // Assuming the year is in 'YY format and needs conversion to 'YYYY'
+            return quarter.includes(month) && fullYear === year.toString();
+            }
+          )
+    .reduce((acc: any, curr: any) => {
+    const agixIndex = curr.tokens.findIndex((token: any) => token === 'AGIX');
+    const agixAmount = agixIndex !== -1 ? curr.amounts[agixIndex] : 0;
+    return acc + agixAmount;
+    }, 0);
+  };
+
+  setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear));
+  setPreviousQuarterBalance(calculateBalance(previousQuarter,
+previousYear));
+};
+
 // Call processData when selected values change
 useEffect(() => {
   if (myVariable.transactions) {processData();}
@@ -275,6 +345,14 @@ useEffect(() => {
             <button key={label} className={styles.selected}>{label}</button>
           ))
         }
+        </div>
+      </div>
+      <div className={styles['flex-row']}>
+        <div className={styles['flex-row-half']}>
+          <span className={styles['selection-label']}>Balance of current Quarter: {currentQuarterBalance}</span>
+        </div>
+        <div className={styles['flex-row-half']}>
+          <span className={styles['selection-label']}>Balance of previous Quarter: {previousQuarterBalance}</span>
         </div>
       </div>
       <div className={styles['components-conatiner']}> 
