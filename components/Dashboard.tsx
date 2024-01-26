@@ -117,9 +117,9 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
       setWorkgroups(['All workgroups', ...distData.workgroups])
       setUniqueTokens(['All tokens', ...distData.tokens])
       setUniqueLabels(['All labels', ...distData.labels])
-      let table: any = runningBalanceTableData(distributionsArray);
-      setRunningBalanceTab(table);
-      setTestTable(table);
+      //let table: any = runningBalanceTableData(distributionsArray);
+      //setRunningBalanceTab(table);
+      //setTestTable(table);
       setMyVariable(prevState => ({ ...prevState, report }));
       //console.log("report2", distributionsArray, myVariable, table, distData)
       if (distributionsArray && distributionsArray.length > 0) {
@@ -213,7 +213,7 @@ const handleLabelChange = (labels: any) => {
 
 const processData = async () => {
   const distArr = await txDenormalizer(myVariable.transactions)
-  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr);
+  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr, myVariable.projectInfo.budgets);
   setProcessedData(data);
   //console.log("processedData", processedData)
 };
@@ -249,25 +249,31 @@ const calculateQuarterBalances = (distributionsArray: any) => {
   const { currentQuarter, currentYear, previousQuarter, previousYear } = getQuarters();
 
   const calculateBalance = (quarter: any, year: any) => {
-      return 172944 - distributionsArray
-          .filter((distribution: any
-          ) => {
+    // Aggregate the budget for the quarter
+    const quarterBudget = quarter.reduce((total: any, month: any) => {
+        const budgetKey = `${month.padStart(2, '0')}.${year}`;
+        const monthlyBudget = myVariable.projectInfo.budgets[budgetKey] || 0;
+        return total + monthlyBudget;
+    }, 0);
+
+    // Calculate the balance
+    return quarterBudget - distributionsArray
+        .filter((distribution: any) => {
             if (distribution.tx_type !== 'Outgoing') return false;
             const [day, month, yearShort] = distribution.task_date.split('.');
             const fullYear = `20${yearShort}`; // Assuming the year is in 'YY format and needs conversion to 'YYYY'
             return quarter.includes(month) && fullYear === year.toString();
-            }
-          )
-    .reduce((acc: any, curr: any) => {
-    const agixIndex = curr.tokens.findIndex((token: any) => token === 'AGIX');
-    const agixAmount = agixIndex !== -1 ? curr.amounts[agixIndex] : 0;
-    return acc + agixAmount;
-    }, 0);
-  };
+        })
+        .reduce((acc: any, curr: any) => {
+            const agixIndex = curr.tokens.findIndex((token: any) => token === 'AGIX');
+            const agixAmount = agixIndex !== -1 ? curr.amounts[agixIndex] : 0;
+            return acc + agixAmount;
+        }, 0);
+    };
+
 
   setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear));
-  setPreviousQuarterBalance(calculateBalance(previousQuarter,
-previousYear));
+  setPreviousQuarterBalance(calculateBalance(previousQuarter,previousYear));
 };
 
 // Call processData when selected values change

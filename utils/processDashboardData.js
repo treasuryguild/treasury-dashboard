@@ -1,4 +1,4 @@
-export function processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distributionsArray) {
+export function processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distributionsArray, budgets) {
 
     const filteredDistributions = distributionsArray.filter(distribution => {
         // Convert task_date to "MM.YYYY" format with a four-digit year
@@ -281,7 +281,7 @@ function createTable1Data(filteredDistributions) {
             monthlyData[formattedTaskDate] = {
                 month: formattedTaskDate,
                 agix: 0,
-                monthlyBudget: 0,
+                monthlyBudget: budgets[formattedTaskDate] || 0, // Use budgets for monthly budget amounts
                 mbBalance: 0,
                 incomingReserve: 0
             };
@@ -290,28 +290,10 @@ function createTable1Data(filteredDistributions) {
         // Aggregate data based on tx_type
         if (distribution.tx_type === "Outgoing" && distribution.tokens.includes('AGIX')) {
             monthlyData[formattedTaskDate].agix += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
-        } else if (distribution.tx_type === "Incoming" && distribution.tokens.includes('AGIX') && selectedMonths.includes('All months')) {
-            monthlyData[formattedTaskDate].monthlyBudget += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
         } else if (distribution.tx_type === "Incoming Reserve" && distribution.tokens.includes('AGIX')) {
             monthlyData[formattedTaskDate].incomingReserve += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
         }
     });
-
-    if (!selectedMonths.includes('All months')) {selectedMonths.forEach(month => {
-        if (incomingTotalsByMonth[month] && incomingTotalsByMonth[month]['AGIX']) {
-            if (!monthlyData[month]) {
-                monthlyData[month] = {
-                    month: month,
-                    agix: 0,
-                    monthlyBudget: Number(parseFloat(incomingTotalsByMonth[month]['AGIX']).toFixed(0)),
-                    mbBalance: 0,
-                    incomingReserve: 0
-                };
-            } else {
-                monthlyData[month].monthlyBudget += Number(parseFloat(incomingTotalsByMonth[month]['AGIX']).toFixed(0));
-            }
-        }
-    });}
 
     // Calculate MB Balance for each month
     for (const month in monthlyData) {
@@ -358,7 +340,8 @@ function createTable1Data(filteredDistributions) {
     sortedData.push(balanceRow);
 
     return sortedData;
-    }
+}
+
 
     function createTable2Data(filteredDistributions) {
         let taskData = {};

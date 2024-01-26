@@ -6,6 +6,7 @@ interface Project {
   project_name: string;
   project_type: string;
   wallet: string;
+  budgets: any;
 }
 
 interface Group {
