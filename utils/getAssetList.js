@@ -112,7 +112,7 @@ export async function getAssetList(wallet) {
 
   async function getAssetDetails(transformedArray) {
     const response = await axios.post('/api/getAssetDetails', { transformedArray });
-    console.log("response", response)
+    //console.log("response", response)
     return response.data;
   }
 
