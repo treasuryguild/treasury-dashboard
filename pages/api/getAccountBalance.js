@@ -2,10 +2,10 @@ import axios from 'axios';
 
 export default async function handler(req, res) {
   if (req.method === 'POST') {
-    const wallet = req.body.wallet;
-    const url = "https://api.koios.rest/api/v1/address_info";
+    const stakeAddress = req.body.stake_address;
+    const url = "https://api.koios.rest/api/v1/account_info";
     const data = {
-      _addresses: [wallet],
+        _stake_addresses: [stakeAddress],
     };
 
     try {
