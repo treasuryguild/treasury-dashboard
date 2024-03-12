@@ -3,8 +3,8 @@ import axios from "axios";
 function isValidKey(key) {
   if (typeof key !== 'string') return false;
   if (key.length > 40) return false;
-  // Start with a letter, not contain any special characters or spaces
-  return /^[A-Za-z][A-Za-z0-9]*$/.test(key);
+  // Start with a letter, $, or @, can contain letters, numbers, spaces, $, @, and .
+  return /^[$@A-Za-z][$@A-Za-z0-9 .]*$/.test(key);
 }
 
 function mapAssetData(assetDetails, assetList) {
@@ -13,15 +13,20 @@ function mapAssetData(assetDetails, assetList) {
     const tokenType = Number(asset.total_supply) > 1 ? 'fungible' : 'nft';
     let name;
     let displayname;
-    //console.log("asset", asset)
+
     if (tokenType === 'nft') {
-      const nameAscii = asset.asset_name_ascii;
-      name = nameAscii;
-      //name = asset.fingerprint;
-      if (isValidKey(nameAscii)) {
-        displayname = nameAscii;
+      const nameFromMetadata = asset.minting_tx_metadata['721']?.[asset.policy_id]?.[asset.asset_name]?.name;
+      if (nameFromMetadata) {
+        name = nameFromMetadata;
+        displayname = nameFromMetadata;
       } else {
-        displayname = asset.fingerprint;
+        const nameAscii = asset.asset_name_ascii;
+        name = nameAscii;
+        if (isValidKey(nameAscii)) {
+          displayname = nameAscii;
+        } else {
+          displayname = asset.fingerprint;
+        }
       }
     } else {
       displayname = asset.token_registry_metadata && asset.token_registry_metadata.ticker
@@ -121,7 +126,7 @@ export async function getAssetList(wallet) {
   if (!Array.isArray(balance) || balance.length === 0 || !balance[0].hasOwnProperty('balance')) {
     balance = [{ balance: "0" }]; // Setting a default value to proceed safely
   }
-
+  //console.log("balance", balance);
   let list = await getList();
   //console.log("List:", list);
   if (list.length === 0) {

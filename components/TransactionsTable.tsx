@@ -47,7 +47,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, group
   };
 
   const renderTokenColumns = (transaction: any) => {
-    const nftCount = transaction.total_tokens.filter((token: string) => getTokenType(token) === 'non-fungible').length;
+    const nftCount = transaction.total_tokens.filter((token: string) => getTokenType(token) === 'nft').length;
 
     const tokenAmounts = transaction.total_tokens.reduce((acc: any, token: string, i: number) => {
       if (getTokenType(token) === 'fungible') {

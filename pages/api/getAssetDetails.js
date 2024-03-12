@@ -3,7 +3,7 @@ import axios from 'axios';
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     const transformedArray = req.body.transformedArray;
-    const url = "https://api.koios.rest/api/v1/asset_info?select=fingerprint,asset_name_ascii,total_supply,token_registry_metadata";
+    const url = "https://api.koios.rest/api/v1/asset_info";
     const data = {     
       _asset_list: transformedArray,
     };
