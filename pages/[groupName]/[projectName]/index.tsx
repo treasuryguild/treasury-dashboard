@@ -19,6 +19,7 @@ interface Project {
   project_name: string;
   project_type: string;
   wallet: string;
+  core_token: string;
 }
 
 const ProjectPage = () => {
@@ -32,7 +33,7 @@ const ProjectPage = () => {
   const [balance2, setBalance2] = useState<Array<any>>([]);
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
-  const [selectedTokens, setSelectedTokens] = useState([]);
+  const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
   const [selectedLabels, setSelectedLabels] = useState([]);
 
   useEffect(() => {
@@ -62,7 +63,7 @@ const ProjectPage = () => {
     const queryParams = new URLSearchParams(window.location.search);
     const months: any = queryParams.get('months')?.split(',') || ['All months'];
     const workgroups: any = queryParams.get('workgroups')?.split(',') || ['All workgroups'];
-    const tokens: any = queryParams.get('tokens')?.split(',') || (projectName === "Singularity Net Ambassador Wallet"?['AGIX']:['ADA']);
+    const tokens: any = queryParams.get('tokens')?.split(',') || (projectName === "Singularity Net Ambassador Wallet"?['AGIX']:selectedTokens);
     const labels: any = queryParams.get('labels')?.split(',') || ['All labels'];
   
     setSelectedMonths(months);
@@ -84,6 +85,9 @@ const ProjectPage = () => {
       const foundGroup = groupInfo?.find(group => group.group_name === groupName);
       const foundProject = foundGroup?.projects.find(project => project.project_name === projectName);
       setProjectData(foundProject || null);
+      //console.log("foundProject", foundProject?.core_token)
+      const coreToken: any = foundProject?.core_token ? foundProject?.core_token : selectedTokens
+      setSelectedTokens([coreToken]);
     };
 
     if (groupName && projectName) {

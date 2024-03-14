@@ -101,7 +101,7 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
       setUniqueTokens(['All tokens', ...distData.tokens])
       setUniqueLabels(['All labels', ...distData.labels])
       setMyVariable(prevState => ({ ...prevState, report }));
-      //console.log("report2", distributionsArray, myVariable, table, distData)
+      //console.log("report2", distributionsArray, myVariable, distData)
   }
 
   useEffect(() => {
@@ -133,7 +133,7 @@ useEffect(() => {
     if (projectName === "Singularity Net Ambassador Wallet") {
       setSelectedTokens(tokens.length > 0 ? tokens : ['AGIX']);
     } else {
-      setSelectedTokens(tokens.length > 0 ? tokens : ['ADA']);
+      setSelectedTokens(tokens.length > 0 ? tokens : [myVariable.projectInfo.core_token]);
     }
     setSelectedLabels(labels.length > 0 ? labels : ['All labels']);
 
@@ -190,7 +190,7 @@ const handleLabelChange = (labels: any) => {
 
 const processData = async () => {
   const distArr = await txDenormalizer(myVariable.transactions)
-  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr);
+  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr, myVariable.projectInfo.core_token);
   setProcessedData(data);
   //console.log("processedData", processedData)
 };
