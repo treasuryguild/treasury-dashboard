@@ -34,6 +34,7 @@ const TxidPage = () => {
     const { connected, wallet } = useWallet();
     const { groupName, projectName, txid } = router.query;
     const [loading, setLoading] = useState<boolean>(true);
+    const [incomingTx, setIncomingTx] = useState<boolean>(false);
     const [projectData, setProjectData] = useState<Project | null>(null);
     const [txidData, setTxidData] = useState<Contribution[] | null>(null);
     const [wallets, setWallets] = useState<string[]>([]);
@@ -82,7 +83,7 @@ const TxidPage = () => {
     }, [groupName, projectName]);  
     
     useEffect(() => {
-        const fetchProjectData = async () => {
+        const fetchProjectData = async () => { 
             let transactions = myVariable.transactions;
             if (projectData) {
                 setLoading(true);
@@ -90,6 +91,9 @@ const TxidPage = () => {
                 setMyVariable(prevState => ({ ...prevState, projectInfo: projectData }));
                 //console.log("TEst", transactions[0].contributions)
                 setTxidData(transactions[0].contributions)
+                if (transactions[0].contributions[0].task_type == "Incoming") {
+                  setIncomingTx(true);
+                }
                 setLoading(false);
             }
         };
@@ -167,8 +171,8 @@ function aggregateTokens(txidData: Contribution[] | null, walletIds: string[]) {
               {connected && (<h2>Rewards sent to this wallet in this transaction</h2>)}
               <p>txid: {txid}</p>
                 <div className={styles.taskCard}>
-                    {!connected && (<h2>Total rewards distributed</h2>)} 
-                    {connected && (<h2>Total rewards received</h2>)} 
+                    {!connected && !incomingTx && (<h2>Total rewards distributed</h2>)} 
+                    {(connected || incomingTx) && (<h2>Total rewards received</h2>)} 
                     <p className={styles.highlight}>
                       {Object.entries(totalTokensReceived).map(([token, amount]) => `${amount} ${token}`).join(', ')}
                     </p>
