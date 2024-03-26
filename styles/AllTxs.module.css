@@ -1,0 +1,30 @@
+.alltxscontainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'Arial, sans-serif';
+}
+
+.project-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; /* Adjusts the alignment of items on the main axis */
+  gap: 20px; /* Space between cards */
+  padding: 20px;
+}
+
+.walletProjectCard {
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  justify-content: center; 
+  flex: 0 1 200px; 
+  padding: 10px; 
+  text-align: center; 
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+

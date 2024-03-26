@@ -3,8 +3,8 @@ import axios from "axios";
 function isValidKey(key) {
   if (typeof key !== 'string') return false;
   if (key.length > 40) return false;
-  // Start with a letter, $, or @, can contain letters, numbers, spaces, $, @, and .
-  return /^[$@A-Za-z][$@A-Za-z0-9 .]*$/.test(key);
+  // Start with a letter, $, @, or #, can contain letters, numbers, spaces, $, @, #, and .
+  return /^[$@#A-Za-z][$@#A-Za-z0-9 .]*$/.test(key);
 }
 
 function mapAssetData(assetDetails, assetList) {

@@ -10,6 +10,7 @@ import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
 import Signup from '../../../components/Signup';
 import Report from '../../../components/Report';
+import SnetDashboard from '../../../components/SnetDashboard';
 import Dashboard from '../../../components/Dashboard';
 import { getTokenTypes } from '../../../utils/getTokenTypes'
 
@@ -18,6 +19,7 @@ interface Project {
   project_name: string;
   project_type: string;
   wallet: string;
+  core_token: string;
 }
 
 const ProjectPage = () => {
@@ -31,7 +33,7 @@ const ProjectPage = () => {
   const [balance2, setBalance2] = useState<Array<any>>([]);
   const [selectedMonths, setSelectedMonths] = useState([]);
   const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
-  const [selectedTokens, setSelectedTokens] = useState([]);
+  const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
   const [selectedLabels, setSelectedLabels] = useState([]);
 
   useEffect(() => {
@@ -61,7 +63,7 @@ const ProjectPage = () => {
     const queryParams = new URLSearchParams(window.location.search);
     const months: any = queryParams.get('months')?.split(',') || ['All months'];
     const workgroups: any = queryParams.get('workgroups')?.split(',') || ['All workgroups'];
-    const tokens: any = queryParams.get('tokens')?.split(',') || ['AGIX'];
+    const tokens: any = queryParams.get('tokens')?.split(',') || (projectName === "Singularity Net Ambassador Wallet"?['AGIX']:selectedTokens);
     const labels: any = queryParams.get('labels')?.split(',') || ['All labels'];
   
     setSelectedMonths(months);
@@ -83,6 +85,9 @@ const ProjectPage = () => {
       const foundGroup = groupInfo?.find(group => group.group_name === groupName);
       const foundProject = foundGroup?.projects.find(project => project.project_name === projectName);
       setProjectData(foundProject || null);
+      //console.log("foundProject", foundProject?.core_token)
+      const coreToken: any = foundProject?.core_token ? foundProject?.core_token : selectedTokens
+      setSelectedTokens([coreToken]);
     };
 
     if (groupName && projectName) {
@@ -167,14 +172,30 @@ const ProjectPage = () => {
                         Dashboard
                       </button>
                     )}
+                    {projectName != "Singularity Net Ambassador Wallet" && (
+                      <button 
+                        onClick={() => handleTabChange('report')}
+                        className={activeTab === 'report' ? styles.active : styles.notactive}
+                      >
+                        Dashboard
+                      </button>
+                    )}
                     {!loading && activeTab === 'transactions' && (
                         <>
+                            <div>Table buttons</div>
+                            <button className={styles.notactive} onClick={scrollToTop}>Scroll to Top</button>
+                            <button className={styles.notactive} onClick={scrollToBottom}>Scroll to Bottom</button>
                             {myVariable?.balance && (
                             <>
                             <div className={styles.walletDetails}>
                             <div>Wallet Balance</div>
                              <table className={styles.tokenTable}>
-                               <tbody>
+                                <thead>
+                                  <tr>
+                                    <th colSpan={2}>Fungible Tokens</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
                                 {myVariable.balance
                                   .filter((token: any) => token.tokenType === 'fungible')
                                   .map((token: any) => {
@@ -183,20 +204,40 @@ const ProjectPage = () => {
                                     const amount = parseFloat(token.amount);
                                     return (
                                       <tr key={token.id}>
-                                        <td style={{ textAlign: 'left' }}>{name}</td>
-                                        <td style={{ textAlign: 'right' }}>{amount.toFixed(2)}</td>
+                                        <td style={{ textAlign: 'left', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</td>
+                                        <td style={{ textAlign: 'right', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{amount.toFixed(2)}</td>
                                       </tr>
                                     );
                                   })
                                 }
                               </tbody>
+                              {myVariable.balance.some((token: any) => token.tokenType === 'nft') && (
+                                <>
+                                  <thead>
+                                    <tr>
+                                      <th colSpan={2}>NFTs</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {myVariable.balance
+                                      .filter((token: any) => token.tokenType === 'nft')
+                                      .map((token: any) => {
+                                        const name = token.displayname || token.name;
+                                        const amount = token.amount;
+                                        return (
+                                          <tr key={token.id}>
+                                            <td style={{ textAlign: 'left', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</td>
+                                            <td style={{ textAlign: 'right', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{amount}</td>
+                                          </tr>
+                                        );
+                                      })}
+                                  </tbody>
+                                </>
+                              )}
                              </table>
                             </div>
                             </>
                             )}
-                            <div>Table buttons</div>
-                            <button className={styles.notactive} onClick={scrollToTop}>Scroll to Top</button>
-                            <button className={styles.notactive} onClick={scrollToBottom}>Scroll to Bottom</button>
                         </>
                     )}
                 </div>
@@ -212,7 +253,10 @@ const ProjectPage = () => {
                 ) : activeTab === 'signup' ? (
                     <Signup />
                 ) : activeTab === 'report' ? (
-                  <Dashboard query={router.query} />
+                  <>
+                    {projectName === "Singularity Net Ambassador Wallet" && (<SnetDashboard query={router.query} />)}
+                    {projectName != "Singularity Net Ambassador Wallet" && (<Dashboard query={router.query} />)}
+                  </>  
                 ) : (
                     <div>nothing selected</div> 
                 )

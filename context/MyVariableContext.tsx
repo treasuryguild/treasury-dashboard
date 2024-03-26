@@ -7,6 +7,7 @@ interface Project {
   project_type: string;
   wallet: string;
   budgets: any;
+  core_token: string;
 }
 
 interface Group {

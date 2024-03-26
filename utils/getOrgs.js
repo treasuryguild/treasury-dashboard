@@ -7,7 +7,7 @@ export async function getOrgs() {
       try {
         const { data, error, status } = await supabase
         .from("groups")
-        .select('group_name, logo_url, group_id, projects(project_name, project_type, project_id, wallet, archived, budgets)')
+        .select('group_name, logo_url, group_id, projects(project_name, project_type, project_id, wallet, archived, budgets, core_token)')
         
         if (error && status !== 406) throw error
         if (data) {

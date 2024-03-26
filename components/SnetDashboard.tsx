@@ -6,7 +6,7 @@ import { getReport } from '../utils/getReport';
 import { txDenormalizer } from '../utils/txDenormalizer';
 import { runningBalanceTableData } from '../utils/curatedDistributionData';
 import { extractDistributionData } from '../utils/extractDistributionData';
-import { processDashboardData } from '../utils/processDashboardData';
+import { processDashboardData } from '../utils/processSnetDashboardData';
 import { createCharts } from '../utils/createCharts';
 import ChartComponent1 from '../components/charts/ChartComponent1';
 import ChartComponent2 from '../components/charts/ChartComponent2';
@@ -20,7 +20,7 @@ import DataTable from '../components/DataTable';
 import DataTable2 from '../components/DataTable2';
 import SpecificWorkgroupComponent from'../components/SpecificWorkgroupComponent'
 
-interface DashboardProps {
+interface SnetDashboardProps {
   query: {
     month?: string;
     workgroup?: string;
@@ -58,7 +58,7 @@ interface ProcessedDataType {
   table3: any[];
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ query }) => {
+const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   const router = useRouter();
   const { groupName, projectName } = router.query;
   const [loading, setLoading] = useState(true);
@@ -67,6 +67,8 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
   const [uniqueTokens, setUniqueTokens] = useState<string[]>(['ADA']);
   const [uniqueLabels, setUniqueLabels] = useState<string[]>(['All labels']);
   const [workgroups, setWorkgroups] = useState<string[]>([]);
+  const [runningBalanceTab, setRunningBalanceTab] = useState<DistributionItem[]>([]);
+  const [testTable, setTestTable] = useState<DistributionItem[]>([]);
   const [selectedMonths, setSelectedMonths] = useState<string[]>(query.month ? query.month.split(',') : []);
   const [selectedWorkgroups, setSelectedWorkgroups] = useState<string[]>(query.workgroup ? query.workgroup.split(',') : []);
   const [selectedTokens, setSelectedTokens] = useState<string[]>(query.token ? query.token.split(',') : []);
@@ -87,6 +89,10 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
     workgroups: false,
     labels: false,
   });
+  const [currentQuarterBalance, setCurrentQuarterBalance] = useState(0);
+  const [previousQuarterBalance, setPreviousQuarterBalance] = useState(0);
+
+
 
   const handleHover = (box: string, status: boolean) => {
     setHoverStatus(prev => ({ ...prev, [box]: status }));
@@ -96,12 +102,29 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
       let report: any = await getReport(myVariable.transactions);
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
       let distData: any = extractDistributionData(distributionsArray);
-      setUniqueMonths(['All months', ...distData.months]);
+      // Sort the months in descending order
+      const sortedMonths = distData.months.sort((a: any, b: any) => {
+          const [monthA, yearA] = a.split('.').map(Number);
+          const [monthB, yearB] = b.split('.').map(Number);
+    
+          if (yearA !== yearB) {
+              return yearB - yearA; // Descending order of year
+          }
+          return monthB - monthA; // Descending order of month
+      });
+
+      setUniqueMonths(['All months', ...sortedMonths]);
       setWorkgroups(['All workgroups', ...distData.workgroups])
       setUniqueTokens(['All tokens', ...distData.tokens])
       setUniqueLabels(['All labels', ...distData.labels])
+      //let table: any = runningBalanceTableData(distributionsArray);
+      //setRunningBalanceTab(table);
+      //setTestTable(table);
       setMyVariable(prevState => ({ ...prevState, report }));
-      //console.log("report2", distributionsArray, myVariable, distData)
+      //console.log("report2", distributionsArray, myVariable, table, distData)
+      if (distributionsArray && distributionsArray.length > 0) {
+        calculateQuarterBalances(distributionsArray);
+      }
   }
 
   useEffect(() => {
@@ -133,7 +156,7 @@ useEffect(() => {
     if (projectName === "Singularity Net Ambassador Wallet") {
       setSelectedTokens(tokens.length > 0 ? tokens : ['AGIX']);
     } else {
-      setSelectedTokens(tokens.length > 0 ? tokens : [myVariable.projectInfo.core_token]);
+      setSelectedTokens(tokens.length > 0 ? tokens : ['All tokens']);
     }
     setSelectedLabels(labels.length > 0 ? labels : ['All labels']);
 
@@ -190,9 +213,67 @@ const handleLabelChange = (labels: any) => {
 
 const processData = async () => {
   const distArr = await txDenormalizer(myVariable.transactions)
-  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr, myVariable.projectInfo.core_token);
+  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr, myVariable.projectInfo.budgets);
   setProcessedData(data);
   //console.log("processedData", processedData)
+};
+
+const getQuarters = () => {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+  let currentQuarter, previousQuarter, previousYear;
+
+  if (currentMonth <= 3) {
+      currentQuarter = ['01', '02', '03'];
+      previousQuarter = ['10', '11', '12'];
+      previousYear = currentYear - 1;
+  } else if (currentMonth <= 6) {
+      currentQuarter = ['04', '05', '06'];
+      previousQuarter = ['01', '02', '03'];
+      previousYear = currentYear;
+  } else if (currentMonth <= 9) {
+      currentQuarter = ['07', '08', '09'];
+      previousQuarter = ['04', '05', '06'];
+      previousYear = currentYear;
+  } else {
+      currentQuarter = ['10', '11', '12'];
+      previousQuarter = ['07', '08', '09'];
+      previousYear = currentYear;
+  }
+
+  return { currentQuarter, currentYear, previousQuarter, previousYear };
+};
+
+const calculateQuarterBalances = (distributionsArray: any) => {
+  const { currentQuarter, currentYear, previousQuarter, previousYear } = getQuarters();
+
+  const calculateBalance = (quarter: any, year: any) => {
+    // Aggregate the budget for the quarter
+    const quarterBudget = quarter.reduce((total: any, month: any) => {
+        const budgetKey = `${month.padStart(2, '0')}.${year}`;
+        const monthlyBudget = myVariable.projectInfo.budgets[budgetKey] || 0;
+        return total + monthlyBudget;
+    }, 0);
+
+    // Calculate the balance
+    return quarterBudget - distributionsArray
+        .filter((distribution: any) => {
+            if (distribution.tx_type !== 'Outgoing') return false;
+            const [day, month, yearShort] = distribution.task_date.split('.');
+            const fullYear = `20${yearShort}`; // Assuming the year is in 'YY format and needs conversion to 'YYYY'
+            return quarter.includes(month) && fullYear === year.toString();
+        })
+        .reduce((acc: any, curr: any) => {
+            const agixIndex = curr.tokens.findIndex((token: any) => token === 'AGIX');
+            const agixAmount = agixIndex !== -1 ? curr.amounts[agixIndex] : 0;
+            return acc + agixAmount;
+        }, 0);
+    };
+
+
+  setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear));
+  setPreviousQuarterBalance(calculateBalance(previousQuarter,previousYear));
 };
 
 // Call processData when selected values change
@@ -272,6 +353,14 @@ useEffect(() => {
         }
         </div>
       </div>
+      <div className={styles['flex-row']}>
+        <div className={styles['flex-row-half']}>
+          <span className={styles['selection-label']}>AGIX Balance of current Quarter: {currentQuarterBalance}</span>
+        </div>
+        <div className={styles['flex-row-half']}>
+          <span className={styles['selection-label']}>AGIX Balance of previous Quarter: {previousQuarterBalance}</span>
+        </div>
+      </div>
       <div className={styles['components-conatiner']}> 
         <div className={styles['flex-column']}>
           <div className={styles['chartX']}>
@@ -306,4 +395,4 @@ useEffect(() => {
   );
 };
 
-export default Dashboard;
+export default SnetDashboard;

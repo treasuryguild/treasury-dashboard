@@ -1,5 +1,5 @@
-export function processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distributionsArray, core_token) {
-    //console.log(distributionsArray, core_token);
+export function processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distributionsArray, budgets) {
+
     const filteredDistributions = distributionsArray.filter(distribution => {
         // Convert task_date to "MM.YYYY" format with a four-digit year
         const [day, month, year] = distribution.task_date.split('.');
@@ -257,7 +257,6 @@ function getAdjustedMonth(taskDate) {
 }
 
 function createTable1Data(filteredDistributions) {
-    const coreToken = core_token.toLowerCase();
     // Get the incoming amounts for all months
     const allIncomingAmounts = aggregateMonthlyIncomingTokens(distributionsArray);
 
@@ -281,61 +280,48 @@ function createTable1Data(filteredDistributions) {
         if (!monthlyData[formattedTaskDate]) {
             monthlyData[formattedTaskDate] = {
                 month: formattedTaskDate,
-                [coreToken]: 0,
-                monthlyBudget: 0,
+                agix: 0,
+                monthlyBudget: budgets[formattedTaskDate] || 0, // Use budgets for monthly budget amounts
                 mbBalance: 0,
                 incomingReserve: 0
             };
         }
 
         // Aggregate data based on tx_type
-        if (distribution.tx_type === "Outgoing" && distribution.tokens.includes(core_token)) {
-            monthlyData[formattedTaskDate][coreToken] += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf(core_token)]).toFixed(0));
-        } else if (distribution.tx_type === "Incoming" && distribution.tokens.includes(core_token) && selectedMonths.includes('All months')) {
-            monthlyData[formattedTaskDate].monthlyBudget += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf(core_token)]).toFixed(0));
-        } else if (distribution.tx_type === "Incoming Reserve" && distribution.tokens.includes(core_token)) {
-            monthlyData[formattedTaskDate].incomingReserve += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf(core_token)]).toFixed(0));
+        if (distribution.tx_type === "Outgoing" && distribution.tokens.includes('AGIX')) {
+            monthlyData[formattedTaskDate].agix += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
+        } else if (distribution.tx_type === "Incoming Reserve" && distribution.tokens.includes('AGIX')) {
+            monthlyData[formattedTaskDate].incomingReserve += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
         }
     });
 
-    if (!selectedMonths.includes('All months')) {
-        selectedMonths.forEach(month => {
-            if (incomingTotalsByMonth[month] && incomingTotalsByMonth[month][core_token]) {
-                if (!monthlyData[month]) {
-                    monthlyData[month] = {
-                        month: month,
-                        [coreToken]: 0,
-                        monthlyBudget: Number(parseFloat(incomingTotalsByMonth[month][core_token]).toFixed(0)),
-                        mbBalance: 0,
-                        incomingReserve: 0
-                    };
-                } else {
-                    monthlyData[month].monthlyBudget += Number(parseFloat(incomingTotalsByMonth[month][core_token]).toFixed(0));
-                }
-            }
-        });
-    }
-
     // Calculate MB Balance for each month
     for (const month in monthlyData) {
-        monthlyData[month].mbBalance = monthlyData[month].monthlyBudget - monthlyData[month][coreToken];
+        monthlyData[month].mbBalance = monthlyData[month].monthlyBudget - monthlyData[month].agix;
     }
 
     let sortedData = Object.values(monthlyData).sort((a, b) => {
-        return b.month.localeCompare(a.month);
+        const [monthA, yearA] = a.month.split('.').map(Number);
+        const [monthB, yearB] = b.month.split('.').map(Number);
+
+        // First compare by year, then by month
+        if (yearA !== yearB) {
+            return yearB - yearA; // Descending order of year
+        }
+        return monthB - monthA; // Descending order of month
     });
 
     // Calculate totals
     let totals = {
         month: "Totals",
-        [coreToken]: 0,
+        agix: 0,
         monthlyBudget: 0,
         mbBalance: 0,
         incomingReserve: 0
     };
 
     sortedData.forEach(row => {
-        totals[coreToken] += row[coreToken];
+        totals.agix += row.agix;
         totals.monthlyBudget += row.monthlyBudget;
         totals.mbBalance += row.mbBalance;
         totals.incomingReserve += row.incomingReserve;
@@ -346,15 +332,16 @@ function createTable1Data(filteredDistributions) {
 
     let balanceRow = {
         month: "Balance",
-        [coreToken]: '',
-        monthlyBudget: '',
-        mbBalance: totals.monthlyBudget - totals[coreToken] + totals.incomingReserve,
-        incomingReserve: ''
+        agix: '', 
+        monthlyBudget: '', 
+        mbBalance: totals.monthlyBudget - totals.agix + totals.incomingReserve,
+        incomingReserve: '' 
     };
     sortedData.push(balanceRow);
 
     return sortedData;
 }
+
 
     function createTable2Data(filteredDistributions) {
         let taskData = {};

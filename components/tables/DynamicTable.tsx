@@ -3,6 +3,9 @@ import styles from '../../styles/Report.module.css';
 
 // Utility function to transform camelCase to Capitalized Words
 const formatCamelCase = (str: string): string => {
+  if (str !== "month" && str !== "monthlyBudget" && str !== "mbBalance" && str !== "incomingReserve") {
+    str = `Outgoing ${str}`
+  }
   const result = str.replace(/([a-z])([A-Z])/g, '$1 $2');
   return result
     .split(' ')
