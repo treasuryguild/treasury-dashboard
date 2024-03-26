@@ -1,16 +1,16 @@
 import Image from 'next/image';
+import styles from '../styles/AllTxs.module.css'
 
-const WalletProjectCard = ({ project, onSelectProject }: any) => {
-  const { project_name, logo_url } = project;
-
+const WalletProjectCard = ({ project, logoUrl, onSelectProject }: any) => {
+  const { project_name } = project;
   return (
     <div
-      className="project-card"
+      className={styles.walletProjectCard}
       onClick={() => onSelectProject(project)}
       style={{ cursor: 'pointer' }}
     >
       <Image
-        src={logo_url}
+        src={logoUrl}
         alt={project_name}
         width={100}
         height={100}

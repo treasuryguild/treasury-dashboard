@@ -9,7 +9,7 @@ import { getWalletTxs } from '../../utils/getWalletTxs';
 import { getTransactions } from '../../utils/getTransactions';
 import { txDenormalizer } from '../../utils/txDenormalizer';
 import WalletProjectCard from '../../components/WalletProjectCard';
-import styles from '../../styles/Tx.module.css';
+import styles from '../../styles/AllTxs.module.css';
 
 interface Project {
   project_id: string;
@@ -65,7 +65,13 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
             if (distributionObj) {
               const { tokens, amounts, ...otherDistributionFields } = distributionObj;
               const tokenAmounts = tokens.reduce((acc: any, token: any, index: any) => {
-                acc[token] = amounts[index];
+                // Check if the token is 'gimbal' and change it to 'GMBL'
+                const adjustedToken = token.toLowerCase() === 'gimbal' ? 'GMBL' : token.toUpperCase();
+                
+                // Round the amount to 2 decimal places before adding it to the accumulator
+                const roundedAmount = Number(Number(amounts[index]).toFixed(2));
+                
+                acc[adjustedToken] = roundedAmount;
                 return acc;
               }, {});
 
@@ -115,8 +121,24 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
     console.log("Wallet connected");
   }, [connected]);
 
+  const getExcludedKeys = () => [
+    'contribution_id',
+    'task_date',
+    'task_name',
+    'task_description',
+    'wallet',
+    'project_id',
+    'task_array_map',
+    'created_at',
+    'task_creator',
+    'task_label',
+    'task_type',
+    'tx_id',
+    'contributor_id'
+  ];
+
   return (
-    <div className={styles.container}>
+    <div className={styles.alltxscontainer}>
       {!connected && (
         <>
           <div>Please connect wallet</div>
@@ -125,7 +147,7 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
       {connected && (
         <>
           <div>Connected</div>
-          <div className="project-cards">
+          <div className={styles['project-cards']}>
             {
               groupInfo.flatMap((group: any) =>
                 group.projects.filter((project: any) => flattenedTransactions[project.project_id])
@@ -140,40 +162,72 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
               )
             }
           </div>
-          {selectedProject && (
-            <div className="project-contributions">
-              <h2>{selectedProject?.project_name}</h2>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Task Date</th>
-                    <th>Task Name/Description</th>
-                    {/* Dynamically render token headers */}
-                    {selectedProject && flattenedTransactions[selectedProject?.project_id] &&
-                      Object.keys(flattenedTransactions[selectedProject?.project_id][0])
-                        .filter(key => key !== 'contribution_id' && key !== 'task_date' && key !== 'task_name' && key !== 'task_description' && key !== 'wallet' && key !== 'project_id')
-                        .map(key => <th key={key}>{key}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {flattenedTransactions[selectedProject.project_id]?.map(
-                    (contribution: any) => (
-                      <tr key={contribution.contribution_id}>
-                        <td>{contribution.task_date || '-'}</td>
-                        <td>
-                          {contribution.task_name || contribution.task_description || '-'}
-                        </td>
-                        {/* Dynamically render token amounts */}
-                        {Object.keys(contribution)
-                          .filter(key => key !== 'contribution_id' && key !== 'task_date' && key !== 'task_name' && key !== 'task_description' && key !== 'wallet' && key !== 'project_id' && key !== 'task_array_map')
-                          .map(key => <td key={`${contribution.contribution_id}-${key}`}>{contribution[key] || '-'}</td>)}
-                      </tr>
-                    )
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
+          {
+            selectedProject && (
+              <div className="project-contributions">
+                <h2>{selectedProject?.project_name}</h2>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Task Date</th>
+                      <th>Task Name/Description</th>
+                      {flattenedTransactions[selectedProject?.project_id] && (
+                        <>
+                          {/* Create a set to store unique token keys */}
+                          {Array.from(
+                            new Set(
+                              flattenedTransactions[selectedProject?.project_id]
+                                .flatMap(Object.keys)
+                                .filter((key: any) => !getExcludedKeys().includes(key))
+                            )
+                          )
+                            .sort() // Sort the keys alphabetically
+                            .map((key: any) => (
+                              <th key={key}>{key}</th>
+                            ))}
+                        </>
+                      )}
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {
+                    flattenedTransactions[selectedProject.project_id]
+                      ?.sort((a: any, b: any) => {
+                        const dateA = a.task_date
+                          ? new Date(`20${a.task_date.slice(-2)}, ${a.task_date.slice(3, 5)}, ${a.task_date.slice(0, 2)}`)
+                          : new Date(0); // Set a minimum date for contributions without task_date
+                        const dateB = b.task_date
+                          ? new Date(`20${b.task_date.slice(-2)}, ${b.task_date.slice(3, 5)}, ${b.task_date.slice(0, 2)}`)
+                          : new Date(0); // Set a minimum date for contributions without task_date
+                        return dateB.getTime() - dateA.getTime(); // Sort in descending order (newest to oldest)
+                      })
+                      .map((contribution: any) => (
+                        <tr key={contribution.contribution_id}>
+                          <td>{contribution.task_date || '-'}</td>
+                          <td>
+                            {contribution.task_name || contribution.task_description || '-'}
+                          </td>
+                          {Array.from(
+                            new Set(
+                              flattenedTransactions[selectedProject?.project_id]
+                                .flatMap(Object.keys)
+                                .filter((key: any) => !getExcludedKeys().includes(key))
+                            )
+                          )
+                            .sort() // Sort the keys alphabetically
+                            .map((key: any) => (
+                              <td key={`${contribution.contribution_id}-${key}`}>
+                                {contribution[key] !== undefined ? contribution[key] : 0}
+                              </td>
+                            ))}
+                        </tr>
+                      )
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )
+          }
         </>
       )}
     </div>
@@ -184,7 +238,6 @@ export default AllTxs;
 
 export async function getServerSideProps() {
   const groupInfo = await getOrgs();
-
   const sortedGroupInfo = groupInfo.sort((a: any, b: any) => {
     return a.group_name.localeCompare(b.group_name);
   });
