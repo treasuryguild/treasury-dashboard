@@ -10,21 +10,38 @@
 .project-cards {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center; /* Adjusts the alignment of items on the main axis */
-  gap: 20px; /* Space between cards */
+  justify-content: center;
+  gap: 20px;
   padding: 20px;
 }
 
 .walletProjectCard {
-  display: flex; 
-  flex-direction: column; 
-  align-items: center; 
-  justify-content: center; 
-  flex: 0 1 200px; 
-  padding: 10px; 
-  text-align: center; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 0 1 200px;
+  padding: 10px;
+  text-align: center;
   border: 1px solid #ccc;
   border-radius: 5px;
 }
 
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
 
+.th, .td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.th:nth-child(n+5), .td:nth-child(n+5) {
+  text-align: center;
+}
+
+.td:nth-child(n+5) {
+  text-align: right;
+}
