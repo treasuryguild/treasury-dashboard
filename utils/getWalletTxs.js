@@ -29,19 +29,32 @@ export async function getWalletTxs(wallets) {
     }
   };
 
+  // Helper function to format date in "dd.mm.yy" format
+  function formatDate(timestamp) {
+    if (!timestamp || isNaN(timestamp)) return null;
+    const date = new Date(parseInt(timestamp, 10));
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear()).slice(-2);
+    return `${day}.${month}.${year}`;
+  }
+
   const fetchContributions = async (distributions) => {
     try {
       const contributionIds = new Set(distributions.map(distribution => distribution.contribution_id));
-      const contributionIdChunks = chunkArray([...contributionIds], 200); // Split into chunks of 1000 ids
+      const contributionIdChunks = chunkArray([...contributionIds], 200); // Split into chunks of 200 ids
       const fetchPromises = contributionIdChunks.map(async (chunk) => {
         const { data, error, status } = await supabase
           .from('contributions')
-          .select('*')
+          .select('*, transactions(transaction_date)')
           .in('contribution_id', chunk);
         if (error && status !== 406) throw error;
-        return data;
+        return data.map(contribution => ({
+          tx_date: formatDate(contribution.transactions?.transaction_date),
+          ...contribution,
+          transactions: undefined,
+        }));
       });
-    
       const results = await Promise.all(fetchPromises);
       return results.flat();
     } catch (error) {

@@ -38,6 +38,7 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
   const [projectOptions, setProjectOptions] = useState<Project[]>([]);
   const [selectedProject, setSelectedProject] = useState<any>({});
   const [flattenedTransactions, setFlattenedTransactions] = useState<any>({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSelectProject = (project: any) => {
     setSelectedProject(project);
@@ -45,6 +46,7 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
 
   async function getWallets() {
     if (connected) {
+      setIsLoading(true); 
       const usedAddresses = await wallet.getUsedAddresses();
       const matchingWallet = await getContributorWallets(usedAddresses);
       if (matchingWallet) {
@@ -100,6 +102,7 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
         console.log('No matching wallet found');
       }
       setWallets(usedAddresses);
+      setIsLoading(false);
     }
   }
 
@@ -124,6 +127,7 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
   const getExcludedKeys = () => [
     'contribution_id',
     'task_date',
+    'tx_date',
     'task_name',
     'task_description',
     'wallet',
@@ -134,7 +138,10 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
     'task_label',
     'task_type',
     'tx_id',
-    'contributor_id'
+    'contributor_id',
+    'transactions',
+    'task_sub_group',
+    'SNET TEST TOKEN'
   ];
 
   return (
@@ -162,72 +169,76 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
               )
             }
           </div>
-          {
+          {isLoading ? (
+            <div>Loading transactions...</div>
+            ) : (
             selectedProject && (
-              <div className="project-contributions">
-                <h2>{selectedProject?.project_name}</h2>
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Task Date</th>
-                      <th>Task Name/Description</th>
-                      {flattenedTransactions[selectedProject?.project_id] && (
-                        <>
-                          {/* Create a set to store unique token keys */}
-                          {Array.from(
-                            new Set(
-                              flattenedTransactions[selectedProject?.project_id]
-                                .flatMap(Object.keys)
-                                .filter((key: any) => !getExcludedKeys().includes(key))
-                            )
+            <div className="project-contributions">
+              <h2>{selectedProject?.project_name}</h2>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th className={styles.th}>Tx Date</th>
+                    <th className={styles.th}>Task Date</th>
+                    <th className={styles.th}>Task Name/Description</th>
+                    <th className={styles.th}>Workgroup</th>
+                    {flattenedTransactions[selectedProject?.project_id] && (
+                      <>
+                        {Array.from(
+                          new Set(
+                            flattenedTransactions[selectedProject?.project_id]
+                              .flatMap(Object.keys)
+                              .filter((key: any) => !getExcludedKeys().includes(key))
                           )
-                            .sort() // Sort the keys alphabetically
-                            .map((key: any) => (
-                              <th key={key}>{key}</th>
-                            ))}
-                        </>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                  {
-                    flattenedTransactions[selectedProject.project_id]
-                      ?.sort((a: any, b: any) => {
-                        const dateA = a.task_date
-                          ? new Date(`20${a.task_date.slice(-2)}, ${a.task_date.slice(3, 5)}, ${a.task_date.slice(0, 2)}`)
-                          : new Date(0); // Set a minimum date for contributions without task_date
-                        const dateB = b.task_date
-                          ? new Date(`20${b.task_date.slice(-2)}, ${b.task_date.slice(3, 5)}, ${b.task_date.slice(0, 2)}`)
-                          : new Date(0); // Set a minimum date for contributions without task_date
-                        return dateB.getTime() - dateA.getTime(); // Sort in descending order (newest to oldest)
-                      })
-                      .map((contribution: any) => (
-                        <tr key={contribution.contribution_id}>
-                          <td>{contribution.task_date || '-'}</td>
-                          <td>
-                            {contribution.task_name || contribution.task_description || '-'}
-                          </td>
-                          {Array.from(
-                            new Set(
-                              flattenedTransactions[selectedProject?.project_id]
-                                .flatMap(Object.keys)
-                                .filter((key: any) => !getExcludedKeys().includes(key))
-                            )
-                          )
-                            .sort() // Sort the keys alphabetically
-                            .map((key: any) => (
-                              <td key={`${contribution.contribution_id}-${key}`}>
-                                {contribution[key] !== undefined ? contribution[key] : 0}
-                              </td>
-                            ))}
-                        </tr>
-                      )
+                        )
+                          .sort((a: any, b: any) => {
+                            if (a === 'tx_date') return -1;
+                            if (b === 'tx_date') return 1;
+                            return a.localeCompare(b);
+                          })
+                          .map((key: any) => (
+                            <th className={styles.th} key={key}>{key}</th>
+                          ))}
+                      </>
                     )}
-                  </tbody>
-                </table>
-              </div>
-            )
-          }
+                  </tr>
+                </thead>
+                <tbody>
+                  {flattenedTransactions[selectedProject.project_id]
+                    ?.sort((a: any, b: any) => {
+                      const dateA = a.tx_date
+                        ? new Date(`20${a.tx_date.slice(-2)}, ${a.tx_date.slice(3, 5)}, ${a.tx_date.slice(0, 2)}`)
+                        : new Date(0);
+                      const dateB = b.tx_date
+                        ? new Date(`20${b.tx_date.slice(-2)}, ${b.tx_date.slice(3, 5)}, ${b.tx_date.slice(0, 2)}`)
+                        : new Date(0);
+                      return dateB.getTime() - dateA.getTime();
+                    })
+                    .map((contribution: any) => (
+                      <tr key={contribution.contribution_id}>
+                        <td className={styles.td}>{contribution.tx_date || '-'}</td>
+                        <td className={styles.td}>{contribution.task_date || '-'}</td>
+                        <td className={styles.td}>{contribution.task_name || contribution.task_description || '-'}</td>
+                        <td className={styles.td}>{contribution.task_sub_group || '-'}</td>
+                        {Array.from(
+                          new Set(
+                            flattenedTransactions[selectedProject?.project_id]
+                              .flatMap(Object.keys)
+                              .filter((key: any) => !getExcludedKeys().includes(key))
+                          )
+                        )
+                          .sort()
+                          .map((key: any) => (
+                            <td className={styles.td} key={`${contribution.contribution_id}-${key}`}>
+                              {contribution[key] !== undefined ? contribution[key] : 0}
+                            </td>
+                          ))}
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          ))}
         </>
       )}
     </div>
