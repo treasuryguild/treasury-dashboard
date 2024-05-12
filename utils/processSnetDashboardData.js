@@ -401,7 +401,7 @@ function createTable1Data(filteredDistributions) {
     }
     
     function createTable3Data(filteredDistributions, selectedWorkgroups) {
-        if (selectedWorkgroups.length <= 1 && !selectedWorkgroups.includes('All workgroups')) {
+        if (selectedWorkgroups.length <= 0 && !selectedWorkgroups.includes('All workgroups')) {
             return []; // Return an empty array if the condition is not met
         }
     
@@ -458,6 +458,6 @@ function createTable1Data(filteredDistributions) {
         table3: createTable3Data(filteredDistributions, selectedWorkgroups),
         filteredDistributions: filteredDistributions
     };
-    //console.log(output)
+    //console.log("output", output)
     return output;
 }
