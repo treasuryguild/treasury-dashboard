@@ -16,6 +16,7 @@ import ChartComponentY from '../components/charts/ChartComponentY';
 import ChartComponentZ from '../components/charts/ChartComponentZ';
 import ChartComponentC from '../components/charts/ChartComponentC';
 import DynamicTable from './tables/DynamicTable'
+import WorkgroupBalances from '../components/WorkgroupBalances';
 import DataTable from '../components/DataTable';
 import DataTable2 from '../components/DataTable2';
 import SpecificWorkgroupComponent from'../components/SpecificWorkgroupComponent'
@@ -67,6 +68,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   const [uniqueTokens, setUniqueTokens] = useState<string[]>(['ADA']);
   const [uniqueLabels, setUniqueLabels] = useState<string[]>(['All labels']);
   const [workgroups, setWorkgroups] = useState<string[]>([]);
+  const [workgroupsBudgets, setWorkgroupsBudgets] = useState<string[]>([]);
   const [runningBalanceTab, setRunningBalanceTab] = useState<DistributionItem[]>([]);
   const [testTable, setTestTable] = useState<DistributionItem[]>([]);
   const [selectedMonths, setSelectedMonths] = useState<string[]>(query.month ? query.month.split(',') : []);
@@ -98,6 +100,40 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     setHoverStatus(prev => ({ ...prev, [box]: status }));
   };
 
+  async function postWorkgroupsToSubgroups(workgroups: string[], projectId: string) {
+    const response = await fetch('/api/setSubgroups', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        inputSubGroups: workgroups,
+        project_id: projectId,
+      }),
+    });
+  
+    if (!response.ok) {
+      throw new Error('Failed to post workgroups to subgroups table');
+    }
+  }
+
+  async function getWorkgroups( projectId: string) {
+    const response = await fetch('/api/getSubgroups', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        project_id: projectId,
+      }),
+    });
+  
+    if (!response.ok) {
+      throw new Error('Failed to post workgroups to subgroups table');
+    }
+    return response.json();
+  }
+
   async function generateReport() {
       let report: any = await getReport(myVariable.transactions);
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
@@ -121,9 +157,19 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
       //setRunningBalanceTab(table);
       //setTestTable(table);
       setMyVariable(prevState => ({ ...prevState, report }));
-      //console.log("report2", distributionsArray, myVariable, table, distData)
+      //console.log("report2", distributionsArray, myVariable, distData)
       if (distributionsArray && distributionsArray.length > 0) {
         calculateQuarterBalances(distributionsArray);
+      }
+
+      // Post workgroups to subgroups table
+      try {
+        await postWorkgroupsToSubgroups(distData.workgroups, myVariable.projectInfo.project_id);
+        const subgroups = await getWorkgroups(myVariable.projectInfo.project_id);
+        setWorkgroupsBudgets(subgroups);
+        //console.log('Workgroups:', subgroups);
+      } catch (error) {
+        console.error('Error posting workgroups to subgroups table:', error);
       }
   }
 
@@ -280,7 +326,7 @@ const calculateQuarterBalances = (distributionsArray: any) => {
 useEffect(() => {
   if (myVariable.transactions) {processData();}
 }, [selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels]);
-
+  //console.log("myVariable", myVariable)
   return (
     <div className={styles['flex-column']}>
       <div className={styles['flex-row']}>
@@ -380,11 +426,23 @@ useEffect(() => {
           </div>
         </div>
         <div className={styles['flex-column']}>
+          <div className={styles['flex-row']}>
+            {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets && 
+            !(selectedWorkgroups.includes('All workgroups') && selectedMonths.includes('All months')) 
+            && (
+              <WorkgroupBalances
+                data={processedData.table3}
+                months={selectedMonths}
+                workgroupsBudgets={workgroupsBudgets}
+                selectedWorkgroups={selectedWorkgroups}
+              />
+            )}
+          </div>
           <div className={styles['tables']}>
             {selectedLabels.includes('All labels') && selectedWorkgroups.includes('All workgroups') && processedData.table1 && (<DynamicTable data={processedData.table1} />)}
           </div>
           <div className={styles['tables']}>
-            {(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && processedData.table3 && (<DynamicTable data={processedData.table3} />)}
+            {(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (selectedTokens.length > 1) && processedData.table3 && (<DynamicTable data={processedData.table3} />)}
           </div>
           <div className={styles['tables']}>
             {processedData.table2 && !(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (<DynamicTable data={processedData.table2} />)}
