@@ -40,7 +40,7 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
     const workgroup = workgroupsBudgets.workgroups.find(
       (wg: any) => wg.sub_group === workgroupName
     );
-    if (workgroup) {
+    if (workgroup && workgroup.budgets) {
       const budgetKeys = Object.keys(workgroup.budgets);
       const latestBudgetKey = budgetKeys[budgetKeys.length - 1];
       const latestBudget = workgroup.budgets[latestBudgetKey];
