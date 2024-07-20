@@ -1,50 +1,56 @@
 import React from 'react';
 import styles from '../styles/Report.module.css';
 
-// Utility function to transform camelCase to Capitalized Words
-const formatCamelCase = (str: string): string => {
-  const result = str.replace(/([a-z])([A-Z])/g, '$1 $2');
-  return result
-    .split(' ')
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-};
-
 interface WorkgroupBalancesProps {
   data: Record<string, any>[];
   months: string[];
-  workgroupsBudgets: any;
+  workgroupsBudgets: any[];
   selectedWorkgroups: string[];
 }
 
 const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, workgroupsBudgets, selectedWorkgroups }) => {
-  const getQuartersFromMonths = (months: string[]) => {
+  const getQuartersAndYearsFromMonths = (months: string[]) => {
     if (months.includes('All months')) {
-      return ['Q1', 'Q2', 'Q3', 'Q4'];
+      return { quarters: ['Q1', 'Q2', 'Q3', 'Q4'], years: ['2023', '2024'] };
     }
     const quarters: string[] = [];
+    const years: string[] = [];
     months.forEach((month) => {
-      const monthNumber = parseInt(month.split('.')[0], 10);
-      const quarter = `Q${Math.ceil(monthNumber / 3)}`;
+      const [monthNum, year] = month.split('.');
+      const quarterNum = Math.ceil(parseInt(monthNum) / 3);
+      const quarter = `Q${quarterNum}`;
       if (!quarters.includes(quarter)) {
         quarters.push(quarter);
       }
+      if (!years.includes(year)) {
+        years.push(year);
+      }
     });
-    return quarters;
+    return { quarters, years };
   };
 
-  const getBudgetForWorkgroup = (workgroupName: string, quarters: string[]) => {
-    if (!workgroupsBudgets || !workgroupsBudgets.workgroups) {
-      return 0;
+  const getBudgetForWorkgroup = (workgroupName: string, quarters: string[], years: string[]) => {
+    const workgroup = workgroupsBudgets.find((wg) => wg.sub_group === workgroupName);
+    if (workgroup && workgroup.sub_group_data) {
+      return years.reduce((yearTotal, year) => {
+        return yearTotal + quarters.reduce((quarterTotal, quarter) => {
+          const quarterData = workgroup.sub_group_data.budgets[year]?.[quarter];
+          return quarterTotal + (quarterData?.final.AGIX || 0);
+        }, 0);
+      }, 0);
     }
-    const workgroup = workgroupsBudgets.workgroups.find(
-      (wg: any) => wg.sub_group === workgroupName
-    );
-    if (workgroup && workgroup.budgets) {
-      const budgetKeys = Object.keys(workgroup.budgets);
-      const latestBudgetKey = budgetKeys[budgetKeys.length - 1];
-      const latestBudget = workgroup.budgets[latestBudgetKey];
-      return quarters.reduce((total, quarter) => total + (latestBudget[quarter]?.AGIX || 0), 0);
+    return 0;
+  };
+
+  const getReallocationForWorkgroup = (workgroupName: string, quarters: string[], years: string[], type: 'incoming' | 'outgoing') => {
+    const workgroup = workgroupsBudgets.find((wg) => wg.sub_group === workgroupName);
+    if (workgroup && workgroup.sub_group_data) {
+      return years.reduce((yearTotal, year) => {
+        return yearTotal + quarters.reduce((quarterTotal, quarter) => {
+          const quarterData = workgroup.sub_group_data.budgets[year]?.[quarter];
+          return quarterTotal + (quarterData?.reallocations[type].AGIX || 0);
+        }, 0);
+      }, 0);
     }
     return 0;
   };
@@ -54,22 +60,20 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
     return workgroupData ? workgroupData.AGIX : 0;
   };
 
-  const quarters = getQuartersFromMonths(months);
+  const { quarters, years } = getQuartersAndYearsFromMonths(months);
 
-  // Determine the workgroups to render based on selectedWorkgroups
   let workgroupsToRender: string[] = [];
-  if (workgroupsBudgets && workgroupsBudgets.workgroups) {
+  if (workgroupsBudgets) {
     workgroupsToRender = selectedWorkgroups.includes('All workgroups')
-      ? workgroupsBudgets.workgroups.map((wg: any) => wg.sub_group)
+      ? workgroupsBudgets.map((wg: any) => wg.sub_group)
       : selectedWorkgroups;
   }
 
-  // Calculate totals
-  const totalBudget = workgroupsToRender.reduce((sum: any, workgroupName: any) => sum + getBudgetForWorkgroup(workgroupName, quarters), 0);
-  const totalSpent = workgroupsToRender.reduce((sum: any, workgroupName: any) => sum + getSpentForWorkgroup(workgroupName), 0);
-  const totalRemaining = totalBudget - totalSpent;
-
-  //console.log("data, months, workgroupsBudgets, selectedWorkgroups", data, months, workgroupsBudgets, selectedWorkgroups);
+  const totalBudget = workgroupsToRender.reduce((sum, workgroupName) => sum + getBudgetForWorkgroup(workgroupName, quarters, years), 0);
+  const totalSpent = workgroupsToRender.reduce((sum, workgroupName) => sum + getSpentForWorkgroup(workgroupName), 0);
+  const totalIncomingReallocation = workgroupsToRender.reduce((sum, workgroupName) => sum + getReallocationForWorkgroup(workgroupName, quarters, years, 'incoming'), 0);
+  const totalOutgoingReallocation = workgroupsToRender.reduce((sum, workgroupName) => sum + getReallocationForWorkgroup(workgroupName, quarters, years, 'outgoing'), 0);
+  const totalRemaining = totalBudget - totalSpent + totalIncomingReallocation - totalOutgoingReallocation;
 
   return (
     <div className={styles.numbers}>
@@ -77,31 +81,39 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
         <thead>
           <tr>
             <th>Workgroup</th>
-            {!months.includes('All months') && <th>Budget ({quarters.join(', ')})</th>}
+            <th>Budget {months.includes('All months') ? '(All Quarters)' : `(${quarters.join(', ')} ${years.join(', ')})`}</th>
             <th>Spent</th>
-            {!months.includes('All months') && <th>Remaining</th>}
+            <th>Incoming Reallocation</th>
+            <th>Outgoing Reallocation</th>
+            <th>Remaining</th>
           </tr>
         </thead>
         <tbody>
-          {workgroupsToRender.map((workgroupName: any, rowIndex: any) => {
-            const budget = getBudgetForWorkgroup(workgroupName, quarters);
-            const spent = getSpentForWorkgroup(workgroupName);
-            const remaining = budget - spent;
+          {workgroupsToRender.map((workgroupName, rowIndex) => {
+            const budget = Math.round(getBudgetForWorkgroup(workgroupName, quarters, years));
+            const spent = Math.round(getSpentForWorkgroup(workgroupName));
+            const incomingReallocation = Math.round(getReallocationForWorkgroup(workgroupName, quarters, years, 'incoming'));
+            const outgoingReallocation = Math.round(getReallocationForWorkgroup(workgroupName, quarters, years, 'outgoing'));
+            const remaining = budget - spent + incomingReallocation - outgoingReallocation;
 
             return (
               <tr key={rowIndex}>
                 <td>{workgroupName}</td>
-                {!months.includes('All months') && <td>{budget}</td>}
+                <td>{budget}</td>
                 <td>{spent}</td>
-                {!months.includes('All months') && <td>{remaining}</td>}
+                <td>{incomingReallocation}</td>
+                <td>{outgoingReallocation}</td>
+                <td>{remaining}</td>
               </tr>
             );
           })}
           <tr>
             <td>Totals</td>
-            {!months.includes('All months') && <td>{totalBudget}</td>}
-            <td>{totalSpent}</td>
-            {!months.includes('All months') && <td>{totalRemaining}</td>}
+            <td>{Math.round(totalBudget)}</td>
+            <td>{Math.round(totalSpent)}</td>
+            <td>{Math.round(totalIncomingReallocation)}</td>
+            <td>{Math.round(totalOutgoingReallocation)}</td>
+            <td>{Math.round(totalRemaining)}</td>
           </tr>
         </tbody>
       </table>
