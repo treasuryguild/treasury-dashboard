@@ -6,9 +6,16 @@ interface WorkgroupBalancesProps {
   months: string[];
   workgroupsBudgets: any[];
   selectedWorkgroups: string[];
+  allDistributions: any[];
 }
 
-const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, workgroupsBudgets, selectedWorkgroups }) => {
+const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ 
+  data, 
+  months, 
+  workgroupsBudgets, 
+  selectedWorkgroups, 
+  allDistributions, 
+}) => {
   const getQuartersAndYearsFromMonths = (months: string[]) => {
     if (months.includes('All months')) {
       return { quarters: ['Q1', 'Q2', 'Q3', 'Q4'], years: ['2023', '2024'] };
@@ -27,6 +34,16 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
       }
     });
     return { quarters, years };
+  };
+
+  const getLatestQuarterAndYear = (quarters: string[], years: string[]) => {
+    const latestYear = Math.max(...years.map(Number));
+    const latestQuarter = Math.max(...quarters.map(q => parseInt(q.slice(1))));
+    return { latestQuarter, latestYear };
+  };
+
+  const isQuarterBeforeOrEqual = (year: number, quarter: number, latestYear: number, latestQuarter: number) => {
+    return year < latestYear || (year === latestYear && quarter <= latestQuarter);
   };
 
   const getBudgetForWorkgroup = (workgroupName: string, quarters: string[], years: string[]) => {
@@ -60,6 +77,60 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
     return workgroupData ? workgroupData.AGIX : 0;
   };
 
+  const getCumulativeReallocationForWorkgroup = (workgroupName: string, quarters: string[], years: string[]) => {
+    const { latestQuarter, latestYear } = getLatestQuarterAndYear(quarters, years);
+    const workgroup = workgroupsBudgets.find((wg) => wg.sub_group === workgroupName);
+    
+    if (workgroup && workgroup.sub_group_data) {
+      return Object.entries(workgroup.sub_group_data.budgets).reduce((totalReallocation, [year, yearData]: [string, any]) => {
+        return totalReallocation + Object.entries(yearData).reduce((yearReallocation, [quarter, quarterData]: [string, any]) => {
+          const currentQuarter = parseInt(quarter.slice(1));
+          const currentYear = parseInt(year);
+          if (isQuarterBeforeOrEqual(currentYear, currentQuarter, latestYear, latestQuarter)) {
+            return yearReallocation + (quarterData?.reallocations.incoming.AGIX || 0) - (quarterData?.reallocations.outgoing.AGIX || 0);
+          }
+          return yearReallocation;
+        }, 0);
+      }, 0);
+    }
+    return 0;
+  };
+
+  const getCumulativeRemainingForWorkgroup = (workgroupName: string, quarters: string[], years: string[]) => {
+    const { latestQuarter, latestYear } = getLatestQuarterAndYear(quarters, years);
+    const workgroup = workgroupsBudgets.find((wg) => wg.sub_group === workgroupName);
+    
+    if (workgroup && workgroup.sub_group_data) {
+      const totalBudget = Object.entries(workgroup.sub_group_data.budgets).reduce((totalBudget, [year, yearData]: [string, any]) => {
+        return totalBudget + Object.entries(yearData).reduce((yearBudget, [quarter, quarterData]: [string, any]) => {
+          const currentQuarter = parseInt(quarter.slice(1));
+          const currentYear = parseInt(year);
+          if (isQuarterBeforeOrEqual(currentYear, currentQuarter, latestYear, latestQuarter)) {
+            return yearBudget + (quarterData?.final.AGIX || 0);
+          }
+          return yearBudget;
+        }, 0);
+      }, 0);
+
+      const totalSpent = allDistributions
+        .filter(dist => {
+          if (dist.tx_type !== 'Outgoing' || dist.task_sub_group !== workgroupName) return false;
+          const [day, month, year] = dist.task_date.split('.');
+          const distQuarter = Math.ceil(parseInt(month) / 3);
+          const distYear = parseInt(year) + 2000;  // Assuming two-digit year
+          return isQuarterBeforeOrEqual(distYear, distQuarter, latestYear, latestQuarter);
+        })
+        .reduce((total, dist) => {
+          const agixIndex = dist.tokens.findIndex((token: any) => token === 'AGIX');
+          return total + (agixIndex !== -1 ? Number(dist.amounts[agixIndex]) : 0);
+        }, 0);
+
+      const totalReallocation = getCumulativeReallocationForWorkgroup(workgroupName, quarters, years);
+      return totalBudget - totalSpent + totalReallocation;
+    }
+    return 0;
+  };
+
   const { quarters, years } = getQuartersAndYearsFromMonths(months);
 
   let workgroupsToRender: string[] = [];
@@ -74,6 +145,8 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
   const totalIncomingReallocation = workgroupsToRender.reduce((sum, workgroupName) => sum + getReallocationForWorkgroup(workgroupName, quarters, years, 'incoming'), 0);
   const totalOutgoingReallocation = workgroupsToRender.reduce((sum, workgroupName) => sum + getReallocationForWorkgroup(workgroupName, quarters, years, 'outgoing'), 0);
   const totalRemaining = totalBudget - totalSpent + totalIncomingReallocation - totalOutgoingReallocation;
+  const totalCumulativeReallocation = workgroupsToRender.reduce((sum, workgroupName) => sum + getCumulativeReallocationForWorkgroup(workgroupName, quarters, years), 0);
+  const totalCumulativeRemaining = workgroupsToRender.reduce((sum, workgroupName) => sum + getCumulativeRemainingForWorkgroup(workgroupName, quarters, years), 0);
 
   return (
     <div className={styles.numbers}>
@@ -85,7 +158,9 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
             <th>Spent</th>
             <th>Incoming Reallocation</th>
             <th>Outgoing Reallocation</th>
-            <th>Remaining</th>
+            <th>Current Remaining</th>
+            <th>Cumulative Reallocation</th>
+            <th>Cumulative Remaining</th>
           </tr>
         </thead>
         <tbody>
@@ -95,6 +170,8 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
             const incomingReallocation = Math.round(getReallocationForWorkgroup(workgroupName, quarters, years, 'incoming'));
             const outgoingReallocation = Math.round(getReallocationForWorkgroup(workgroupName, quarters, years, 'outgoing'));
             const remaining = budget - spent + incomingReallocation - outgoingReallocation;
+            const cumulativeReallocation = Math.round(getCumulativeReallocationForWorkgroup(workgroupName, quarters, years));
+            const cumulativeRemaining = Math.round(getCumulativeRemainingForWorkgroup(workgroupName, quarters, years));
 
             return (
               <tr key={rowIndex}>
@@ -104,6 +181,8 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
                 <td>{incomingReallocation}</td>
                 <td>{outgoingReallocation}</td>
                 <td>{remaining}</td>
+                <td>{cumulativeReallocation}</td>
+                <td>{cumulativeRemaining}</td>
               </tr>
             );
           })}
@@ -114,6 +193,8 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({ data, months, wor
             <td>{Math.round(totalIncomingReallocation)}</td>
             <td>{Math.round(totalOutgoingReallocation)}</td>
             <td>{Math.round(totalRemaining)}</td>
+            <td>{Math.round(totalCumulativeReallocation)}</td>
+            <td>{Math.round(totalCumulativeRemaining)}</td>
           </tr>
         </tbody>
       </table>

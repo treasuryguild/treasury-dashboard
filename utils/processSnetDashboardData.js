@@ -458,6 +458,6 @@ function createTable1Data(filteredDistributions) {
         table3: createTable3Data(filteredDistributions, selectedWorkgroups),
         filteredDistributions: filteredDistributions
     };
-    //console.log("output", output)
+    console.log("output", output)
     return output;
 }

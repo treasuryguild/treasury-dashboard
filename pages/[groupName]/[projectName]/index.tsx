@@ -1,3 +1,4 @@
+// ../pages/[groupName]/[projectName]/index.tsx
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { useMyVariable } from '../../../context/MyVariableContext';

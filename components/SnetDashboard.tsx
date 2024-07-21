@@ -93,8 +93,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   });
   const [currentQuarterBalance, setCurrentQuarterBalance] = useState(0);
   const [previousQuarterBalance, setPreviousQuarterBalance] = useState(0);
-
-
+  const [allDistributions, setAllDistributions] = useState<any[]>([]);
 
   const handleHover = (box: string, status: boolean) => {
     setHoverStatus(prev => ({ ...prev, [box]: status }));
@@ -163,6 +162,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     try {
       let report: any = await getReport(myVariable.transactions);
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
+      setAllDistributions(distributionsArray);
       let distData: any = extractDistributionData(distributionsArray);
       
       // Sort the months in descending order
@@ -292,9 +292,8 @@ const handleLabelChange = (labels: any) => {
 };
 
 const processData = async () => {
-  const distArr = await txDenormalizer(myVariable.transactions)
-  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr, myVariable.projectInfo.budgets);
-  setProcessedData(data);
+    const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, allDistributions, myVariable.projectInfo.budgets);
+    setProcessedData(data);
   //console.log("processedData", processedData)
 };
 
@@ -468,6 +467,7 @@ useEffect(() => {
                 months={selectedMonths}
                 workgroupsBudgets={workgroupsBudgets}
                 selectedWorkgroups={selectedWorkgroups}
+                allDistributions={allDistributions}
               />
             )}
           </div>
