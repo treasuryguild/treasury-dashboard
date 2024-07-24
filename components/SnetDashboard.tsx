@@ -54,6 +54,10 @@ interface ProcessedDataType {
     data: any[]; 
   };
   filteredDistributions: any[]; 
+  monthlyTotals: {
+    totalMonthly: Record<string, Record<string, number>>;
+    workgroupMonthly: Record<string, Record<string, Record<string, number>>>;
+  };
   table1: any[]; 
   table2: any[]; 
   table3: any[];
@@ -81,6 +85,10 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     chart3: { labels: [], data: [] },
     chart4: { labels: [], data: [] },
     filteredDistributions: [],
+    monthlyTotals: {
+      totalMonthly: {},
+      workgroupMonthly: {}
+    },
     table1: [],
     table2: [],
     table3: []
@@ -463,7 +471,7 @@ useEffect(() => {
             {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets.length > 0  
             && (
               <WorkgroupBalances
-                data={processedData.table3}
+                data={processedData}
                 months={selectedMonths}
                 workgroupsBudgets={workgroupsBudgets}
                 selectedWorkgroups={selectedWorkgroups}
