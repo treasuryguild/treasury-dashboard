@@ -283,8 +283,23 @@ const updateUrlParam = (key: any, values: any) => {
     query: newQuery,
   }, undefined, { shallow: true });
 }
-const handleMonthChange = (months: any) => {
-  selectItem(months, 'All months', selectedMonths, setSelectedMonths, 'months');
+
+const handleMonthChange = (month: string) => {
+  let updatedMonths: string[];
+  if (month === 'All months') {
+    updatedMonths = ['All months'];
+  } else {
+    if (selectedMonths.includes(month)) {
+      updatedMonths = selectedMonths.filter(m => m !== month);
+      if (updatedMonths.length === 0) {
+        updatedMonths = ['All months'];
+      }
+    } else {
+      updatedMonths = [...selectedMonths.filter(m => m !== 'All months'), month];
+    }
+  }
+  setSelectedMonths(updatedMonths);
+  updateUrlParam('months', updatedMonths);
 };
 
 const handleWorkgroupChange = (workgroup: any) => {

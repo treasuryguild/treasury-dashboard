@@ -59,7 +59,7 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
       return years.reduce((yearTotal, year) => {
         return yearTotal + quarters.reduce((quarterTotal, quarter) => {
           const quarterData = workgroup.sub_group_data.budgets[year]?.[quarter];
-          return quarterTotal + (quarterData?.final.AGIX || 0);
+          return quarterTotal + (quarterData?.initial.AGIX || 0);
         }, 0);
       }, 0);
     }
@@ -99,13 +99,26 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
   };
 
   const getLatestSelectedMonth = (months: string[]) => {
-    if (months.includes('All months')) {
+    if (months.includes('All months') || months.length === 0) {
       return getLatestMonth(Object.keys(data.monthlyTotals.totalMonthly));
     }
     return getLatestMonth(months);
   };
 
-  const getLatestMonth = (months: string[]) => {
+  const getLatestMonth = (months: string[]): string => {
+    if (months.includes('All months') || months.length === 0) {
+      // If 'All months' is selected or no months are selected, return the latest month from all available data
+      const allMonths = Object.keys(data.monthlyTotals.totalMonthly);
+      return allMonths.reduce((latest, current) => {
+        const [latestMonth, latestYear] = latest.split('.').map(Number);
+        const [currentMonth, currentYear] = current.split('.').map(Number);
+        if (currentYear > latestYear || (currentYear === latestYear && currentMonth > latestMonth)) {
+          return current;
+        }
+        return latest;
+      }, allMonths[0] || 'All months'); // Provide a default value if allMonths is empty
+    }
+  
     return months.reduce((latest, current) => {
       const [latestMonth, latestYear] = latest.split('.').map(Number);
       const [currentMonth, currentYear] = current.split('.').map(Number);
@@ -113,8 +126,9 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
         return current;
       }
       return latest;
-    });
+    }, months[0]);
   };
+  
 
   const isMonthBeforeOrEqual = (month: string, latestMonth: string) => {
     const [monthNum, year] = month.split('.').map(Number);
@@ -175,7 +189,7 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
     const workgroupData = data.monthlyTotals.workgroupMonthly[workgroupName];
     if (!workgroupData || !workgroupData.AGIX) return 0;
 
-    if (selectedMonths.includes('All months')) {
+    if (selectedMonths.includes('All months') || selectedMonths.length === 0) {
       return Object.values(workgroupData.AGIX).reduce((sum, amount) => sum + amount, 0);
     }
 
@@ -191,6 +205,8 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
     workgroupsToRender = selectedWorkgroups.includes('All workgroups')
       ? workgroupsBudgets.map((wg: any) => wg.sub_group)
       : selectedWorkgroups;
+    // Sort the workgroups alphabetically
+    workgroupsToRender.sort((a, b) => a.localeCompare(b));
   }
 
   const totalBudget = workgroupsToRender.reduce((sum, workgroupName) => sum + getBudgetForWorkgroup(workgroupName, quarters, years), 0);
@@ -208,10 +224,10 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
           <tr>
             <th>Workgroup</th>
             <th>Budget {months.includes('All months') ? '(All Quarters)' : `(${quarters.join(', ')} ${years.join(', ')})`}</th>
-            <th>Spent {months.includes('All months') ? '(All Months)' : `(Selected Months)`}</th>
+            <th>Spent {months.includes('All months') ? '(All Quarters)' : `(${quarters.join(', ')} ${years.join(', ')})`}</th>
             <th>Incoming Reallocation</th>
             <th>Outgoing Reallocation</th>
-            <th>Current Remaining</th>
+            <th>{months.includes('All months') ? '(All Quarters)' : `(${quarters.join(', ')} ${years.join(', ')})`} Remaining</th>
             <th>Cumulative Reallocation</th>
             <th>Cumulative Remaining</th>
           </tr>
