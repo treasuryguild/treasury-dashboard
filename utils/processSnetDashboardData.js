@@ -446,7 +446,105 @@ function createTable1Data(filteredDistributions) {
         sortedData.push(totalsRow);
     
         return sortedData;
-    }    
+    }
+
+    function calculateMonthlyTotals(distributionsArray, selectedMonths, selectedWorkgroups, selectedTokens) {
+        let monthlyTotals = {};
+        let workgroupTotals = {};
+        
+        // Sort all unique months from the entire distributionsArray
+        let allMonths = [...new Set(distributionsArray.map(d => getFormattedTaskDate(d.task_date)))];
+        allMonths.sort((a, b) => {
+            const [monthA, yearA] = a.split('.').map(Number);
+            const [monthB, yearB] = b.split('.').map(Number);
+            return new Date(yearA, monthA - 1) - new Date(yearB, monthB - 1);
+        });
+    
+        // Find the latest selected month
+        let latestSelectedMonth = selectedMonths.includes('All months') 
+            ? allMonths[allMonths.length - 1] 
+            : selectedMonths.sort((a, b) => {
+                const [monthA, yearA] = a.split('.').map(Number);
+                const [monthB, yearB] = b.split('.').map(Number);
+                return new Date(yearB, monthB - 1) - new Date(yearA, monthA - 1);
+              })[0];
+    
+        // Initialize monthly and workgroup totals for all months
+        allMonths.forEach(month => {
+            monthlyTotals[month] = {};
+            selectedTokens.forEach(token => monthlyTotals[month][token] = 0);
+        });
+    
+        let allWorkgroups = [...new Set(distributionsArray.map(d => d.task_sub_group).filter(group => group && group.trim() !== ''))];
+        allWorkgroups.forEach(workgroup => {
+            if (workgroup !== 'All workgroups') {
+                workgroupTotals[workgroup] = {};
+                selectedTokens.forEach(token => {
+                    workgroupTotals[workgroup][token] = {};
+                    allMonths.forEach(month => {
+                        workgroupTotals[workgroup][token][month] = 0;
+                    });
+                });
+            }
+        });
+    
+        // Calculate monthly and workgroup totals
+        distributionsArray.forEach(distribution => {
+            if (distribution.tx_type === "Outgoing") {
+                const month = getFormattedTaskDate(distribution.task_date);
+                const workgroup = distribution.task_sub_group;
+    
+                distribution.tokens.forEach((token, index) => {
+                    if (selectedTokens.includes(token) || selectedTokens.includes('All tokens')) {
+                        const amount = Number(distribution.amounts[index]);
+                        monthlyTotals[month][token] = (Number(monthlyTotals[month][token]) || 0) + amount;
+    
+                        if (workgroup && (selectedWorkgroups.includes(workgroup) || selectedWorkgroups.includes('All workgroups'))) {
+                            if (!workgroupTotals[workgroup]) {
+                                workgroupTotals[workgroup] = {};
+                            }
+                            if (!workgroupTotals[workgroup][token]) {
+                                workgroupTotals[workgroup][token] = {};
+                                allMonths.forEach(m => {
+                                    workgroupTotals[workgroup][token][m] = 0;
+                                });
+                            }
+                            workgroupTotals[workgroup][token][month] = (Number(workgroupTotals[workgroup][token][month]) || 0) + amount;
+                        }
+                    }
+                });
+            }
+        });
+    
+        // Filter months up to and including the latest selected month
+        let relevantMonths = allMonths.filter(month => {
+            const [monthNum, year] = month.split('.').map(Number);
+            const [latestMonthNum, latestYear] = latestSelectedMonth.split('.').map(Number);
+            return (year < latestYear) || (year === latestYear && monthNum <= latestMonthNum);
+        });
+    
+        // Filter the results to include only relevant months
+        let filteredMonthlyTotals = {};
+        relevantMonths.forEach(month => {
+            filteredMonthlyTotals[month] = monthlyTotals[month];
+        });
+    
+        let filteredWorkgroupTotals = {};
+        Object.keys(workgroupTotals).forEach(workgroup => {
+            filteredWorkgroupTotals[workgroup] = {};
+            Object.keys(workgroupTotals[workgroup]).forEach(token => {
+                filteredWorkgroupTotals[workgroup][token] = {};
+                relevantMonths.forEach(month => {
+                    filteredWorkgroupTotals[workgroup][token][month] = workgroupTotals[workgroup][token][month];
+                });
+            });
+        });
+    
+        return {
+            totalMonthly: filteredMonthlyTotals,
+            workgroupMonthly: filteredWorkgroupTotals
+        };
+    }
 
     const output = {
         chart1: generateChartData(filteredDistributions, 'workgroup'), 
@@ -456,8 +554,9 @@ function createTable1Data(filteredDistributions) {
         table1: createTable1Data(filteredDistributions), 
         table2: createTable2Data(filteredDistributions),
         table3: createTable3Data(filteredDistributions, selectedWorkgroups),
-        filteredDistributions: filteredDistributions
+        filteredDistributions: filteredDistributions,
+        monthlyTotals: calculateMonthlyTotals(distributionsArray, selectedMonths, selectedWorkgroups, selectedTokens),
     };
-    //console.log("output", output)
+    console.log("output", output)
     return output;
 }

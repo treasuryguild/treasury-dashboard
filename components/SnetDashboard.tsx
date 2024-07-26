@@ -54,6 +54,10 @@ interface ProcessedDataType {
     data: any[]; 
   };
   filteredDistributions: any[]; 
+  monthlyTotals: {
+    totalMonthly: Record<string, Record<string, number>>;
+    workgroupMonthly: Record<string, Record<string, Record<string, number>>>;
+  };
   table1: any[]; 
   table2: any[]; 
   table3: any[];
@@ -81,6 +85,10 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     chart3: { labels: [], data: [] },
     chart4: { labels: [], data: [] },
     filteredDistributions: [],
+    monthlyTotals: {
+      totalMonthly: {},
+      workgroupMonthly: {}
+    },
     table1: [],
     table2: [],
     table3: []
@@ -93,8 +101,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   });
   const [currentQuarterBalance, setCurrentQuarterBalance] = useState(0);
   const [previousQuarterBalance, setPreviousQuarterBalance] = useState(0);
-
-
+  const [allDistributions, setAllDistributions] = useState<any[]>([]);
 
   const handleHover = (box: string, status: boolean) => {
     setHoverStatus(prev => ({ ...prev, [box]: status }));
@@ -117,60 +124,95 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     }
   }
 
-  async function getWorkgroups( projectId: string) {
-    const response = await fetch('/api/getSubgroups', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        project_id: projectId,
-      }),
-    });
+  async function getWorkgroups(projectId: string) {
+    try {
+      const response = await fetch('/api/getSubgroups', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          project_id: projectId,
+        }),
+      });
   
-    if (!response.ok) {
-      throw new Error('Failed to post workgroups to subgroups table');
+      if (!response.ok) {
+        throw new Error('Failed to fetch workgroups from subgroups table');
+      }
+  
+      const data = await response.json();
+      console.log('Raw data from getSubgroups:', data);
+  
+      if (data && Array.isArray(data.workgroups)) {
+        console.log('Processing workgroups array');
+        const processedData = data.workgroups.map((item: any) => {
+          console.log('Processing item:', item);
+          return {
+            ...item,
+            sub_group_data: typeof item.sub_group_data === 'string' 
+              ? JSON.parse(item.sub_group_data) 
+              : item.sub_group_data
+          };
+        });
+        console.log('Processed data:', processedData);
+        return processedData;
+      } else {
+        console.error('Unexpected data format from getSubgroups:', data);
+        return [];
+      }
+    } catch (error) {
+      console.error('Error in getWorkgroups:', error);
+      return [];
     }
-    return response.json();
   }
 
   async function generateReport() {
+    try {
       let report: any = await getReport(myVariable.transactions);
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
+      setAllDistributions(distributionsArray);
       let distData: any = extractDistributionData(distributionsArray);
+      
       // Sort the months in descending order
       const sortedMonths = distData.months.sort((a: any, b: any) => {
-          const [monthA, yearA] = a.split('.').map(Number);
-          const [monthB, yearB] = b.split('.').map(Number);
-    
-          if (yearA !== yearB) {
-              return yearB - yearA; // Descending order of year
-          }
-          return monthB - monthA; // Descending order of month
+        const [monthA, yearA] = a.split('.').map(Number);
+        const [monthB, yearB] = b.split('.').map(Number);
+  
+        if (yearA !== yearB) {
+          return yearB - yearA; // Descending order of year
+        }
+        return monthB - monthA; // Descending order of month
       });
-
+  
       setUniqueMonths(['All months', ...sortedMonths]);
       setWorkgroups(['All workgroups', ...distData.workgroups])
       setUniqueTokens(['All tokens', ...distData.tokens])
       setUniqueLabels(['All labels', ...distData.labels])
-      //let table: any = runningBalanceTableData(distributionsArray);
-      //setRunningBalanceTab(table);
-      //setTestTable(table);
+      
       setMyVariable(prevState => ({ ...prevState, report }));
-      //console.log("report2", distributionsArray, myVariable, distData)
+      
       if (distributionsArray && distributionsArray.length > 0) {
         calculateQuarterBalances(distributionsArray);
       }
-
+  
       // Post workgroups to subgroups table
-      try {
-        await postWorkgroupsToSubgroups(distData.workgroups, myVariable.projectInfo.project_id);
-        const subgroups = await getWorkgroups(myVariable.projectInfo.project_id);
+      console.log('Posting workgroups to subgroups table');
+      await postWorkgroupsToSubgroups(distData.workgroups, myVariable.projectInfo.project_id);
+      
+      console.log('Fetching subgroups');
+      const subgroups = await getWorkgroups(myVariable.projectInfo.project_id);
+      console.log('Fetched subgroups:', subgroups);
+      
+      if (Array.isArray(subgroups) && subgroups.length > 0) {
+        console.log('Setting workgroupsBudgets');
         setWorkgroupsBudgets(subgroups);
-        //console.log('Workgroups:', subgroups);
-      } catch (error) {
-        console.error('Error posting workgroups to subgroups table:', error);
+        console.log('workgroupsBudgets set to:', subgroups);
+      } else {
+        console.warn('No subgroups data returned or empty array');
       }
+    } catch (error) {
+      console.error('Error in generateReport:', error);
+    }
   }
 
   useEffect(() => {
@@ -241,8 +283,23 @@ const updateUrlParam = (key: any, values: any) => {
     query: newQuery,
   }, undefined, { shallow: true });
 }
-const handleMonthChange = (months: any) => {
-  selectItem(months, 'All months', selectedMonths, setSelectedMonths, 'months');
+
+const handleMonthChange = (month: string) => {
+  let updatedMonths: string[];
+  if (month === 'All months') {
+    updatedMonths = ['All months'];
+  } else {
+    if (selectedMonths.includes(month)) {
+      updatedMonths = selectedMonths.filter(m => m !== month);
+      if (updatedMonths.length === 0) {
+        updatedMonths = ['All months'];
+      }
+    } else {
+      updatedMonths = [...selectedMonths.filter(m => m !== 'All months'), month];
+    }
+  }
+  setSelectedMonths(updatedMonths);
+  updateUrlParam('months', updatedMonths);
 };
 
 const handleWorkgroupChange = (workgroup: any) => {
@@ -258,9 +315,8 @@ const handleLabelChange = (labels: any) => {
 };
 
 const processData = async () => {
-  const distArr = await txDenormalizer(myVariable.transactions)
-  const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distArr, myVariable.projectInfo.budgets);
-  setProcessedData(data);
+    const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, allDistributions, myVariable.projectInfo.budgets);
+    setProcessedData(data);
   //console.log("processedData", processedData)
 };
 
@@ -427,14 +483,14 @@ useEffect(() => {
         </div>
         <div className={styles['flex-column']}>
           <div className={styles['flex-row']}>
-            {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets && 
-            !(selectedWorkgroups.includes('All workgroups') && selectedMonths.includes('All months')) 
+            {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets.length > 0  
             && (
               <WorkgroupBalances
-                data={processedData.table3}
+                data={processedData}
                 months={selectedMonths}
                 workgroupsBudgets={workgroupsBudgets}
                 selectedWorkgroups={selectedWorkgroups}
+                allDistributions={allDistributions}
               />
             )}
           </div>

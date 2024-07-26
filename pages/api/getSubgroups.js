@@ -26,7 +26,7 @@ async function getSubGroups( project_id) {
   // Fetch all existing SubGroups from the database
   const { data: existingSubGroups, error: fetchError } = await supabase
     .from("subgroups")
-    .select("sub_group, budgets")
+    .select("sub_group, budgets, sub_group_data")
     .eq('project_id', project_id);
 
   if (fetchError) throw fetchError;
