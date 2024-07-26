@@ -464,7 +464,7 @@ useEffect(() => {
         </div>
       </div>
       <div className={styles['components-conatiner']}> 
-        <div className={styles['flex-column']}>
+        <div className={styles['flex-row']}>
           <div className={styles['chartX']}>
             {processedData.chart1.labels.length > 1 && !processedData.chart1.data[0].x && (<ChartComponent1 chartData={processedData.chart1} />)}
             {processedData.chart1 && processedData.chart1.data[0]?.x && (<ChartComponentX chartData={processedData.chart1} />)}
@@ -481,8 +481,7 @@ useEffect(() => {
             {processedData.chart4 && processedData.chart4.data[0]?.x && (<ChartComponentC chartData={processedData.chart4} />)}
           </div>
         </div>
-        <div className={styles['flex-column']}>
-          <div className={styles['flex-row']}>
+        <div className={styles['flex-row']}>
             {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets.length > 0  
             && (
               <WorkgroupBalances
@@ -494,6 +493,7 @@ useEffect(() => {
               />
             )}
           </div>
+          <div className={styles['flex-column']}>
           <div className={styles['tables']}>
             {selectedLabels.includes('All labels') && selectedWorkgroups.includes('All workgroups') && processedData.table1 && (<DynamicTable data={processedData.table1} />)}
           </div>
