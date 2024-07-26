@@ -475,7 +475,8 @@ function createTable1Data(filteredDistributions) {
             selectedTokens.forEach(token => monthlyTotals[month][token] = 0);
         });
     
-        selectedWorkgroups.forEach(workgroup => {
+        let allWorkgroups = [...new Set(distributionsArray.map(d => d.task_sub_group).filter(group => group && group.trim() !== ''))];
+        allWorkgroups.forEach(workgroup => {
             if (workgroup !== 'All workgroups') {
                 workgroupTotals[workgroup] = {};
                 selectedTokens.forEach(token => {

@@ -149,7 +149,7 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
   const getCumulativeRemainingForWorkgroup = (workgroupName: string, selectedMonths: string[]) => {
     const workgroup = workgroupsBudgets.find((wg) => wg.sub_group === workgroupName);
     const workgroupData = data.monthlyTotals.workgroupMonthly[workgroupName];
-    
+    //console.log("test", workgroupData);
     if (workgroup && workgroup.sub_group_data && workgroupData) {
       const latestMonth = getLatestSelectedMonth(selectedMonths);
       
@@ -163,12 +163,14 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
         }, 0);
       }, 0);
 
-      const totalSpent = Object.entries(workgroupData.AGIX).reduce((total, [month, amount]) => {
-        if (isMonthBeforeOrEqual(month, latestMonth)) {
-          return total + amount;
-        }
-        return total;
-      }, 0);
+      const totalSpent = workgroupData.AGIX 
+        ? Object.entries(workgroupData.AGIX).reduce((total, [month, amount]) => {
+            if (isMonthBeforeOrEqual(month, latestMonth)) {
+              return total + amount;
+            }
+            return total;
+          }, 0)
+        : 0;
 
       const totalReallocation = Object.entries(workgroup.sub_group_data.budgets).reduce((total, [year, yearData]: [string, any]) => {
         return total + Object.entries(yearData).reduce((yearTotal, [quarter, quarterData]: [string, any]) => {
