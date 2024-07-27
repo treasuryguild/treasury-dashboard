@@ -29,6 +29,7 @@ interface SnetDashboardProps {
     label?: string;
   };
 }
+
 interface DistributionItem {
   date: string;
   incoming: number;
@@ -98,10 +99,13 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     tokens: false,
     workgroups: false,
     labels: false,
+    quarters: false,
   });
   const [currentQuarterBalance, setCurrentQuarterBalance] = useState(0);
   const [previousQuarterBalance, setPreviousQuarterBalance] = useState(0);
   const [allDistributions, setAllDistributions] = useState<any[]>([]);
+  const [uniqueQuarters, setUniqueQuarters] = useState<string[]>([]);
+  const [selectedQuarter, setSelectedQuarter] = useState<string>("All quarters");
 
   const handleHover = (box: string, status: boolean) => {
     setHoverStatus(prev => ({ ...prev, [box]: status }));
@@ -223,96 +227,164 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
 
   useEffect(() => {
     if (myVariable.report && Object.keys(myVariable.report).length > 0) {
-        //console.log("Loading")
-        //setWorkgroups(extractWorkgroups(myVariable.report, 'All months'));
       setLoading(false);
     }
-}, [myVariable.report]);
+  }, [myVariable.report]);
 
-useEffect(() => {
-  // Function to set the initial state based on URL parameters
-  const initializeStateFromQuery = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const months = urlParams.get('months')?.split(',').map(decodeURIComponent) || [];
-    const workgroups = urlParams.get('workgroups')?.split(',').map(decodeURIComponent) || [];
-    const tokens = urlParams.get('tokens')?.split(',').map(decodeURIComponent) || [];
-    const labels = urlParams.get('labels')?.split(',').map(decodeURIComponent) || [];
+  useEffect(() => {
+    // Function to set the initial state based on URL parameters
+    const initializeStateFromQuery = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const months = urlParams.get('months')?.split(',').map(decodeURIComponent) || [];
+      const workgroups = urlParams.get('workgroups')?.split(',').map(decodeURIComponent) || [];
+      const tokens = urlParams.get('tokens')?.split(',').map(decodeURIComponent) || [];
+      const labels = urlParams.get('labels')?.split(',').map(decodeURIComponent) || [];
 
-    // Update state based on URL parameters
-    setSelectedMonths(months.length > 0 ? months : ['All months']);
-    setSelectedWorkgroups(workgroups.length > 0 ? workgroups : ['All workgroups']);
-    if (projectName === "Singularity Net Ambassador Wallet") {
-      setSelectedTokens(tokens.length > 0 ? tokens : ['AGIX']);
-    } else {
-      setSelectedTokens(tokens.length > 0 ? tokens : ['All tokens']);
+      // Update state based on URL parameters
+      setSelectedMonths(months.length > 0 ? months : ['All months']);
+      setSelectedWorkgroups(workgroups.length > 0 ? workgroups : ['All workgroups']);
+      if (projectName === "Singularity Net Ambassador Wallet") {
+        setSelectedTokens(tokens.length > 0 ? tokens : ['AGIX']);
+      } else {
+        setSelectedTokens(tokens.length > 0 ? tokens : ['All tokens']);
+      }
+      setSelectedLabels(labels.length > 0 ? labels : ['All labels']);
+
+      setLoading(false); // Set loading to false after initialization
+    };
+
+    // Call the function
+    if (router.isReady) {
+      initializeStateFromQuery();
     }
-    setSelectedLabels(labels.length > 0 ? labels : ['All labels']);
+  }, [router.query, router.isReady]);
 
-    setLoading(false); // Set loading to false after initialization
+  const selectItem = (item: any, allItem: any, selectedItem: any, setSelectedItem: Function, queryKey: any) => {
+    let updatedItems: any;
+    if (item === allItem) {
+      updatedItems = [allItem];
+    } else {
+      updatedItems = selectedItem.includes(item)
+        ? selectedItem.filter((i: any) => i !== item)
+        : [...selectedItem.filter((i: any) => i !== allItem), item];
+    }
+    // Update state and then update the URL
+    setSelectedItem(updatedItems);
+    updateUrlParam(queryKey, updatedItems);
   };
 
-  // Call the function
-  if (router.isReady) {
-    initializeStateFromQuery();
-  }
-}, [router.query, router.isReady]);
-
-const selectItem = (item: any, allItem: any, selectedItem: any, setSelectedItem: Function, queryKey: any) => {
-  let updatedItems: any;
-  if (item === allItem) {
-    updatedItems = [allItem];
-  } else {
-    updatedItems = selectedItem.includes(item)
-      ? selectedItem.filter((i: any) => i !== item)
-      : [...selectedItem.filter((i: any) => i !== allItem), item];
-  }
-  // Update state and then update the URL
-  setSelectedItem(updatedItems);
-  updateUrlParam(queryKey, updatedItems);
-};
-
-const updateUrlParam = (key: any, values: any) => {
-  const newQuery = { ...router.query };
-  if (values.length === 0 || values.includes(`All ${key}`)) {
-    newQuery[key] = `All ${key}`; 
-  } else {
-    newQuery[key] = values.join(','); 
-  }
-  router.push({
-    pathname: router.pathname,
-    query: newQuery,
-  }, undefined, { shallow: true });
-}
-
-const handleMonthChange = (month: string) => {
-  let updatedMonths: string[];
-  if (month === 'All months') {
-    updatedMonths = ['All months'];
-  } else {
-    if (selectedMonths.includes(month)) {
-      updatedMonths = selectedMonths.filter(m => m !== month);
-      if (updatedMonths.length === 0) {
-        updatedMonths = ['All months'];
+  const updateUrlParam = (key: string, values: string | string[]) => {
+    const newQuery = { ...router.query };
+    if (Array.isArray(values)) {
+      if (values.length === 0 || values.includes(`All ${key}`)) {
+        newQuery[key] = `All ${key}`;
+      } else {
+        newQuery[key] = values.join(',');
       }
     } else {
-      updatedMonths = [...selectedMonths.filter(m => m !== 'All months'), month];
+      newQuery[key] = values;
     }
-  }
-  setSelectedMonths(updatedMonths);
-  updateUrlParam('months', updatedMonths);
-};
+    router.push({
+      pathname: router.pathname,
+      query: newQuery,
+    }, undefined, { shallow: true });
+  };
 
-const handleWorkgroupChange = (workgroup: any) => {
-  selectItem(workgroup, 'All workgroups', selectedWorkgroups, setSelectedWorkgroups, 'workgroups');
-};
+  const generateQuarters = (months: string[]) => {
+    const quarters = new Set<string>();
+    months.forEach(month => {
+      if (month !== 'All months') {
+        const [m, y] = month.split('.');
+        const quarterNum = Math.ceil(parseInt(m) / 3);
+        quarters.add(`Q${quarterNum} ${y}`);
+      }
+    });
+    return Array.from(quarters).sort((a, b) => {
+      const [aq, ay] = a.split(' ');
+      const [bq, by] = b.split(' ');
+      return parseInt(by) - parseInt(ay) || b.localeCompare(a);
+    });
+  };
 
-const handleTokenChange = (tokens: any) => {
-  selectItem(tokens, 'All tokens', selectedTokens, setSelectedTokens, 'tokens');
-};
+  const getQuarterMonths = (quarter: string): string[] => {
+    const [q, year] = quarter.split(' ');
+    const quarterNum = parseInt(q.slice(1));
+    const startMonth = (quarterNum - 1) * 3 + 1;
+    return [
+      `${startMonth.toString().padStart(2, '0')}.${year}`,
+      `${(startMonth + 1).toString().padStart(2, '0')}.${year}`,
+      `${(startMonth + 2).toString().padStart(2, '0')}.${year}`
+    ].filter(month => uniqueMonths.includes(month));
+  };
 
-const handleLabelChange = (labels: any) => {
-  selectItem(labels, 'All labels', selectedLabels, setSelectedLabels, 'labels');
-};
+  const handleQuarterChange = (quarter: string) => {
+    let updatedMonths: string[];
+    if (quarter === selectedQuarter || quarter === 'All quarters') {
+      setSelectedQuarter("All quarters");
+      updatedMonths = ['All months'];
+    } else {
+      setSelectedQuarter(quarter);
+      updatedMonths = getQuarterMonths(quarter);
+    }
+    setSelectedMonths(updatedMonths);
+    updateUrlParam('months', updatedMonths);
+  };
+
+  useEffect(() => {
+    if (uniqueMonths.length > 1) {
+      const quarters = generateQuarters(uniqueMonths);
+      setUniqueQuarters(['All quarters', ...quarters]);
+    }
+  }, [uniqueMonths]);
+
+  useEffect(() => {
+    if (selectedMonths.length > 0 && selectedMonths[0] !== 'All months') {
+      const selectedQuartersSet = new Set(selectedMonths.map(month => {
+        const [m, y] = month.split('.');
+        const quarterNum = Math.ceil(parseInt(m) / 3);
+        return `Q${quarterNum} ${y}`;
+      }));
+
+      if (selectedQuartersSet.size === 1) {
+        setSelectedQuarter(Array.from(selectedQuartersSet)[0]);
+      } else {
+        setSelectedQuarter("All quarters");
+      }
+    } else {
+      setSelectedQuarter("All quarters");
+    }
+  }, [selectedMonths]);
+
+  const handleMonthChange = (month: string) => {
+    let updatedMonths: string[];
+    if (month === 'All months') {
+      updatedMonths = ['All months'];
+      setSelectedQuarter("All quarters");
+    } else {
+      if (selectedMonths.includes(month)) {
+        updatedMonths = selectedMonths.filter(m => m !== month);
+        if (updatedMonths.length === 0) {
+          updatedMonths = ['All months'];
+        }
+      } else {
+        updatedMonths = [...selectedMonths.filter(m => m !== 'All months'), month];
+      }
+    }
+    setSelectedMonths(updatedMonths);
+    updateUrlParam('months', updatedMonths);
+  };
+
+  const handleWorkgroupChange = (workgroup: any) => {
+    selectItem(workgroup, 'All workgroups', selectedWorkgroups, setSelectedWorkgroups, 'workgroups');
+  };
+
+  const handleTokenChange = (tokens: any) => {
+    selectItem(tokens, 'All tokens', selectedTokens, setSelectedTokens, 'tokens');
+  };
+
+  const handleLabelChange = (labels: any) => {
+    selectItem(labels, 'All labels', selectedLabels, setSelectedLabels, 'labels');
+  };
 
 const processData = async () => {
     const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, allDistributions, myVariable.projectInfo.budgets);
@@ -385,126 +457,152 @@ useEffect(() => {
   //console.log("myVariable", myVariable)
   return (
     <div className={styles['flex-column']}>
-      <div className={styles['flex-row']}>
-        <div 
-          className={styles['flex-row-half']}
-          onMouseEnter={() => handleHover('months', true)}
-          onMouseLeave={() => handleHover('months', false)}
+      <div className={styles['flex-column']}>
+        <div className={styles['flex-row']}>
+          <div 
+            className={styles['flex-row-full']}
+            onMouseEnter={() => handleHover('quarters', true)}
+            onMouseLeave={() => handleHover('quarters', false)}
           >
-          <span className={styles['selection-label']}>Select Months</span>
-          {(hoverStatus.months || selectedMonths.includes('All months')) ? 
-          uniqueMonths.map((month) => (
-            <button key={month} onClick={() => handleMonthChange(month)}
-              className={selectedMonths.includes(month) ? styles.selected : styles['filter-btn']}>
-              {month}
-            </button>
-          )) :
-          selectedMonths.map((month) => (
-            <button key={month} className={styles.selected}>{month}</button>
-          ))
-        }
-        </div>
-        <div className={styles['flex-row-half']}
-          onMouseEnter={() => handleHover('tokens', true)}
-          onMouseLeave={() => handleHover('tokens', false)}>
-        <span className={styles['selection-label']}>Select Tokens</span>
-        {(hoverStatus.tokens || selectedTokens.includes('All tokens')) ? 
-          uniqueTokens.map((token) => (
-            <button key={token} onClick={() => handleTokenChange(token)}
-              className={selectedTokens.includes(token) ? styles.selected : styles['filter-btn']}>
-              {token}
-            </button>
-          )) :
-          selectedTokens.map((token) => (
-            <button key={token} className={styles.selected}>{token}</button>
-          ))
-        }
-        </div>
-      </div>
-      <div className={styles['flex-row']}>
-        <div className={styles['flex-row-half']}
-          onMouseEnter={() => handleHover('workgroups', true)}
-          onMouseLeave={() => handleHover('workgroups', false)}>
-          <span className={styles['selection-label']}>Select Workgroups</span>
-        {(hoverStatus.workgroups || selectedWorkgroups.includes('All workgroups')) ? 
-          workgroups.map((workgroup) => (
-            <button key={workgroup} onClick={() => handleWorkgroupChange(workgroup)}
-              className={selectedWorkgroups.includes(workgroup) ? styles.selected : styles['filter-btn']}>
-              {workgroup}
-            </button>
-          )) :
-          selectedWorkgroups.map((workgroup) => (
-            <button key={workgroup} className={styles.selected}>{workgroup}</button>
-          ))
-        }
-        </div>
-        <div className={styles['flex-row-half']}
-          onMouseEnter={() => handleHover('labels', true)}
-          onMouseLeave={() => handleHover('labels', false)}>
-          <span className={styles['selection-label']}>Select Labels</span>
-        {(hoverStatus.labels || selectedLabels.includes('All labels')) ? 
-          uniqueLabels.map((label) => (
-            <button key={label} onClick={() => handleLabelChange(label)}
-              className={selectedLabels.includes(label) ? styles.selected : styles['filter-btn']}>
-              {label}
-            </button>
-          )) :
-          selectedLabels.map((label) => (
-            <button key={label} className={styles.selected}>{label}</button>
-          ))
-        }
-        </div>
-      </div>
-      <div className={styles['flex-row']}>
-        <div className={styles['flex-row-half']}>
-          <span className={styles['selection-label']}>AGIX Balance of current Quarter: {currentQuarterBalance}</span>
-        </div>
-        <div className={styles['flex-row-half']}>
-          <span className={styles['selection-label']}>AGIX Balance of previous Quarter: {previousQuarterBalance}</span>
-        </div>
-      </div>
-      <div className={styles['components-conatiner']}> 
-        <div className={styles['flex-row']}>
-          <div className={styles['chartX']}>
-            {processedData.chart1.labels.length > 1 && !processedData.chart1.data[0].x && (<ChartComponent1 chartData={processedData.chart1} />)}
-            {processedData.chart1 && processedData.chart1.data[0]?.x && (<ChartComponentX chartData={processedData.chart1} />)}
-          </div>
-          <div className={styles['chartX']}>
-            {processedData.chart2.labels.length > 1 && !processedData.chart2.data[0].x && (<ChartComponent2 chartData={processedData.chart2} />)}
-            {processedData.chart2 && processedData.chart2.data[0]?.x && (<ChartComponentY chartData={processedData.chart2} />)}
-          </div>
-          <div className={styles['chartX']}>
-            {processedData.chart3 && processedData.chart3.data[0]?.x && (<ChartComponentZ chartData={processedData.chart3} />)}
-          </div>
-          <div className={styles['chartX']}>
-            {processedData.chart4.labels.length > 1 && !processedData.chart4.data[0].x && (<ChartComponent4 chartData={processedData.chart4} />)}
-            {processedData.chart4 && processedData.chart4.data[0]?.x && (<ChartComponentC chartData={processedData.chart4} />)}
+            <span className={styles['selection-label']}>Select Quarter</span>
+            {(hoverStatus.quarters || selectedQuarter === "All quarters") ? 
+              uniqueQuarters.map((quarter) => (
+                <button 
+                  key={quarter} 
+                  onClick={() => handleQuarterChange(quarter)}
+                  className={selectedQuarter === quarter ? styles.selected : styles['filter-btn']}
+                >
+                  {quarter}
+                </button>
+              )) :
+              <button className={styles.selected}>{selectedQuarter}</button>
+            }
           </div>
         </div>
         <div className={styles['flex-row']}>
-            {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets.length > 0  
-            && (
-              <WorkgroupBalances
-                data={processedData}
-                months={selectedMonths}
-                workgroupsBudgets={workgroupsBudgets}
-                selectedWorkgroups={selectedWorkgroups}
-                allDistributions={allDistributions}
-              />
-            )}
+          <div 
+            className={styles['flex-row-half']}
+            onMouseEnter={() => handleHover('months', true)}
+            onMouseLeave={() => handleHover('months', false)}
+          >
+            <span className={styles['selection-label']}>Select Months</span>
+            {(hoverStatus.months || selectedMonths.includes('All months')) ? 
+              uniqueMonths.map((month) => (
+                <button 
+                  key={month} 
+                  onClick={() => handleMonthChange(month)}
+                  className={selectedMonths.includes(month) ? styles.selected : styles['filter-btn']}
+                >
+                  {month}
+                </button>
+              )) :
+              selectedMonths.map((month) => (
+                <button key={month} className={styles.selected}>{month}</button>
+              ))
+            }
+          </div>
+          <div className={styles['flex-row-half']}
+            onMouseEnter={() => handleHover('tokens', true)}
+            onMouseLeave={() => handleHover('tokens', false)}>
+          <span className={styles['selection-label']}>Select Tokens</span>
+          {(hoverStatus.tokens || selectedTokens.includes('All tokens')) ? 
+            uniqueTokens.map((token) => (
+              <button key={token} onClick={() => handleTokenChange(token)}
+                className={selectedTokens.includes(token) ? styles.selected : styles['filter-btn']}>
+                {token}
+              </button>
+            )) :
+            selectedTokens.map((token) => (
+              <button key={token} className={styles.selected}>{token}</button>
+            ))
+          }
+          </div>
+        </div>
+        <div className={styles['flex-row']}>
+          <div className={styles['flex-row-half']}
+            onMouseEnter={() => handleHover('workgroups', true)}
+            onMouseLeave={() => handleHover('workgroups', false)}>
+            <span className={styles['selection-label']}>Select Workgroups</span>
+          {(hoverStatus.workgroups || selectedWorkgroups.includes('All workgroups')) ? 
+            workgroups.map((workgroup) => (
+              <button key={workgroup} onClick={() => handleWorkgroupChange(workgroup)}
+                className={selectedWorkgroups.includes(workgroup) ? styles.selected : styles['filter-btn']}>
+                {workgroup}
+              </button>
+            )) :
+            selectedWorkgroups.map((workgroup) => (
+              <button key={workgroup} className={styles.selected}>{workgroup}</button>
+            ))
+          }
+          </div>
+          <div className={styles['flex-row-half']}
+            onMouseEnter={() => handleHover('labels', true)}
+            onMouseLeave={() => handleHover('labels', false)}>
+            <span className={styles['selection-label']}>Select Labels</span>
+          {(hoverStatus.labels || selectedLabels.includes('All labels')) ? 
+            uniqueLabels.map((label) => (
+              <button key={label} onClick={() => handleLabelChange(label)}
+                className={selectedLabels.includes(label) ? styles.selected : styles['filter-btn']}>
+                {label}
+              </button>
+            )) :
+            selectedLabels.map((label) => (
+              <button key={label} className={styles.selected}>{label}</button>
+            ))
+          }
+          </div>
+        </div>
+        <div className={styles['flex-row']}>
+          <div className={styles['flex-row-half']}>
+            <span className={styles['selection-label']}>AGIX Balance of current Quarter: {currentQuarterBalance}</span>
+          </div>
+          <div className={styles['flex-row-half']}>
+            <span className={styles['selection-label']}>AGIX Balance of previous Quarter: {previousQuarterBalance}</span>
+          </div>
+        </div>
+        <div className={styles['flex-row']}>
+              {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets.length > 0  
+              && (
+                <WorkgroupBalances
+                  data={processedData}
+                  months={selectedMonths}
+                  workgroupsBudgets={workgroupsBudgets}
+                  selectedWorkgroups={selectedWorkgroups}
+                  allDistributions={allDistributions}
+                />
+              )}
+          </div>
+        <div className={styles['components-conatiner']}>  
+          <div className={styles['flex-column']}>
+            <div className={styles['chartX']}>
+              {processedData.chart1.labels.length > 1 && !processedData.chart1.data[0].x && (<ChartComponent1 chartData={processedData.chart1} />)}
+              {processedData.chart1 && processedData.chart1.data[0]?.x && (<ChartComponentX chartData={processedData.chart1} />)}
+            </div>
+            <div className={styles['chartX']}>
+              {processedData.chart2.labels.length > 1 && !processedData.chart2.data[0].x && (<ChartComponent2 chartData={processedData.chart2} />)}
+              {processedData.chart2 && processedData.chart2.data[0]?.x && (<ChartComponentY chartData={processedData.chart2} />)}
+            </div>
+            <div className={styles['chartX']}>
+              {processedData.chart3 && processedData.chart3.data[0]?.x && (<ChartComponentZ chartData={processedData.chart3} />)}
+            </div>
+            <div className={styles['chartX']}>
+              {processedData.chart4.labels.length > 1 && !processedData.chart4.data[0].x && (<ChartComponent4 chartData={processedData.chart4} />)}
+              {processedData.chart4 && processedData.chart4.data[0]?.x && (<ChartComponentC chartData={processedData.chart4} />)}
+            </div>
           </div>
           <div className={styles['flex-column']}>
-          <div className={styles['tables']}>
-            {selectedLabels.includes('All labels') && selectedWorkgroups.includes('All workgroups') && processedData.table1 && (<DynamicTable data={processedData.table1} />)}
+            <div className={styles['tables']}>
+              {selectedLabels.includes('All labels') && selectedWorkgroups.includes('All workgroups') && processedData.table1 && (<DynamicTable data={processedData.table1} />)}
+            </div>
+            <div className={styles['tables']}>
+              {(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (selectedTokens.length > 1) && processedData.table3 && (<DynamicTable data={processedData.table3} />)}
+            </div>
+            <div className={styles['tables']}>
+              {processedData.table2 && !(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (<DynamicTable data={processedData.table2} />)}
+            </div>
           </div>
-          <div className={styles['tables']}>
-            {(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (selectedTokens.length > 1) && processedData.table3 && (<DynamicTable data={processedData.table3} />)}
-          </div>
-          <div className={styles['tables']}>
-            {processedData.table2 && !(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (<DynamicTable data={processedData.table2} />)}
-          </div>
-        </div>
-      </div>  
+        </div>  
+      </div>
     </div>
   );
 };

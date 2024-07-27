@@ -181,12 +181,13 @@ const ProjectPage = () => {
                         Dashboard
                       </button>
                     )}
-                    {!loading && activeTab === 'transactions' && (
+                    {!loading && (activeTab === 'transactions' || activeTab === 'report') && (
                         <>
-                            <div>Table buttons</div>
+                            {activeTab != 'report' && (<div>Table buttons</div>)}
+                            {activeTab === 'report' && (<div>Dashboard buttons</div>)}
                             <button className={styles.notactive} onClick={scrollToTop}>Scroll to Top</button>
                             <button className={styles.notactive} onClick={scrollToBottom}>Scroll to Bottom</button>
-                            {myVariable?.balance && (
+                            {myVariable?.balance && activeTab != 'report' && (
                             <>
                             <div className={styles.walletDetails}>
                             <div>Wallet Balance</div>

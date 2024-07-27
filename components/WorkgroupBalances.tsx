@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from '../styles/Report.module.css';
+import styles from '../styles/WorkgroupBalances.module.css';
 
 interface WorkgroupBalancesProps {
   data: {
