@@ -1,0 +1,109 @@
+.main {
+    display: flex;
+    flex-direction: column;
+}
+
+.numbers {
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Center the table horizontally */
+}
+
+.numbers table {
+    width: 100%;
+    max-width: 1065px; /* Set a maximum width for the table */
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin-left: -0px;
+}
+
+.numbers th, .numbers td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+    font-size: 0.8rem;
+}
+
+.numbers th {
+    text-align: left;
+    height: auto;
+    white-space: normal;
+    vertical-align: top;
+    min-height: 60px;
+    line-height: 1.2;
+}
+
+.numbers td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Adjust these percentages to change column widths */
+.numbers th:nth-child(1), .numbers td:nth-child(1) { width: 25%; } /* Workgroup */
+.numbers th:nth-child(2), .numbers td:nth-child(2) { width: 10%; } /* Budget */
+.numbers th:nth-child(3), .numbers td:nth-child(3) { width: 10%; } /* Spent */
+.numbers th:nth-child(4), .numbers td:nth-child(4) { width: 10%; } /* Incoming Reallocation */
+.numbers th:nth-child(5), .numbers td:nth-child(5) { width: 10%; } /* Outgoing Reallocation */
+.numbers th:nth-child(6), .numbers td:nth-child(6) { width: 10%; } /* Remaining */
+.numbers th:nth-child(7), .numbers td:nth-child(7) { width: 10%; } /* Cumulative Reallocation */
+.numbers th:nth-child(8), .numbers td:nth-child(8) { width: 10%; } /* Cumulative Remaining */
+
+.numbers th:not(:first-child),
+.numbers td:not(:first-child) {
+    text-align: right;
+}
+
+.dropdownContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.dropdown {
+    margin: 5px;
+}
+
+.dropdownSelect {
+    padding: 0.2em;
+    background-color: black;
+    color: white;
+}
+
+.workgroupTable {
+    border-collapse: collapse;
+    border: 1px solid white;
+    width: 100%;
+}
+
+.workgroupTable th,
+.workgroupTable td {
+    border: 1px solid white;
+    padding: 4px 8px; 
+    font-size: 0.9rem;
+}
+
+.workgroupTable th:first-child,
+.workgroupTable td:first-child {
+    text-align: left;
+}
+
+.workgroupTable th:last-child,
+.workgroupTable td:last-child {
+    text-align: right;
+}
+
+.workgroupTable th:nth-child(2),
+.workgroupTable td:nth-child(2) {
+    text-align: right;
+}
+
+.workgroupContainer {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.workgroupBox {
+    display: flex;
+    flex-direction: column;
+}
