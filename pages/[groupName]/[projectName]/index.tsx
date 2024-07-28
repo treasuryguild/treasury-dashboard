@@ -5,6 +5,7 @@ import { useMyVariable } from '../../../context/MyVariableContext';
 import { getOrgs } from '../../../utils/getOrgs';
 import { getMonthlyBudget } from '../../../utils/getMonthlyBudget';
 import { getTransactions } from '../../../utils/getTransactions';
+import { getAllTransactions } from '../../../utils/getAllTransactions';
 import { getWalletBalance } from '../../../utils/getWalletBalance';
 import { getAssetList } from '../../../utils/getAssetList'
 import styles from '../../../styles/Transactions.module.css';
@@ -105,7 +106,7 @@ const ProjectPage = () => {
       if (projectData) {
         setLoading(true);
         budgetInfo = await getMonthlyBudget(projectData.project_id);
-        transactions = await getTransactions(projectData.project_id);
+        transactions = await getAllTransactions(projectData.project_id);
         let balance = await getAssetList(projectData.wallet);
         let toke_types = await getTokenTypes();
         //console.log("balance2", balance);

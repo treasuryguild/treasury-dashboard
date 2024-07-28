@@ -112,6 +112,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   };
 
   async function postWorkgroupsToSubgroups(workgroups: string[], projectId: string) {
+    console.log('Posting workgroups to subgroups table', workgroups);
     const response = await fetch('/api/setSubgroups', {
       method: 'POST',
       headers: {
@@ -145,12 +146,12 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
       }
   
       const data = await response.json();
-      console.log('Raw data from getSubgroups:', data);
+      //console.log('Raw data from getSubgroups:', data);
   
       if (data && Array.isArray(data.workgroups)) {
-        console.log('Processing workgroups array');
+        //console.log('Processing workgroups array');
         const processedData = data.workgroups.map((item: any) => {
-          console.log('Processing item:', item);
+          //console.log('Processing item:', item);
           return {
             ...item,
             sub_group_data: typeof item.sub_group_data === 'string' 
@@ -200,17 +201,17 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
       }
   
       // Post workgroups to subgroups table
-      console.log('Posting workgroups to subgroups table');
+      //console.log('Posting workgroups to subgroups table');
       await postWorkgroupsToSubgroups(distData.workgroups, myVariable.projectInfo.project_id);
       
-      console.log('Fetching subgroups');
+      //console.log('Fetching subgroups');
       const subgroups = await getWorkgroups(myVariable.projectInfo.project_id);
-      console.log('Fetched subgroups:', subgroups);
+      //console.log('Fetched subgroups:', subgroups);
       
       if (Array.isArray(subgroups) && subgroups.length > 0) {
-        console.log('Setting workgroupsBudgets');
+        //console.log('Setting workgroupsBudgets');
         setWorkgroupsBudgets(subgroups);
-        console.log('workgroupsBudgets set to:', subgroups);
+        //console.log('workgroupsBudgets set to:', subgroups);
       } else {
         console.warn('No subgroups data returned or empty array');
       }

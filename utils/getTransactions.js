@@ -109,6 +109,6 @@ export async function getTransactions(project_id) {
   }
 
   const transactions = await getAllData(project_id);
-  //console.log("transactions", transactions);
+  console.log("transactions", transactions);
   return transactions;
 }
