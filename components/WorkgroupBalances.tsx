@@ -21,7 +21,7 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
   selectedWorkgroups, 
   allDistributions, 
 }) => {
-  console.log('WorkgroupBalances', { data, months, workgroupsBudgets, selectedWorkgroups, allDistributions });
+  //console.log('WorkgroupBalances', { data, months, workgroupsBudgets, selectedWorkgroups, allDistributions });
 
   const getQuartersAndYearsFromMonths = (months: string[]) => {
     if (months.includes('All months')) {
