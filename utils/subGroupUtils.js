@@ -16,11 +16,21 @@ const subgroupConfig = {
         'video-workgroup': 50
       }
     },
-    // Configuration for renaming (including single workgroups)
+    // Configuration for renaming
     renameRules: {
       'ambassador-translator': 'translator-workgroup'
       // Add more renaming rules as needed
     },
+    // New configuration for date-based renaming
+    dateBasedRenameRules: [
+      {
+        subgroup: 'strategy-guild',
+        newName: 'strategy-guild-v2',
+        startDate: '31.06.24', // Format: YYYY-MM-DD
+        endDate: ''    // Optional, if not provided, it will apply from startDate onwards
+      }
+      // Add more date-based renaming rules as needed
+    ],
     // Default configuration
     default: {
       split: false,
@@ -30,8 +40,28 @@ const subgroupConfig = {
     }
   };
   
+  function parseDate(dateString) {
+    const [day, month, year] = dateString.split('.');
+    return new Date(2000 + parseInt(year), parseInt(month) - 1, parseInt(day));
+  }
+  
   // Utility function to rename a single subgroup
-  function renameSubgroup(subgroup) {
+  function renameSubgroup(subgroup, taskDate) {
+    // First, check for date-based renaming
+    if (taskDate) {
+      const dateBasedRule = subgroupConfig.dateBasedRenameRules.find(rule => {
+        const date = parseDate(taskDate);
+        const startDate = parseDate(rule.startDate);
+        const endDate = rule.endDate ? parseDate(rule.endDate) : new Date('9999-12-31');
+        return rule.subgroup === subgroup && date >= startDate && date <= endDate;
+      });
+  
+      if (dateBasedRule) {
+        return dateBasedRule.newName;
+      }
+    }
+  
+    // If no date-based rule applies, use the original renaming logic
     return subgroupConfig.renameRules[subgroup] || subgroup;
   }
   
@@ -40,7 +70,8 @@ const subgroupConfig = {
     // First, rename all subgroups
     const renamedSubgroups = parsedContribution.task_sub_group
       .split(',')
-      .map(subgroup => renameSubgroup(subgroup.trim()));
+      .map(subgroup => renameSubgroup(subgroup.trim(), parsedContribution.task_date));
+  
   
     // Join the renamed subgroups back into a string
     const renamedTaskSubGroup = renamedSubgroups.join(',');
