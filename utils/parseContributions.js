@@ -1,3 +1,6 @@
+// ../utils/parseContributions.js
+import { handleSubgroupsAndRewards } from './subGroupUtils';
+
 export function parseContributions(tx_json) {
     const contributions = [];
     const mdVersion = tx_json.mdVersion ? tx_json.mdVersion[0] : '1.0';
@@ -22,22 +25,18 @@ export function parseContributions(tx_json) {
           .replace(/\s+/g, '-')
           .trim();
         
-        console.log("taskSubGroup", taskSubGroup);
+        console.log("Original taskSubGroup", taskSubGroup);
+        
         // If still empty after all processing, set to "ambassador-program"
         if (taskSubGroup === "mindplex") {
           taskSubGroup = "mindplex,ambassador-translator";
         }
 
-        // Remove duplicates
-        let subGroups = taskSubGroup.split(',').map(g => g.trim());
-        subGroups = [...new Set(subGroups)];
-        taskSubGroup = subGroups.join(',');
-  
         // If still empty after all processing, set to "ambassador-program"
         if (taskSubGroup === "" || taskSubGroup === "ambasador-program") {
           taskSubGroup = "ambassador-program";
         }
-  
+        
         const parsedContribution = {
           contribution_id: crypto.randomUUID(),
           task_name: contribution.name || (Array.isArray(contribution.description) ? contribution.description.join(' ') : String(contribution.description || '')),
@@ -61,9 +60,13 @@ export function parseContributions(tx_json) {
           });
         }
   
-        contributions.push(parsedContribution);
+        // Use the utility function to handle subgroups renaming, splitting, and rewards
+        const processedContributions = handleSubgroupsAndRewards(parsedContribution);
+        contributions.push(...processedContributions);
+        
+        console.log("Processed contributions:", processedContributions);
       });
     }
-  
+    console.log("All contributions:", contributions);
     return contributions;
   }
