@@ -1,5 +1,6 @@
+
 import { supabase } from "../lib/supabaseClient";
-import { parseContributions } from "./parseContributions"; // Import the new utility function
+import { parseContributions } from "./parseContributions";
 
 export async function getAllTransactions(project_id) {
   async function getAllTransactionsData(projectId, page, limit) {
@@ -35,6 +36,8 @@ export async function getAllTransactions(project_id) {
         page++;
       }
 
+      console.log("Total transactions fetched:", transactionsData.length);
+
       const transactions = transactionsData.map((transaction) => {
         let tx_json;
         try {
@@ -43,20 +46,84 @@ export async function getAllTransactions(project_id) {
           console.error('Error parsing tx_json:', error);
           tx_json = {};
         }
+        const contributions = parseContributions(tx_json);
 
-        const contributions = parseContributions(tx_json); // Use the new utility function
-
-        return { ...transaction, contributions };
+        return { ...transaction, contributions, original_tx_json: tx_json };
       });
 
-      return transactions;
+      console.log("Transactions after parsing:", transactions.length);
+
+      // Separate FaultyTx-Filter transactions
+      const faultyTxFilters = transactions.filter(t => t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter");
+      const regularTransactions = transactions.filter(t => !(t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter"));
+
+      console.log("FaultyTx-Filter transactions:", faultyTxFilters.length);
+      console.log("Regular transactions:", regularTransactions.length);
+
+      // Apply filters to regular transactions
+      const fixedTransactions = regularTransactions.map(transaction => {
+        const matchingFilters = faultyTxFilters.filter(filter => filter.original_tx_json.faultyTx === transaction.transaction_id);
+        
+        if (matchingFilters.length > 0) {
+          console.log(`Applying ${matchingFilters.length} filters to transaction ${transaction.transaction_id}`);
+          console.log("Before filtering:", JSON.stringify(transaction.contributions, null, 2));
+          
+          matchingFilters.forEach(filter => {
+            const faultyContributions = filter.original_tx_json.contributions;
+            console.log("Faulty contributions:", JSON.stringify(faultyContributions, null, 2));
+            
+            // First, identify all contributors to be removed globally
+            const globalContributorsToRemove = faultyContributions
+              .filter(fc => !fc.name)
+              .flatMap(fc => fc.contributors);
+            
+            console.log("Global contributors to remove:", globalContributorsToRemove);
+
+            // Then, apply filters to all contributions
+            transaction.contributions = transaction.contributions.filter(contribution => {
+              console.log(`Processing contribution: ${contribution.task_name}`);
+              
+              const matchingFaultyContribution = faultyContributions.find(fc => 
+                fc.name && fc.name[0] === contribution.task_name
+              );
+
+              // Remove global contributors and specific contributors if there's a match
+              const contributorsToRemove = [
+                ...globalContributorsToRemove,
+                ...(matchingFaultyContribution ? matchingFaultyContribution.contributors : [])
+              ];
+
+              console.log(`Contributors to remove for ${contribution.task_name}:`, contributorsToRemove);
+
+              contribution.distributions = contribution.distributions.filter(dist => {
+                const keep = !contributorsToRemove.includes(dist.contributor_id);
+                console.log(`Distribution for ${dist.contributor_id}: ${keep ? 'kept' : 'removed'}`);
+                return keep;
+              });
+
+              const keep = contribution.distributions.length > 0;
+              console.log(`Contribution ${contribution.task_name}: ${keep ? 'kept' : 'removed'}`);
+              return keep;
+            });
+          });
+
+          console.log("After filtering:", JSON.stringify(transaction.contributions, null, 2));
+        }
+
+        return transaction;
+      });
+
+      console.log("Fixed Transactions:", fixedTransactions.length);
+
+      return { transactions, fixedTransactions };
     } catch (error) {
       console.error('Unknown error:', error);
-      return [];
+      return { transactions: [], fixedTransactions: [] };
     }
   }
 
-  const transactions = await getAllData(project_id);
-  console.log("transactions", transactions);
-  return transactions;
+  const result = await getAllData(project_id);
+  console.log("Final transactions count:", result.transactions);
+  console.log("Final fixedTransactions count:", result.fixedTransactions);
+  return result;
 }

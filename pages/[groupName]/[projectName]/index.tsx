@@ -101,12 +101,11 @@ const ProjectPage = () => {
   useEffect(() => {
     const fetchProjectData = async () => {
       let budgetInfo = myVariable.projectInfo;
-      let transactions = myVariable.transactions;
 
       if (projectData) {
         setLoading(true);
         budgetInfo = await getMonthlyBudget(projectData.project_id);
-        transactions = await getAllTransactions(projectData.project_id);
+        let {transactions, fixedTransactions} = await getAllTransactions(projectData.project_id);
         let balance = await getAssetList(projectData.wallet);
         let toke_types = await getTokenTypes();
         //console.log("balance2", balance);
