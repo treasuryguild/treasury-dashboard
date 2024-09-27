@@ -38,7 +38,7 @@ export function parseContributions(tx_json) {
           .replace(/\s+/g, '-')
           .trim();
         
-        console.log("Original taskSubGroup", taskSubGroup);
+        //console.log("Original taskSubGroup", taskSubGroup);
         
         if (taskSubGroup === "mindplex") {
           taskSubGroup = "mindplex,ambassador-translator";
@@ -75,9 +75,9 @@ export function parseContributions(tx_json) {
         const processedContributions = handleSubgroupsAndRewards(parsedContribution);
         contributions.push(...processedContributions);
         
-        console.log("Processed contributions:", processedContributions);
+        //console.log("Processed contributions:", processedContributions);
       });
     }
-    console.log("All contributions:", contributions);
+    //console.log("All contributions:", contributions);
     return contributions;
 }
