@@ -557,6 +557,6 @@ function createTable1Data(filteredDistributions) {
         filteredDistributions: filteredDistributions,
         monthlyTotals: calculateMonthlyTotals(distributionsArray, selectedMonths, selectedWorkgroups, selectedTokens),
     };
-    console.log("output", output)
+    //console.log("output", output)
     return output;
 }

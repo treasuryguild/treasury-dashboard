@@ -7,7 +7,7 @@ let testFaultyTxFilters;
 try {
   testFaultyTxFilters = require('../public/testFaultyTxFilters.json'); 
 } catch (error) {
-  console.warn("testFaultyTxFilters.json not found, using empty filters");
+  //console.warn("testFaultyTxFilters.json not found, using empty filters");
   testFaultyTxFilters = []; 
 }
 
