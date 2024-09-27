@@ -1,7 +1,15 @@
 // ../utils/getAllTransactions.js
 import { supabase } from "../lib/supabaseClient";
 import { parseContributions } from "./parseContributions";
-import testFaultyTxFilters from '../public/testFaultyTxFilters.json';
+
+let testFaultyTxFilters;
+
+try {
+  testFaultyTxFilters = require('../public/testFaultyTxFilters.json'); 
+} catch (error) {
+  console.warn("testFaultyTxFilters.json not found, using empty filters");
+  testFaultyTxFilters = []; 
+}
 
 export async function getAllTransactions(project_id, useTestData = false) {
   async function getAllTransactionsData(projectId, page, limit) {
@@ -55,8 +63,9 @@ export async function getAllTransactions(project_id, useTestData = false) {
       console.log("Original transactions after parsing:", originalTransactions.length);
 
       // Use test data if useTestData is true
+      const defaultFilters = [];
       const faultyTxFilters = useTestData
-        ? testFaultyTxFilters
+        ? (testFaultyTxFilters || defaultFilters)
         : originalTransactions.filter(t => t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter");
       
       const regularTransactions = originalTransactions.filter(t => !(t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter"));
