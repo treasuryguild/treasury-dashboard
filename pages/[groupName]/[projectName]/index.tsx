@@ -101,17 +101,16 @@ const ProjectPage = () => {
   useEffect(() => {
     const fetchProjectData = async () => {
       let budgetInfo = myVariable.projectInfo;
-      let transactions = myVariable.transactions;
 
       if (projectData) {
         setLoading(true);
         budgetInfo = await getMonthlyBudget(projectData.project_id);
-        transactions = await getAllTransactions(projectData.project_id);
+        let {transactions, originalTransactions} = await getAllTransactions(projectData.project_id);
         let balance = await getAssetList(projectData.wallet);
         let toke_types = await getTokenTypes();
         //console.log("balance2", balance);
         setBalance2(balance);
-        setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, balance, toke_types }));
+        setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions, originalTransactions, balance, toke_types }));
         setLoading(false);
       }
     };
