@@ -1,8 +1,9 @@
-
+// ../utils/getAllTransactions.js
 import { supabase } from "../lib/supabaseClient";
 import { parseContributions } from "./parseContributions";
+import testFaultyTxFilters from '../public/testFaultyTxFilters.json';
 
-export async function getAllTransactions(project_id) {
+export async function getAllTransactions(project_id, useTestData = false) {
   async function getAllTransactionsData(projectId, page, limit) {
     const from = (page - 1) * limit;
     const to = from + limit - 1;
@@ -38,7 +39,7 @@ export async function getAllTransactions(project_id) {
 
       console.log("Total transactions fetched:", transactionsData.length);
 
-      const transactions = transactionsData.map((transaction) => {
+      const originalTransactions = transactionsData.map((transaction) => {
         let tx_json;
         try {
           tx_json = typeof transaction.tx_json === 'string' ? JSON.parse(transaction.tx_json) : transaction.tx_json;
@@ -51,17 +52,20 @@ export async function getAllTransactions(project_id) {
         return { ...transaction, contributions, original_tx_json: tx_json };
       });
 
-      console.log("Transactions after parsing:", transactions.length);
+      console.log("Original transactions after parsing:", originalTransactions.length);
 
-      // Separate FaultyTx-Filter transactions
-      const faultyTxFilters = transactions.filter(t => t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter");
-      const regularTransactions = transactions.filter(t => !(t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter"));
+      // Use test data if useTestData is true
+      const faultyTxFilters = useTestData
+        ? testFaultyTxFilters
+        : originalTransactions.filter(t => t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter");
+      
+      const regularTransactions = originalTransactions.filter(t => !(t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter"));
 
       console.log("FaultyTx-Filter transactions:", faultyTxFilters.length);
       console.log("Regular transactions:", regularTransactions.length);
 
       // Apply filters to regular transactions
-      const fixedTransactions = regularTransactions.map(transaction => {
+      const transactions = regularTransactions.map(transaction => {
         const matchingFilters = faultyTxFilters.filter(filter => filter.original_tx_json.faultyTx === transaction.transaction_id);
         
         if (matchingFilters.length > 0) {
@@ -113,17 +117,17 @@ export async function getAllTransactions(project_id) {
         return transaction;
       });
 
-      console.log("Fixed Transactions:", fixedTransactions.length);
+      console.log("Fixed Transactions (now 'transactions'):", transactions.length);
 
-      return { transactions, fixedTransactions };
+      return { originalTransactions, transactions };
     } catch (error) {
       console.error('Unknown error:', error);
-      return { transactions: [], fixedTransactions: [] };
+      return { originalTransactions: [], transactions: [] };
     }
   }
 
   const result = await getAllData(project_id);
-  console.log("Final transactions count:", result.transactions);
-  console.log("Final fixedTransactions count:", result.fixedTransactions);
+  console.log("Final originalTransactions count:", result.originalTransactions.length);
+  console.log("Final transactions count:", result.transactions.length);
   return result;
 }

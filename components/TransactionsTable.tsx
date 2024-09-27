@@ -14,7 +14,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, group
     return tokenInfo ? tokenInfo.asset_type : null;
   };
 
-  const transactions = Array.isArray(myVariable.transactions) ? myVariable.transactions : [];
+  const transactions = Array.isArray(myVariable.originalTransactions) ? myVariable.originalTransactions : [];
 
   const allTokens: string[] = transactions.flatMap((transaction: any) => 
     Array.isArray(transaction.total_tokens) 
