@@ -46,6 +46,8 @@ export async function txDenormalizer(txs) {
                                     return 'ADA';
                                 } else if (token.toLowerCase() === 'gimbal') {
                                     return 'GMBL';
+                                } else if (token.toLowerCase() === 'minutes') {
+                                    return 'MINS';
                                 } else {
                                     return token;
                                 }
