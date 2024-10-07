@@ -142,3 +142,10 @@
 .quarter-btn:hover {
     background-color: rgb(99, 124, 171);
 }
+
+.filter-select {
+  padding: 5px;
+  margin-left: 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
