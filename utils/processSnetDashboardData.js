@@ -1,3 +1,4 @@
+// ../utils/processSnetDashboardData.js
 export function processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distributionsArray, budgets) {
 
     const filteredDistributions = distributionsArray.filter(distribution => {

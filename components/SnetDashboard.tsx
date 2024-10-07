@@ -1,3 +1,4 @@
+// ../components/SnetDashboard.tsx
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/Dashboard.module.css';
@@ -64,6 +65,20 @@ interface ProcessedDataType {
   table3: any[];
 }
 
+interface WorkgroupBudget {
+  sub_group: string;
+  sub_group_data: {
+    budgets: Record<string, Record<string, {
+      initial: { AGIX: number };
+      final: { AGIX: number };
+      reallocations: {
+        incoming: { AGIX: number };
+        outgoing: { AGIX: number };
+      };
+    }>>;
+  };
+}
+
 const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   const router = useRouter();
   const { groupName, projectName } = router.query;
@@ -73,7 +88,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   const [uniqueTokens, setUniqueTokens] = useState<string[]>(['ADA']);
   const [uniqueLabels, setUniqueLabels] = useState<string[]>(['All labels']);
   const [workgroups, setWorkgroups] = useState<string[]>([]);
-  const [workgroupsBudgets, setWorkgroupsBudgets] = useState<string[]>([]);
+  const [workgroupsBudgets, setWorkgroupsBudgets] = useState<WorkgroupBudget[]>([]);
   const [runningBalanceTab, setRunningBalanceTab] = useState<DistributionItem[]>([]);
   const [testTable, setTestTable] = useState<DistributionItem[]>([]);
   const [selectedMonths, setSelectedMonths] = useState<string[]>(query.month ? query.month.split(',') : []);
@@ -100,19 +115,21 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     workgroups: false,
     labels: false,
     quarters: false,
+    quarterFilters: false
   });
   const [currentQuarterBalance, setCurrentQuarterBalance] = useState(0);
   const [previousQuarterBalance, setPreviousQuarterBalance] = useState(0);
   const [allDistributions, setAllDistributions] = useState<any[]>([]);
   const [uniqueQuarters, setUniqueQuarters] = useState<string[]>([]);
   const [selectedQuarter, setSelectedQuarter] = useState<string>("All quarters");
+  const [selectedQuarterFilters, setSelectedQuarterFilters] = useState<string[]>(["No Quarters"]);
 
   const handleHover = (box: string, status: boolean) => {
     setHoverStatus(prev => ({ ...prev, [box]: status }));
   };
 
   async function postWorkgroupsToSubgroups(workgroups: string[], projectId: string) {
-    console.log('Posting workgroups to subgroups table', workgroups);
+    //console.log('Posting workgroups to subgroups table', workgroups);
     const response = await fetch('/api/setSubgroups', {
       method: 'POST',
       headers: {
@@ -159,7 +176,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
               : item.sub_group_data
           };
         });
-        console.log('Processed data:', processedData);
+        //console.log('Processed data:', processedData);
         return processedData;
       } else {
         console.error('Unexpected data format from getSubgroups:', data);
@@ -387,6 +404,33 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     selectItem(labels, 'All labels', selectedLabels, setSelectedLabels, 'labels');
   };
 
+  const handleQuarterFilterChange = (quarter: string) => {
+    let updatedFilters: string[];
+    if (quarter === "No Quarters") {
+      updatedFilters = ["No Quarters"];
+    } else if (quarter === "All quarters") {
+      updatedFilters = uniqueQuarters.filter(q => q !== "All quarters");
+    } else {
+      if (selectedQuarterFilters.includes(quarter)) {
+        updatedFilters = selectedQuarterFilters.filter(q => q !== quarter);
+      } else {
+        updatedFilters = [...selectedQuarterFilters.filter(q => q !== "No Quarters"), quarter];
+      }
+  
+      if (updatedFilters.length === 0) {
+        updatedFilters = ["No Quarters"];
+      } else if (updatedFilters.length === uniqueQuarters.length - 1) {
+        // If all quarters except "All quarters" are selected, change to "All quarters"
+        updatedFilters = uniqueQuarters.filter(q => q !== "All quarters");
+      }
+    }
+  
+    // Remove duplicates and "All quarters" from the array
+    updatedFilters = Array.from(new Set(updatedFilters)).filter(q => q !== "All quarters");
+  
+    setSelectedQuarterFilters(updatedFilters);
+  };
+
 const processData = async () => {
     const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, allDistributions, myVariable.projectInfo.budgets);
     setProcessedData(data);
@@ -461,7 +505,7 @@ useEffect(() => {
       <div className={styles['flex-column']}>
         <div className={styles['flex-row']}>
           <div 
-            className={styles['flex-row-full']}
+            className={styles['flex-row-half']}
             onMouseEnter={() => handleHover('quarters', true)}
             onMouseLeave={() => handleHover('quarters', false)}
           >
@@ -477,6 +521,32 @@ useEffect(() => {
                 </button>
               )) :
               <button className={styles.selected}>{selectedQuarter}</button>
+            }
+          </div>
+          <div className={styles['flex-row-half']}
+            onMouseEnter={() => handleHover('quarterFilters', true)}
+            onMouseLeave={() => handleHover('quarterFilters', false)}>
+            <span className={styles['selection-label']}>Filter Out Reallocations by Quarter</span>
+            {(hoverStatus.quarterFilters || selectedQuarterFilters.includes('No Quarters')) ? 
+              ["No Quarters", "All quarters", ...uniqueQuarters.filter(q => q !== "All quarters")].map((quarter) => (
+                <button 
+                  key={quarter} 
+                  onClick={() => handleQuarterFilterChange(quarter)}
+                  className={
+                    quarter === "All quarters" 
+                      ? (selectedQuarterFilters.length === uniqueQuarters.length - 1 ? styles.selected : styles['filter-btn'])
+                      : (selectedQuarterFilters.includes(quarter) ? styles.selected : styles['filter-btn'])
+                  }
+                >
+                  {quarter}
+                </button>
+              )) :
+              (selectedQuarterFilters.length === uniqueQuarters.length - 1 
+                ? [<button key="All quarters" className={styles.selected}>All quarters</button>]
+                : selectedQuarterFilters.map((quarter) => (
+                    <button key={quarter} className={styles.selected}>{quarter}</button>
+                  ))
+              )
             }
           </div>
         </div>
@@ -570,6 +640,7 @@ useEffect(() => {
                   workgroupsBudgets={workgroupsBudgets}
                   selectedWorkgroups={selectedWorkgroups}
                   allDistributions={allDistributions}
+                  selectedQuarterFilters={selectedQuarterFilters}
                 />
               )}
           </div>
