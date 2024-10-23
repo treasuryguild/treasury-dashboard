@@ -194,7 +194,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
       let distributionsArray: any = await txDenormalizer(myVariable.transactions);
       setAllDistributions(distributionsArray);
       let distData: any = extractDistributionData(distributionsArray);
-      
+      //console.log("distData", distData)
       // Sort the months in descending order
       const sortedMonths = distData.months.sort((a: any, b: any) => {
         const [monthA, yearA] = a.split('.').map(Number);
@@ -468,10 +468,13 @@ const calculateQuarterBalances = (distributionsArray: any) => {
   const { currentQuarter, currentYear, previousQuarter, previousYear } = getQuarters();
 
   const calculateBalance = (quarter: any, year: any) => {
+    // Ensure year is a number for consistent comparison
+    const yearAsNumber = Number(year);
+
     // Aggregate the budget for the quarter
     const quarterBudget = quarter.reduce((total: any, month: any) => {
-        const budgetKey = `${month.padStart(2, '0')}.${year}`;
-        const monthlyBudget = myVariable.projectInfo.budgets[budgetKey] || 0;
+        const budgetKey = `${month.padStart(2, '0')}.${yearAsNumber}`;
+        const monthlyBudget = Number(myVariable.projectInfo.budgets[budgetKey] || 0);
         return total + monthlyBudget;
     }, 0);
 
@@ -479,16 +482,17 @@ const calculateQuarterBalances = (distributionsArray: any) => {
     return quarterBudget - distributionsArray
         .filter((distribution: any) => {
             if (distribution.tx_type !== 'Outgoing') return false;
-            const [day, month, yearShort] = distribution.task_date.split('.');
-            const fullYear = `20${yearShort}`; // Assuming the year is in 'YY format and needs conversion to 'YYYY'
-            return quarter.includes(month) && fullYear === year.toString();
+            const [day, month, distributionYear] = distribution.task_date.split('.');
+            // Handle both YY and YYYY formats and convert to number
+            const fullYear = Number(distributionYear.length === 2 ? `20${distributionYear}` : distributionYear);
+            return quarter.includes(month) && fullYear === yearAsNumber;
         })
         .reduce((acc: any, curr: any) => {
             const agixIndex = curr.tokens.findIndex((token: any) => token === 'AGIX');
-            const agixAmount = agixIndex !== -1 ? curr.amounts[agixIndex] : 0;
+            const agixAmount = Number(agixIndex !== -1 ? curr.amounts[agixIndex] : 0);
             return acc + agixAmount;
         }, 0);
-    };
+  };
 
 
   setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear));

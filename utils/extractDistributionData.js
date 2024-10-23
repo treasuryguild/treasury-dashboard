@@ -14,7 +14,9 @@ export function extractDistributionData(distributions) {
         const dateString = distribution.task_date || distribution.transaction_date;
         if (dateString) {
             const dateParts = dateString.split('.');
-            const monthYear = `${dateParts[1]}.${'20' + dateParts[2]}`; // Assuming year is in YY format and needs conversion to YYYY
+            // Handle both YY and YYYY formats
+            const year = dateParts[2].length === 2 ? '20' + dateParts[2] : dateParts[2];
+            const monthYear = `${dateParts[1]}.${year}`;
             monthsSet.add(monthYear);
         }
 
