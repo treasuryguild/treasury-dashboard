@@ -36,12 +36,14 @@ export default Home;
 
 export async function getServerSideProps() {
   const groupInfo = await getOrgs();
-  
-  const sortedGroupInfo = groupInfo.sort((a: any, b: any) => {
-    return a.group_name.localeCompare(b.group_name);
-  });
+
+  const sortedGroupInfo = groupInfo
+    .filter((group: any) => group.archived !== true)
+    .sort((a: any, b: any) => {
+      return a.group_name.localeCompare(b.group_name);
+    });
 
   return {
-    props: { groupInfo: sortedGroupInfo }
+    props: { groupInfo: sortedGroupInfo },
   };
 }
