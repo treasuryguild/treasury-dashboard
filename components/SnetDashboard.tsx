@@ -121,7 +121,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   const [previousQuarterBalance, setPreviousQuarterBalance] = useState(0);
   const [allDistributions, setAllDistributions] = useState<any[]>([]);
   const [uniqueQuarters, setUniqueQuarters] = useState<string[]>([]);
-  const [selectedQuarter, setSelectedQuarter] = useState<string>("All quarters");
+  const [selectedQuarters, setSelectedQuarters] = useState<string[]>(["All quarters"]);
   const [selectedQuarterFilters, setSelectedQuarterFilters] = useState<string[]>(["No Quarters"]);
 
   const handleHover = (box: string, status: boolean) => {
@@ -336,14 +336,34 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   };
 
   const handleQuarterChange = (quarter: string) => {
+    let updatedQuarters: string[];
     let updatedMonths: string[];
-    if (quarter === selectedQuarter || quarter === 'All quarters') {
-      setSelectedQuarter("All quarters");
-      updatedMonths = ['All months'];
+    
+    if (quarter === "All quarters") {
+      updatedQuarters = ["All quarters"];
+      updatedMonths = ["All months"];
     } else {
-      setSelectedQuarter(quarter);
-      updatedMonths = getQuarterMonths(quarter);
+      if (selectedQuarters.includes(quarter)) {
+        // Remove the quarter if it's already selected
+        updatedQuarters = selectedQuarters.filter(q => q !== quarter);
+        if (updatedQuarters.length === 0) {
+          updatedQuarters = ["All quarters"];
+          updatedMonths = ["All months"];
+        } else {
+          // Get months for remaining selected quarters
+          updatedMonths = updatedQuarters
+            .filter(q => q !== "All quarters")
+            .flatMap(q => getQuarterMonths(q));
+        }
+      } else {
+        // Add the new quarter
+        updatedQuarters = [...selectedQuarters.filter(q => q !== "All quarters"), quarter];
+        // Get months for all selected quarters
+        updatedMonths = updatedQuarters.flatMap(q => getQuarterMonths(q));
+      }
     }
+    
+    setSelectedQuarters(updatedQuarters);
     setSelectedMonths(updatedMonths);
     updateUrlParam('months', updatedMonths);
   };
@@ -362,14 +382,15 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
         const quarterNum = Math.ceil(parseInt(m) / 3);
         return `Q${quarterNum} ${y}`;
       }));
-
-      if (selectedQuartersSet.size === 1) {
-        setSelectedQuarter(Array.from(selectedQuartersSet)[0]);
+  
+      const quartersArray = Array.from(selectedQuartersSet);
+      if (quartersArray.length === 0) {
+        setSelectedQuarters(["All quarters"]);
       } else {
-        setSelectedQuarter("All quarters");
+        setSelectedQuarters(quartersArray);
       }
     } else {
-      setSelectedQuarter("All quarters");
+      setSelectedQuarters(["All quarters"]);
     }
   }, [selectedMonths]);
 
@@ -377,7 +398,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     let updatedMonths: string[];
     if (month === 'All months') {
       updatedMonths = ['All months'];
-      setSelectedQuarter("All quarters");
+      setSelectedQuarters(["All quarters"]);
     } else {
       if (selectedMonths.includes(month)) {
         updatedMonths = selectedMonths.filter(m => m !== month);
@@ -508,23 +529,25 @@ useEffect(() => {
     <div className={styles['flex-column']}>
       <div className={styles['flex-column']}>
         <div className={styles['flex-row']}>
-          <div 
+        <div 
             className={styles['flex-row-half']}
             onMouseEnter={() => handleHover('quarters', true)}
             onMouseLeave={() => handleHover('quarters', false)}
           >
-            <span className={styles['selection-label']}>Select Quarter</span>
-            {(hoverStatus.quarters || selectedQuarter === "All quarters") ? 
+            <span className={styles['selection-label']}>Select Quarters</span>
+            {(hoverStatus.quarters || selectedQuarters.includes("All quarters")) ? 
               uniqueQuarters.map((quarter) => (
                 <button 
                   key={quarter} 
                   onClick={() => handleQuarterChange(quarter)}
-                  className={selectedQuarter === quarter ? styles.selected : styles['filter-btn']}
+                  className={selectedQuarters.includes(quarter) ? styles.selected : styles['filter-btn']}
                 >
                   {quarter}
                 </button>
               )) :
-              <button className={styles.selected}>{selectedQuarter}</button>
+              selectedQuarters.map((quarter) => (
+                <button key={quarter} className={styles.selected}>{quarter}</button>
+              ))
             }
           </div>
           <div className={styles['flex-row-half']}

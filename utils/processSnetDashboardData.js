@@ -65,7 +65,7 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
             }
         });
     
-        return Array.from(months).sort(descendingMonthSort);
+        return Array.from(months).sort(ascendingMonthSort);
     }
     
     
@@ -79,7 +79,7 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
         } else {
             // Add specified selected months to labels and sort
             selectedMonths.forEach(month => labels.add(month));
-            labels = new Set(Array.from(labels).sort(descendingMonthSort));
+            labels = new Set(Array.from(labels).sort(ascendingMonthSort));
         }
     
         // Initialize monthData with labels
@@ -112,17 +112,17 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
         return { labels: Array.from(labels), data };
     }
     
-    // Function to sort months in descending order
-    function descendingMonthSort(a, b) {
+    // Function to sort months in ascending order
+    function ascendingMonthSort(a, b) {
         let [monthA, yearA] = a.split('.').map(Number);
         let [monthB, yearB] = b.split('.').map(Number);
     
-        // Compare by year, then by month if the years are equal
+        // Compare by year first, then by month if years are equal
         if (yearA === yearB) {
-            return monthB - monthA;
+            return monthA - monthB;
         }
-        return yearB - yearA;
-    }
+        return yearA - yearB;
+    }    
 
     function isDateString(str) {
         const regex = /^\d{2}\.\d{4}$/; // Regex to match "MM.YYYY" format
@@ -201,7 +201,7 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
         // Prepare data for chart
         let labelsArray = Array.from(groups);
         if (labelsArray.length > 0 && isDateString(labelsArray[0])) {
-            labelsArray.sort(descendingMonthSort); // Sorts in descending order by month and year
+            labelsArray.sort(ascendingMonthSort); // Sorts in ascending order by month and year
         } else {
             labelsArray.sort(); 
         }
