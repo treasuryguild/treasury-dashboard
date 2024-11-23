@@ -207,7 +207,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
       });
   
       setUniqueMonths(['All months', ...sortedMonths]);
-      setWorkgroups(['All workgroups', ...distData.workgroups])
+      setWorkgroups(['All workgroups', ...distData.workgroups.sort((a: string, b: string) => a.localeCompare(b))])
       setUniqueTokens(['All tokens', ...distData.tokens])
       setUniqueLabels(['All labels', ...distData.labels])
       
