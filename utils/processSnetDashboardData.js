@@ -267,32 +267,74 @@ function createTable1Data(filteredDistributions) {
         incomingTotalsByMonth[monthData.month] = monthData.tokens;
     });
 
+    // Find the last month with outgoing transactions
+    let lastOutgoingMonth = null;
+    filteredDistributions.forEach(distribution => {
+        if (distribution.tx_type === "Outgoing") {
+            const formattedDate = getFormattedTaskDate(distribution.task_date);
+            if (!lastOutgoingMonth) {
+                lastOutgoingMonth = formattedDate;
+            } else {
+                // Compare dates to find the latest
+                const [currentMonth, currentYear] = formattedDate.split('.').map(Number);
+                const [lastMonth, lastYear] = lastOutgoingMonth.split('.').map(Number);
+                if (currentYear > lastYear || (currentYear === lastYear && currentMonth > lastMonth)) {
+                    lastOutgoingMonth = formattedDate;
+                }
+            }
+        }
+    });
+
     let monthlyData = {};
 
-    filteredDistributions.forEach(distribution => {
-        let formattedTaskDate = getFormattedTaskDate(distribution.task_date);
-
-        if (distribution.tx_type === "Incoming") {
-            // Adjust the month for 'Incoming' and 'Incoming Reserve' transactions if needed
-            formattedTaskDate = getAdjustedMonth(distribution.task_date);
-        }
-
-        // Initialize monthly data
-        if (!monthlyData[formattedTaskDate]) {
-            monthlyData[formattedTaskDate] = {
-                month: formattedTaskDate,
+    // Initialize data for all relevant months from budgets
+    // Only include months up to and including the last outgoing month
+    for (const month in budgets) {
+        const [budgetMonth, budgetYear] = month.split('.').map(Number);
+        const [lastMonth, lastYear] = lastOutgoingMonth.split('.').map(Number);
+        
+        // Only include this month if it's before or equal to the last outgoing month
+        if (budgetYear < lastYear || (budgetYear === lastYear && budgetMonth <= lastMonth)) {
+            monthlyData[month] = {
+                month: month,
                 agix: 0,
-                monthlyBudget: budgets[formattedTaskDate] || 0, // Use budgets for monthly budget amounts
+                monthlyBudget: budgets[month],
                 mbBalance: 0,
                 incomingReserve: 0
             };
         }
+    }
 
-        // Aggregate data based on tx_type
-        if (distribution.tx_type === "Outgoing" && distribution.tokens.includes('AGIX')) {
-            monthlyData[formattedTaskDate].agix += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
-        } else if (distribution.tx_type === "Incoming Reserve" && distribution.tokens.includes('AGIX')) {
-            monthlyData[formattedTaskDate].incomingReserve += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
+    // Process all distributions
+    filteredDistributions.forEach(distribution => {
+        let formattedTaskDate = getFormattedTaskDate(distribution.task_date);
+
+        if (distribution.tx_type === "Incoming") {
+            formattedTaskDate = getAdjustedMonth(distribution.task_date);
+        }
+
+        // Only process if this month is before or equal to the last outgoing month
+        const [currentMonth, currentYear] = formattedTaskDate.split('.').map(Number);
+        const [lastMonth, lastYear] = lastOutgoingMonth.split('.').map(Number);
+        
+        if (currentYear < lastYear || (currentYear === lastYear && currentMonth <= lastMonth)) {
+            // Initialize monthly data if not already initialized from budgets
+            if (!monthlyData[formattedTaskDate]) {
+                monthlyData[formattedTaskDate] = {
+                    month: formattedTaskDate,
+                    agix: 0,
+                    monthlyBudget: budgets[formattedTaskDate] || 0,
+                    mbBalance: 0,
+                    incomingReserve: 0
+                };
+            }
+
+            // Aggregate data based on tx_type
+            if (distribution.tx_type === "Outgoing" && distribution.tokens.includes('AGIX')) {
+                monthlyData[formattedTaskDate].agix += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
+            } else if (distribution.tx_type === "Incoming Reserve" && distribution.tokens.includes('AGIX')) {
+                monthlyData[formattedTaskDate].incomingReserve += Number(parseFloat(distribution.amounts[distribution.tokens.indexOf('AGIX')]).toFixed(0));
+            }
         }
     });
 
