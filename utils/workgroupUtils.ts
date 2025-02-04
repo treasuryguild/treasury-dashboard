@@ -23,7 +23,7 @@ export interface WorkgroupBudget {
 
 export const getQuartersAndYearsFromMonths = (months: string[]) => {
   if (months.includes('All months')) {
-    return { quarters: ['Q1', 'Q2', 'Q3', 'Q4'], years: ['2023', '2024'] };
+    return { quarters: ['Q1', 'Q2', 'Q3', 'Q4'], years: ['2022','2023', '2024', '2025'] };
   }
   const quarters: string[] = [];
   const years: string[] = [];
