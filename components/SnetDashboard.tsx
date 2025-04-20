@@ -20,7 +20,8 @@ import DynamicTable from './tables/DynamicTable'
 import WorkgroupBalances from '../components/WorkgroupBalances';
 import DataTable from '../components/DataTable';
 import DataTable2 from '../components/DataTable2';
-import SpecificWorkgroupComponent from'../components/SpecificWorkgroupComponent'
+import SpecificWorkgroupComponent from '../components/SpecificWorkgroupComponent'
+import IncomingTransactionsTable from '../components/IncomingTransactionsTable';
 
 interface SnetDashboardProps {
   query: {
@@ -40,28 +41,28 @@ interface DistributionItem {
 
 interface ProcessedDataType {
   chart1: {
-    labels: any[], 
-    data: any[]; 
+    labels: any[],
+    data: any[];
   };
   chart2: {
     labels: any[],
-    data: any[]; 
+    data: any[];
   };
   chart3: {
     labels: any[],
-    data: any[]; 
+    data: any[];
   };
   chart4: {
     labels: any[],
-    data: any[]; 
+    data: any[];
   };
-  filteredDistributions: any[]; 
+  filteredDistributions: any[];
   monthlyTotals: {
     totalMonthly: Record<string, Record<string, number>>;
     workgroupMonthly: Record<string, Record<string, Record<string, number>>>;
   };
-  table1: any[]; 
-  table2: any[]; 
+  table1: any[];
+  table2: any[];
   table3: any[];
 }
 
@@ -140,7 +141,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
         project_id: projectId,
       }),
     });
-  
+
     if (!response.ok) {
       throw new Error('Failed to post workgroups to subgroups table');
     }
@@ -157,22 +158,22 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
           project_id: projectId,
         }),
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to fetch workgroups from subgroups table');
       }
-  
+
       const data = await response.json();
       //console.log('Raw data from getSubgroups:', data);
-  
+
       if (data && Array.isArray(data.workgroups)) {
         //console.log('Processing workgroups array');
         const processedData = data.workgroups.map((item: any) => {
           //console.log('Processing item:', item);
           return {
             ...item,
-            sub_group_data: typeof item.sub_group_data === 'string' 
-              ? JSON.parse(item.sub_group_data) 
+            sub_group_data: typeof item.sub_group_data === 'string'
+              ? JSON.parse(item.sub_group_data)
               : item.sub_group_data
           };
         });
@@ -199,32 +200,32 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
       const sortedMonths = distData.months.sort((a: any, b: any) => {
         const [monthA, yearA] = a.split('.').map(Number);
         const [monthB, yearB] = b.split('.').map(Number);
-  
+
         if (yearA !== yearB) {
           return yearB - yearA; // Descending order of year
         }
         return monthB - monthA; // Descending order of month
       });
-  
+
       setUniqueMonths(['All months', ...sortedMonths]);
       setWorkgroups(['All workgroups', ...distData.workgroups.sort((a: string, b: string) => a.localeCompare(b))])
       setUniqueTokens(['All tokens', ...distData.tokens])
       setUniqueLabels(['All labels', ...distData.labels])
-      
+
       setMyVariable(prevState => ({ ...prevState, report }));
-      
+
       if (distributionsArray && distributionsArray.length > 0) {
         calculateQuarterBalances(distributionsArray);
       }
-  
+
       // Post workgroups to subgroups table
       //console.log('Posting workgroups to subgroups table');
       await postWorkgroupsToSubgroups(distData.workgroups, myVariable.projectInfo.project_id);
-      
+
       //console.log('Fetching subgroups');
       const subgroups = await getWorkgroups(myVariable.projectInfo.project_id);
       //console.log('Fetched subgroups:', subgroups);
-      
+
       if (Array.isArray(subgroups) && subgroups.length > 0) {
         //console.log('Setting workgroupsBudgets');
         setWorkgroupsBudgets(subgroups);
@@ -240,7 +241,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   useEffect(() => {
     if (myVariable.transactions) {
       generateReport();
-    }     
+    }
   }, []);
 
   useEffect(() => {
@@ -338,7 +339,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   const handleQuarterChange = (quarter: string) => {
     let updatedQuarters: string[];
     let updatedMonths: string[];
-    
+
     if (quarter === "All quarters") {
       updatedQuarters = ["All quarters"];
       updatedMonths = ["All months"];
@@ -362,7 +363,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
         updatedMonths = updatedQuarters.flatMap(q => getQuarterMonths(q));
       }
     }
-    
+
     setSelectedQuarters(updatedQuarters);
     setSelectedMonths(updatedMonths);
     updateUrlParam('months', updatedMonths);
@@ -382,7 +383,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
         const quarterNum = Math.ceil(parseInt(m) / 3);
         return `Q${quarterNum} ${y}`;
       }));
-  
+
       const quartersArray = Array.from(selectedQuartersSet);
       if (quartersArray.length === 0) {
         setSelectedQuarters(["All quarters"]);
@@ -437,7 +438,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
       } else {
         updatedFilters = [...selectedQuarterFilters.filter(q => q !== "No Quarters"), quarter];
       }
-  
+
       if (updatedFilters.length === 0) {
         updatedFilters = ["No Quarters"];
       } else if (updatedFilters.length === uniqueQuarters.length - 1) {
@@ -445,100 +446,100 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
         updatedFilters = uniqueQuarters.filter(q => q !== "All quarters");
       }
     }
-  
+
     // Remove duplicates and "All quarters" from the array
     updatedFilters = Array.from(new Set(updatedFilters)).filter(q => q !== "All quarters");
-  
+
     setSelectedQuarterFilters(updatedFilters);
   };
 
-const processData = async () => {
+  const processData = async () => {
     const data: any = processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, allDistributions, myVariable.projectInfo.budgets);
     setProcessedData(data);
-  //console.log("processedData", processedData)
-};
+    //console.log("processedData", processedData)
+  };
 
-const getQuarters = () => {
-  const currentDate = new Date();
-  const currentYear = currentDate.getFullYear();
-  const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
-  let currentQuarter, previousQuarter, previousYear;
+  const getQuarters = () => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-indexed
+    let currentQuarter, previousQuarter, previousYear;
 
-  if (currentMonth <= 3) {
+    if (currentMonth <= 3) {
       currentQuarter = ['01', '02', '03'];
       previousQuarter = ['10', '11', '12'];
       previousYear = currentYear - 1;
-  } else if (currentMonth <= 6) {
+    } else if (currentMonth <= 6) {
       currentQuarter = ['04', '05', '06'];
       previousQuarter = ['01', '02', '03'];
       previousYear = currentYear;
-  } else if (currentMonth <= 9) {
+    } else if (currentMonth <= 9) {
       currentQuarter = ['07', '08', '09'];
       previousQuarter = ['04', '05', '06'];
       previousYear = currentYear;
-  } else {
+    } else {
       currentQuarter = ['10', '11', '12'];
       previousQuarter = ['07', '08', '09'];
       previousYear = currentYear;
-  }
+    }
 
-  return { currentQuarter, currentYear, previousQuarter, previousYear };
-};
+    return { currentQuarter, currentYear, previousQuarter, previousYear };
+  };
 
-const calculateQuarterBalances = (distributionsArray: any) => {
-  const { currentQuarter, currentYear, previousQuarter, previousYear } = getQuarters();
+  const calculateQuarterBalances = (distributionsArray: any) => {
+    const { currentQuarter, currentYear, previousQuarter, previousYear } = getQuarters();
 
-  const calculateBalance = (quarter: any, year: any) => {
-    // Ensure year is a number for consistent comparison
-    const yearAsNumber = Number(year);
+    const calculateBalance = (quarter: any, year: any) => {
+      // Ensure year is a number for consistent comparison
+      const yearAsNumber = Number(year);
 
-    // Aggregate the budget for the quarter
-    const quarterBudget = quarter.reduce((total: any, month: any) => {
+      // Aggregate the budget for the quarter
+      const quarterBudget = quarter.reduce((total: any, month: any) => {
         const budgetKey = `${month.padStart(2, '0')}.${yearAsNumber}`;
         const monthlyBudget = Number(myVariable.projectInfo.budgets[budgetKey] || 0);
         return total + monthlyBudget;
-    }, 0);
+      }, 0);
 
-    // Calculate the balance
-    return quarterBudget - distributionsArray
+      // Calculate the balance
+      return quarterBudget - distributionsArray
         .filter((distribution: any) => {
-            if (distribution.tx_type !== 'Outgoing') return false;
-            const [day, month, distributionYear] = distribution.task_date.split('.');
-            // Handle both YY and YYYY formats and convert to number
-            const fullYear = Number(distributionYear.length === 2 ? `20${distributionYear}` : distributionYear);
-            return quarter.includes(month) && fullYear === yearAsNumber;
+          if (distribution.tx_type !== 'Outgoing') return false;
+          const [day, month, distributionYear] = distribution.task_date.split('.');
+          // Handle both YY and YYYY formats and convert to number
+          const fullYear = Number(distributionYear.length === 2 ? `20${distributionYear}` : distributionYear);
+          return quarter.includes(month) && fullYear === yearAsNumber;
         })
         .reduce((acc: any, curr: any) => {
-            const agixIndex = curr.tokens.findIndex((token: any) => token === 'AGIX');
-            const agixAmount = Number(agixIndex !== -1 ? curr.amounts[agixIndex] : 0);
-            return acc + agixAmount;
+          const agixIndex = curr.tokens.findIndex((token: any) => token === 'AGIX');
+          const agixAmount = Number(agixIndex !== -1 ? curr.amounts[agixIndex] : 0);
+          return acc + agixAmount;
         }, 0);
+    };
+
+
+    setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear));
+    setPreviousQuarterBalance(calculateBalance(previousQuarter, previousYear));
   };
 
-
-  setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear));
-  setPreviousQuarterBalance(calculateBalance(previousQuarter,previousYear));
-};
-
-// Call processData when selected values change
-useEffect(() => {
-  if (myVariable.transactions) {processData();}
-}, [selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels]);
-  //console.log("myVariable", myVariable)
+  // Call processData when selected values change
+  useEffect(() => {
+    if (myVariable.transactions) { processData(); }
+  }, [selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels]);
+  // console.log("myVariable", myVariable)
   return (
     <div className={styles['flex-column']}>
       <div className={styles['flex-column']}>
         <div className={styles['flex-row']}>
-        <div 
+          <div
             className={styles['flex-row-half']}
             onMouseEnter={() => handleHover('quarters', true)}
             onMouseLeave={() => handleHover('quarters', false)}
           >
             <span className={styles['selection-label']}>Select Quarters</span>
-            {(hoverStatus.quarters || selectedQuarters.includes("All quarters")) ? 
+            {(hoverStatus.quarters || selectedQuarters.includes("All quarters")) ?
               uniqueQuarters.map((quarter) => (
-                <button 
-                  key={quarter} 
+                <button
+                  key={quarter}
                   onClick={() => handleQuarterChange(quarter)}
                   className={selectedQuarters.includes(quarter) ? styles.selected : styles['filter-btn']}
                 >
@@ -554,13 +555,13 @@ useEffect(() => {
             onMouseEnter={() => handleHover('quarterFilters', true)}
             onMouseLeave={() => handleHover('quarterFilters', false)}>
             <span className={styles['selection-label']}>Filter Out Reallocations by Quarter</span>
-            {(hoverStatus.quarterFilters || selectedQuarterFilters.includes('No Quarters')) ? 
+            {(hoverStatus.quarterFilters || selectedQuarterFilters.includes('No Quarters')) ?
               ["No Quarters", "All quarters", ...uniqueQuarters.filter(q => q !== "All quarters")].map((quarter) => (
-                <button 
-                  key={quarter} 
+                <button
+                  key={quarter}
                   onClick={() => handleQuarterFilterChange(quarter)}
                   className={
-                    quarter === "All quarters" 
+                    quarter === "All quarters"
                       ? (selectedQuarterFilters.length === uniqueQuarters.length - 1 ? styles.selected : styles['filter-btn'])
                       : (selectedQuarterFilters.includes(quarter) ? styles.selected : styles['filter-btn'])
                   }
@@ -568,26 +569,26 @@ useEffect(() => {
                   {quarter}
                 </button>
               )) :
-              (selectedQuarterFilters.length === uniqueQuarters.length - 1 
+              (selectedQuarterFilters.length === uniqueQuarters.length - 1
                 ? [<button key="All quarters" className={styles.selected}>All quarters</button>]
                 : selectedQuarterFilters.map((quarter) => (
-                    <button key={quarter} className={styles.selected}>{quarter}</button>
-                  ))
+                  <button key={quarter} className={styles.selected}>{quarter}</button>
+                ))
               )
             }
           </div>
         </div>
         <div className={styles['flex-row']}>
-          <div 
+          <div
             className={styles['flex-row-half']}
             onMouseEnter={() => handleHover('months', true)}
             onMouseLeave={() => handleHover('months', false)}
           >
             <span className={styles['selection-label']}>Select Months</span>
-            {(hoverStatus.months || selectedMonths.includes('All months')) ? 
+            {(hoverStatus.months || selectedMonths.includes('All months')) ?
               uniqueMonths.map((month) => (
-                <button 
-                  key={month} 
+                <button
+                  key={month}
                   onClick={() => handleMonthChange(month)}
                   className={selectedMonths.includes(month) ? styles.selected : styles['filter-btn']}
                 >
@@ -602,18 +603,18 @@ useEffect(() => {
           <div className={styles['flex-row-half']}
             onMouseEnter={() => handleHover('tokens', true)}
             onMouseLeave={() => handleHover('tokens', false)}>
-          <span className={styles['selection-label']}>Select Tokens</span>
-          {(hoverStatus.tokens || selectedTokens.includes('All tokens')) ? 
-            uniqueTokens.map((token) => (
-              <button key={token} onClick={() => handleTokenChange(token)}
-                className={selectedTokens.includes(token) ? styles.selected : styles['filter-btn']}>
-                {token}
-              </button>
-            )) :
-            selectedTokens.map((token) => (
-              <button key={token} className={styles.selected}>{token}</button>
-            ))
-          }
+            <span className={styles['selection-label']}>Select Tokens</span>
+            {(hoverStatus.tokens || selectedTokens.includes('All tokens')) ?
+              uniqueTokens.map((token) => (
+                <button key={token} onClick={() => handleTokenChange(token)}
+                  className={selectedTokens.includes(token) ? styles.selected : styles['filter-btn']}>
+                  {token}
+                </button>
+              )) :
+              selectedTokens.map((token) => (
+                <button key={token} className={styles.selected}>{token}</button>
+              ))
+            }
           </div>
         </div>
         <div className={styles['flex-row']}>
@@ -621,33 +622,33 @@ useEffect(() => {
             onMouseEnter={() => handleHover('workgroups', true)}
             onMouseLeave={() => handleHover('workgroups', false)}>
             <span className={styles['selection-label']}>Select Workgroups</span>
-          {(hoverStatus.workgroups || selectedWorkgroups.includes('All workgroups')) ? 
-            workgroups.map((workgroup) => (
-              <button key={workgroup} onClick={() => handleWorkgroupChange(workgroup)}
-                className={selectedWorkgroups.includes(workgroup) ? styles.selected : styles['filter-btn']}>
-                {workgroup}
-              </button>
-            )) :
-            selectedWorkgroups.map((workgroup) => (
-              <button key={workgroup} className={styles.selected}>{workgroup}</button>
-            ))
-          }
+            {(hoverStatus.workgroups || selectedWorkgroups.includes('All workgroups')) ?
+              workgroups.map((workgroup) => (
+                <button key={workgroup} onClick={() => handleWorkgroupChange(workgroup)}
+                  className={selectedWorkgroups.includes(workgroup) ? styles.selected : styles['filter-btn']}>
+                  {workgroup}
+                </button>
+              )) :
+              selectedWorkgroups.map((workgroup) => (
+                <button key={workgroup} className={styles.selected}>{workgroup}</button>
+              ))
+            }
           </div>
           <div className={styles['flex-row-half']}
             onMouseEnter={() => handleHover('labels', true)}
             onMouseLeave={() => handleHover('labels', false)}>
             <span className={styles['selection-label']}>Select Labels</span>
-          {(hoverStatus.labels || selectedLabels.includes('All labels')) ? 
-            uniqueLabels.map((label) => (
-              <button key={label} onClick={() => handleLabelChange(label)}
-                className={selectedLabels.includes(label) ? styles.selected : styles['filter-btn']}>
-                {label}
-              </button>
-            )) :
-            selectedLabels.map((label) => (
-              <button key={label} className={styles.selected}>{label}</button>
-            ))
-          }
+            {(hoverStatus.labels || selectedLabels.includes('All labels')) ?
+              uniqueLabels.map((label) => (
+                <button key={label} onClick={() => handleLabelChange(label)}
+                  className={selectedLabels.includes(label) ? styles.selected : styles['filter-btn']}>
+                  {label}
+                </button>
+              )) :
+              selectedLabels.map((label) => (
+                <button key={label} className={styles.selected}>{label}</button>
+              ))
+            }
           </div>
         </div>
         <div className={styles['flex-row']}>
@@ -659,19 +660,19 @@ useEffect(() => {
           </div>
         </div>
         <div className={styles['flex-row']}>
-              {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets.length > 0  
-              && (
-                <WorkgroupBalances
-                  data={processedData}
-                  months={selectedMonths}
-                  workgroupsBudgets={workgroupsBudgets}
-                  selectedWorkgroups={selectedWorkgroups}
-                  allDistributions={allDistributions}
-                  selectedQuarterFilters={selectedQuarterFilters}
-                />
-              )}
-          </div>
-        <div className={styles['components-conatiner']}>  
+          {selectedWorkgroups.length > 0 && processedData.table3 && workgroupsBudgets.length > 0
+            && (
+              <WorkgroupBalances
+                data={processedData}
+                months={selectedMonths}
+                workgroupsBudgets={workgroupsBudgets}
+                selectedWorkgroups={selectedWorkgroups}
+                allDistributions={allDistributions}
+                selectedQuarterFilters={selectedQuarterFilters}
+              />
+            )}
+        </div>
+        <div className={styles['components-conatiner']}>
           <div className={styles['flex-column']}>
             <div className={styles['chartX']}>
               {processedData.chart1.labels.length > 1 && !processedData.chart1.data[0].x && (<ChartComponent1 chartData={processedData.chart1} />)}
@@ -699,8 +700,12 @@ useEffect(() => {
             <div className={styles['tables']}>
               {processedData.table2 && !(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (<DynamicTable data={processedData.table2} />)}
             </div>
+            <div className={styles['tables']}>
+              <h3>Incoming Transactions from msge62 wallet</h3>
+              <IncomingTransactionsTable myVariable={myVariable} />
+            </div>
           </div>
-        </div>  
+        </div>
       </div>
     </div>
   );
