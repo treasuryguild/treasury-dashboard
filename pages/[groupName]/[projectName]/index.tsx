@@ -16,6 +16,7 @@ import Report from '../../../components/Report';
 import SnetDashboard from '../../../components/SnetDashboard';
 import Dashboard from '../../../components/Dashboard';
 import { getTokenTypes } from '../../../utils/getTokenTypes'
+import { TokenBalance } from '../../../types/transactions';
 
 interface Project {
   project_id: string;
@@ -23,6 +24,22 @@ interface Project {
   project_type: string;
   wallet: string;
   core_token: string;
+}
+
+interface TokenType {
+  asset_name: string;
+  unit: string;
+  asset_type: string;
+  policy_id: string;
+  ticker: string;
+  fingerprint: string;
+  decimals: number;
+}
+
+interface SnetTokenAllocation {
+  month: string;
+  sc_allocation: number;
+  ambassador_allocation: number;
 }
 
 const ProjectPage = () => {
@@ -33,11 +50,11 @@ const ProjectPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [projectData, setProjectData] = useState<Project | null>(null);
   const [previousTab, setPreviousTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
-  const [balance2, setBalance2] = useState<Array<any>>([]);
-  const [selectedMonths, setSelectedMonths] = useState([]);
-  const [selectedWorkgroup, setSelectedWorkgroup] = useState([]);
+  const [balance2, setBalance2] = useState<TokenBalance[]>([]);
+  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [selectedWorkgroup, setSelectedWorkgroup] = useState<string[]>([]);
   const [selectedTokens, setSelectedTokens] = useState<string[]>([]);
-  const [selectedLabels, setSelectedLabels] = useState([]);
+  const [selectedLabels, setSelectedLabels] = useState<string[]>([]);
 
   useEffect(() => {
     const handleRouteChange = (url: string) => {
@@ -108,10 +125,10 @@ const ProjectPage = () => {
         budgetInfo = await getMonthlyBudget(projectData.project_id);
         let { transactions, originalTransactions } = await getAllTransactions(projectData.project_id);
         let balance = await getAssetList(projectData.wallet);
-        let toke_types = await getTokenTypes();
+        let toke_types = await getTokenTypes() as TokenType[];
 
         // Fetch snet token allocation data if it's the Singularity Net Ambassador Wallet
-        let snetTokenAllocation = [];
+        let snetTokenAllocation: SnetTokenAllocation[] = [];
         if (projectName === "Singularity Net Ambassador Wallet") {
           snetTokenAllocation = await getSnetTokenAllocation();
         }
@@ -215,8 +232,8 @@ const ProjectPage = () => {
                       </thead>
                       <tbody>
                         {myVariable.balance
-                          .filter((token: any) => token.tokenType === 'fungible')
-                          .map((token: any) => {
+                          .filter((token: TokenBalance) => token.tokenType === 'fungible')
+                          .map((token: TokenBalance) => {
                             const decimals = token.decimals || 0;
                             const name = token.displayname || token.name;
                             const amount = parseFloat(token.amount);
@@ -229,7 +246,7 @@ const ProjectPage = () => {
                           })
                         }
                       </tbody>
-                      {myVariable.balance.some((token: any) => token.tokenType === 'nft') && (
+                      {myVariable.balance.some((token: TokenBalance) => token.tokenType === 'nft') && (
                         <>
                           <thead>
                             <tr>
@@ -238,8 +255,8 @@ const ProjectPage = () => {
                           </thead>
                           <tbody>
                             {myVariable.balance
-                              .filter((token: any) => token.tokenType === 'nft')
-                              .map((token: any) => {
+                              .filter((token: TokenBalance) => token.tokenType === 'nft')
+                              .map((token: TokenBalance) => {
                                 const name = token.displayname || token.name;
                                 const amount = token.amount;
                                 return (

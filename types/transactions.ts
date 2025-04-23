@@ -44,6 +44,10 @@ export interface TokenBalance {
     displayname: string;
     amount: string;
     unit: string;
+    tokenType: 'fungible' | 'nft';
+    decimals?: number;
+    fingerprint?: string;
+    policy_id?: string;
 }
 
 export interface MyVariable {
