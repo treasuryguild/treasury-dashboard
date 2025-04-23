@@ -8,6 +8,7 @@ interface Project {
   wallet: string;
   budgets: any;
   core_token: string;
+  carry_over_amounts: any;
 }
 
 interface Group {
@@ -26,6 +27,7 @@ type MyVariable = {
   report?: any;
   balance?: any;
   toke_types?: any;
+  snetTokenAllocation?: any;
   // other keys go here
 };
 

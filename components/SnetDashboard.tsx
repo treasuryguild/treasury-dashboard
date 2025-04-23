@@ -525,7 +525,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
   useEffect(() => {
     if (myVariable.transactions) { processData(); }
   }, [selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels]);
-  // console.log("myVariable", myVariable)
+   //console.log("myVariable", myVariable)
   return (
     <div className={styles['flex-column']}>
       <div className={styles['flex-column']}>

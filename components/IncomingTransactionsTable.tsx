@@ -1,5 +1,13 @@
 import React from 'react';
 import styles from '../styles/WorkgroupBalances.module.css';
+import { MyVariable } from '../types/transactions';
+import {
+    filterIncomingTransactions,
+    calculateAgixTotal,
+    calculateWorkgroupAgixTotal,
+    getCurrentAgixBalance,
+    calculateAmbassadorAllocationBalance
+} from '../utils/transactionUtils';
 
 interface Distribution {
     amounts: number[];
@@ -41,55 +49,21 @@ interface ReportData {
     };
 }
 
-interface MyVariable {
-    report?: ReportData;
-    balance?: Array<{
-        id: string;
-        name: string;
-        displayname: string;
-        amount: string;
-        unit: string;
-    }>;
-    transactions?: Transaction[];
-}
-
 interface IncomingTransactionsTableProps {
     myVariable: MyVariable;
 }
 
 const IncomingTransactionsTable: React.FC<IncomingTransactionsTableProps> = ({ myVariable }) => {
-    // Filter for incoming transactions from msge62
-    const incomingTransactions = (myVariable.transactions || []).filter(tx =>
-        (tx.tx_type === 'Incoming' || tx.tx_type === 'Incoming Reserve') &&
-        tx.contributions?.some(contribution =>
-            contribution.distributions?.some(dist => dist.contributor_id === 'msge62')
-        )
+    const incomingTransactions = filterIncomingTransactions(myVariable.transactions || []);
+    const agixTotal = calculateAgixTotal(incomingTransactions);
+    const workgroupAgixTotal = calculateWorkgroupAgixTotal(myVariable.report || {});
+    const currentAgixBalance = getCurrentAgixBalance(myVariable.balance || []);
+    const preTreasurySpending = Number(myVariable.projectInfo?.carry_over_amounts?.pre_treasury_system_spending?.AGIX || 0);
+    const ambassadorAllocationBalance = calculateAmbassadorAllocationBalance(
+        myVariable.snetTokenAllocation || [],
+        workgroupAgixTotal,
+        preTreasurySpending
     );
-
-    // Calculate total for AGIX token from incoming transactions
-    const agixTotal = incomingTransactions.reduce((acc, tx) => {
-        if (Array.isArray(tx.total_tokens) && Array.isArray(tx.total_amounts)) {
-            const agixIndex = tx.total_tokens.indexOf('AGIX');
-            if (agixIndex !== -1) {
-                acc += Number(tx.total_amounts[agixIndex]) || 0;
-            }
-        }
-        return acc;
-    }, 0);
-
-    // Calculate total AGIX from all workgroups across all months using total-distribution
-    const workgroupAgixTotal = myVariable.report ? Object.entries(myVariable.report).reduce((acc, [month, monthData]) => {
-        // Get the total-distribution amount for this month
-        const totalDistribution = monthData['total-distribution'];
-        if (totalDistribution && 'totalAmounts' in totalDistribution) {
-            const agixAmount = (totalDistribution as WorkgroupData).totalAmounts?.AGIX || 0;
-            return acc + agixAmount;
-        }
-        return acc;
-    }, 0) : 0;
-
-    // Get current AGIX balance
-    const currentAgixBalance = myVariable.balance?.find(token => token.name === 'AGIX')?.amount || '0';
 
     return (
         <div>
@@ -138,7 +112,21 @@ const IncomingTransactionsTable: React.FC<IncomingTransactionsTableProps> = ({ m
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Incoming Transactions Total</td>
+                                <td>Total Ambassador Allocation (June 2022 - Present)</td>
+                                <td style={{ textAlign: 'right' }}>
+                                    {myVariable.snetTokenAllocation?.reduce((acc, allocation) => {
+                                        const allocationDate = new Date(allocation.month);
+                                        const startDate = new Date('2022-06-01');
+                                        const currentDate = new Date();
+                                        if (allocationDate >= startDate && allocationDate <= currentDate) {
+                                            return acc + allocation.ambassador_allocation;
+                                        }
+                                        return acc;
+                                    }, 0).toFixed(2)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Agix received in treasury system</td>
                                 <td style={{ textAlign: 'right' }}>{agixTotal.toFixed(2)}</td>
                             </tr>
                             <tr>
@@ -146,9 +134,23 @@ const IncomingTransactionsTable: React.FC<IncomingTransactionsTableProps> = ({ m
                                 <td style={{ textAlign: 'right' }}>{workgroupAgixTotal.toFixed(2)}</td>
                             </tr>
                             <tr>
-                                <td style={{ fontWeight: 'bold' }}>Balance</td>
+                                <td>Pre-Treasury System Spending</td>
+                                <td style={{ textAlign: 'right' }}>{preTreasurySpending.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td>Ambassador Allocation Balance</td>
+                                <td style={{ textAlign: 'right' }}>{ambassadorAllocationBalance.toFixed(2)}</td>
+                            </tr>
+                            <tr>
+                                <td style={{ fontWeight: 'bold' }}>Balance (AGIX received minus spending)</td>
                                 <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
                                     {(agixTotal - workgroupAgixTotal).toFixed(2)}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style={{ fontWeight: 'bold' }}>Amount Still to Receive</td>
+                                <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                                    {(ambassadorAllocationBalance - (agixTotal - workgroupAgixTotal)).toFixed(2)}
                                 </td>
                             </tr>
                             <tr>
