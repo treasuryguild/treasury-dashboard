@@ -66,6 +66,7 @@ const Signup = () => {
             <br />
             <div className={styles.supportedWallets}>
                 <p>Supported wallets: Eternl, Typhon, Lace, Yoroi, Gero</p>
+                <p>Please make sure you have one of these wallets installed in your browser</p>
             </div>
             <br />
             {!notification && (<h3>Steps left to do</h3>)}
