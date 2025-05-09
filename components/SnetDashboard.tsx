@@ -701,7 +701,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
               {processedData.table2 && !(selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.length > 1) && (<DynamicTable data={processedData.table2} />)}
             </div>
             <div className={styles['tables']}>
-              <h3>Incoming Transactions from msge62 wallet</h3>
+              <h3>Incoming Transactions from Ambassador wallet (msge62)</h3>
               <IncomingTransactionsTable myVariable={myVariable} />
             </div>
           </div>

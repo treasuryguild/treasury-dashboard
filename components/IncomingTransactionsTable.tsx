@@ -101,7 +101,7 @@ const IncomingTransactionsTable: React.FC<IncomingTransactionsTableProps> = ({ m
             </div>
 
             <div style={{ marginTop: '40px' }}>
-                <h3>Summary</h3>
+                <h3>SNET Ambassador Program Treasury Summary</h3>
                 <div className={styles.numbers}>
                     <table>
                         <thead>
