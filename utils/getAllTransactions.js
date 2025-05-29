@@ -5,10 +5,10 @@ import { parseContributions } from "./parseContributions";
 let testFaultyTxFilters;
 
 try {
-  testFaultyTxFilters = require('../public/testFaultyTxFilters.json'); 
+  testFaultyTxFilters = require('../public/testFaultyTxFilters.json');
 } catch (error) {
   //console.warn("testFaultyTxFilters.json not found, using empty filters");
-  testFaultyTxFilters = []; 
+  testFaultyTxFilters = [];
 }
 
 export async function getAllTransactions(project_id, useTestData = false) {
@@ -67,7 +67,7 @@ export async function getAllTransactions(project_id, useTestData = false) {
       const faultyTxFilters = useTestData
         ? (testFaultyTxFilters || defaultFilters)
         : originalTransactions.filter(t => t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter");
-      
+
       const regularTransactions = originalTransactions.filter(t => !(t.original_tx_json.msg && t.original_tx_json.msg[0] === "FaultyTx-Filter"));
 
       //console.log("FaultyTx-Filter transactions:", faultyTxFilters.length);
@@ -76,27 +76,32 @@ export async function getAllTransactions(project_id, useTestData = false) {
       // Apply filters to regular transactions
       const transactions = regularTransactions.map(transaction => {
         const matchingFilters = faultyTxFilters.filter(filter => filter.original_tx_json.faultyTx === transaction.transaction_id);
-        
+
         if (matchingFilters.length > 0) {
           //console.log(`Applying ${matchingFilters.length} filters to transaction ${transaction.transaction_id}`);
           //console.log("Before filtering:", JSON.stringify(transaction.contributions, null, 2));
-          
+
           matchingFilters.forEach(filter => {
             const faultyContributions = filter.original_tx_json.contributions;
             //console.log("Faulty contributions:", JSON.stringify(faultyContributions, null, 2));
-            
+
             // First, identify all contributors to be removed globally
             const globalContributorsToRemove = faultyContributions
               .filter(fc => !fc.name)
               .flatMap(fc => fc.contributors);
-            
+
             //console.log("Global contributors to remove:", globalContributorsToRemove);
 
             // Then, apply filters to all contributions
             transaction.contributions = transaction.contributions.filter(contribution => {
+              // Exclude contributions with task_label 'Reimbursement'
+              if (contribution.task_label === 'Reimbursement') {
+                return false;
+              }
+
               //console.log(`Processing contribution: ${contribution.task_name}`);
-              
-              const matchingFaultyContribution = faultyContributions.find(fc => 
+
+              const matchingFaultyContribution = faultyContributions.find(fc =>
                 fc.name && fc.name[0] === contribution.task_name
               );
 
@@ -121,6 +126,11 @@ export async function getAllTransactions(project_id, useTestData = false) {
           });
 
           //console.log("After filtering:", JSON.stringify(transaction.contributions, null, 2));
+        } else {
+          // For transactions without matching filters, still filter out Reimbursement contributions
+          transaction.contributions = transaction.contributions.filter(contribution =>
+            contribution.task_label !== 'Reimbursement'
+          );
         }
 
         return transaction;
@@ -137,6 +147,6 @@ export async function getAllTransactions(project_id, useTestData = false) {
 
   const result = await getAllData(project_id);
   //console.log("Final originalTransactions count:", result.originalTransactions.length);
-  //console.log("Final transactions count:", result.transactions.length);
+  //console.log("Final transactions count:", result.transactions.length, result.transactions);
   return result;
 }
