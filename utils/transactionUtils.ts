@@ -2,9 +2,9 @@ import { MyVariable, Transaction, WorkgroupData } from '../types/transactions';
 
 export const filterIncomingTransactions = (transactions: Transaction[] | undefined): Transaction[] => {
     return (transactions || []).filter(tx =>
-        (tx.tx_type === 'Incoming' || tx.tx_type === 'Incoming Reserve') &&
+        (tx.tx_type === 'Incoming' || tx.tx_type === 'Incoming Reserve' || tx.tx_type === 'Swap Incoming') &&
         tx.contributions?.some(contribution =>
-            contribution.distributions?.some(dist => dist.contributor_id === 'msge62')
+            contribution.distributions?.some(dist => ['msge62', 'vxhl7e'].includes(dist.contributor_id))
         )
     );
 };
