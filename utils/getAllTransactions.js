@@ -94,8 +94,8 @@ export async function getAllTransactions(project_id, useTestData = false) {
 
             // Then, apply filters to all contributions
             transaction.contributions = transaction.contributions.filter(contribution => {
-              // Exclude contributions with task_label 'Reimbursement'
-              if (contribution.task_label === 'Reimbursement') {
+              // Exclude contributions with task_label 'Reimbursement' or 'Donation'
+              if (contribution.task_label === 'Reimbursement' || contribution.task_label === 'Donation') {
                 return false;
               }
 
@@ -127,9 +127,9 @@ export async function getAllTransactions(project_id, useTestData = false) {
 
           //console.log("After filtering:", JSON.stringify(transaction.contributions, null, 2));
         } else {
-          // For transactions without matching filters, still filter out Reimbursement contributions
+          // For transactions without matching filters, still filter out Reimbursement and Donation contributions
           transaction.contributions = transaction.contributions.filter(contribution =>
-            contribution.task_label !== 'Reimbursement'
+            contribution.task_label !== 'Reimbursement' && contribution.task_label !== 'Donation'
           );
         }
 
@@ -146,7 +146,7 @@ export async function getAllTransactions(project_id, useTestData = false) {
   }
 
   const result = await getAllData(project_id);
-  //console.log("Final originalTransactions count:", result.originalTransactions.length);
-  //console.log("Final transactions count:", result.transactions.length, result.transactions);
+  console.log("Final originalTransactions count:", result.originalTransactions.length);
+  console.log("Final transactions count:", result.transactions.length, result.transactions);
   return result;
 }
