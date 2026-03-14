@@ -11,6 +11,8 @@ export interface Contribution {
 
 export interface Transaction {
     tx_type: string;
+    tx_id?: string;
+    transaction_id?: string;
     contributions?: Contribution[];
     total_tokens?: string[];
     total_amounts?: number[];

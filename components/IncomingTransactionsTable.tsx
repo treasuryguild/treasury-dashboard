@@ -6,7 +6,8 @@ import {
     calculateAgixTotal,
     calculateWorkgroupAgixTotal,
     getCurrentAgixBalance,
-    calculateAmbassadorAllocationBalance
+    calculateAmbassadorAllocationBalance,
+    isTransactionInSpecialReturnedGroup
 } from '../utils/transactionUtils';
 
 interface Distribution {
@@ -53,21 +54,33 @@ interface IncomingTransactionsTableProps {
     myVariable: MyVariable;
 }
 
-// Function to remove transactions where any distribution's contributor_id is in the excludedContributors list
-function removeDexes(transactions: Transaction[], excludedContributors: string[]): Transaction[] {
-    return transactions.filter(tx =>
-        !tx.contributions?.some(contribution =>
-            contribution.distributions?.some(dist => excludedContributors.includes(dist.contributor_id))
-        )
+function splitTransactionsByPredicate(
+    transactions: Transaction[],
+    predicate: (tx: Transaction) => boolean
+): { regularTransactions: Transaction[]; specialTransactions: Transaction[] } {
+    return transactions.reduce(
+        (acc, tx) => {
+            if (predicate(tx)) {
+                acc.specialTransactions.push(tx);
+            } else {
+                acc.regularTransactions.push(tx);
+            }
+            return acc;
+        },
+        { regularTransactions: [] as Transaction[], specialTransactions: [] as Transaction[] }
     );
 }
 
 const IncomingTransactionsTable: React.FC<IncomingTransactionsTableProps> = ({ myVariable }) => {
-    // List of contributor IDs to exclude from the table, these are when Dexes send AGIX back after a swap
-    const excludedContributors = ['vxhl7e'];
-
     const incomingTransactions = filterIncomingTransactions(myVariable.transactions || []);
+    const {
+        regularTransactions: regularIncomingTransactions,
+        specialTransactions: specialReturnedTransactions
+    } = splitTransactionsByPredicate(incomingTransactions, isTransactionInSpecialReturnedGroup);
+
     const agixTotal = calculateAgixTotal(incomingTransactions);
+    const regularAgixTotal = calculateAgixTotal(regularIncomingTransactions);
+    const specialReturnedAgixTotal = calculateAgixTotal(specialReturnedTransactions);
     const workgroupAgixTotal = calculateWorkgroupAgixTotal(myVariable.report || {});
     const currentAgixBalance = getCurrentAgixBalance(myVariable.balance || []);
     const preTreasurySpending = Number(myVariable.projectInfo?.carry_over_amounts?.pre_treasury_system_spending?.AGIX || 0);
@@ -77,10 +90,9 @@ const IncomingTransactionsTable: React.FC<IncomingTransactionsTableProps> = ({ m
         preTreasurySpending
     );
 
-    const filteredTransactions = incomingTransactions;
-
     return (
         <div>
+            <h3>Incoming Transactions</h3>
             <div className={styles.numbers}>
                 <table>
                     <thead>
@@ -90,29 +102,72 @@ const IncomingTransactionsTable: React.FC<IncomingTransactionsTableProps> = ({ m
                         </tr>
                     </thead>
                     <tbody>
-                        {removeDexes(filteredTransactions, excludedContributors)
-                            .map((tx, index) => {
-                                const agixIndex = tx.total_tokens?.indexOf('AGIX') ?? -1;
-                                const agixAmount = agixIndex >= 0 && Array.isArray(tx.total_amounts)
-                                    ? tx.total_amounts[agixIndex] ?? 0
-                                    : 0;
-                                return (
-                                    <tr key={index}>
-                                        <td>{new Date(Number(tx.transaction_date)).toLocaleDateString()}</td>
-                                        <td style={{ textAlign: 'right' }}>
-                                            {Number(agixAmount).toFixed(2)}
-                                        </td>
-                                    </tr>
-                                );
-                            })}
+                        {regularIncomingTransactions.map((tx, index) => {
+                            const agixIndex = tx.total_tokens?.indexOf('AGIX') ?? -1;
+                            const agixAmount = agixIndex >= 0 && Array.isArray(tx.total_amounts)
+                                ? tx.total_amounts[agixIndex] ?? 0
+                                : 0;
+                            return (
+                                <tr key={index}>
+                                    <td>{new Date(Number(tx.transaction_date)).toLocaleDateString()}</td>
+                                    <td style={{ textAlign: 'right' }}>
+                                        {Number(agixAmount).toFixed(2)}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                         <tr>
                             <td style={{ textAlign: 'right', fontWeight: 'bold' }}>Total</td>
                             <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
-                                {agixTotal.toFixed(2)}
+                                {regularAgixTotal.toFixed(2)}
                             </td>
                         </tr>
                     </tbody>
                 </table>
+            </div>
+
+            <div style={{ marginTop: '40px' }}>
+                <h3>Special Returned Tokens</h3>
+                <div className={styles.numbers}>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>AGIX</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {specialReturnedTransactions
+                                .filter(tx => {
+                                    const agixIndex = tx.total_tokens?.indexOf('AGIX') ?? -1;
+                                    const agixAmount = agixIndex >= 0 && Array.isArray(tx.total_amounts)
+                                        ? tx.total_amounts[agixIndex] ?? 0
+                                        : 0;
+                                    return Number(agixAmount) !== 0;
+                                })
+                                .map((tx, index) => {
+                                    const agixIndex = tx.total_tokens?.indexOf('AGIX') ?? -1;
+                                    const agixAmount = agixIndex >= 0 && Array.isArray(tx.total_amounts)
+                                        ? tx.total_amounts[agixIndex] ?? 0
+                                        : 0;
+                                    return (
+                                        <tr key={index}>
+                                            <td>{new Date(Number(tx.transaction_date)).toLocaleDateString()}</td>
+                                            <td style={{ textAlign: 'right' }}>
+                                                {Number(agixAmount).toFixed(2)}
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                            <tr>
+                                <td style={{ textAlign: 'right', fontWeight: 'bold' }}>Total</td>
+                                <td style={{ textAlign: 'right', fontWeight: 'bold' }}>
+                                    {specialReturnedAgixTotal.toFixed(2)}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <div style={{ marginTop: '40px' }}>
