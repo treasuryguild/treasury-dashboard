@@ -22,6 +22,10 @@ import DataTable from '../components/DataTable';
 import DataTable2 from '../components/DataTable2';
 import SpecificWorkgroupComponent from '../components/SpecificWorkgroupComponent'
 import IncomingTransactionsTable from '../components/IncomingTransactionsTable';
+import {
+  filterIncomingTransactions,
+  isTransactionInSpecialReturnedGroup
+} from '../utils/transactionUtils';
 
 interface SnetDashboardProps {
   query: {
@@ -516,8 +520,32 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
         }, 0);
     };
 
+    const calculateSpecialReturnedForQuarter = (quarter: string[], year: number): number => {
+      const incomingTransactions = filterIncomingTransactions(myVariable.transactions || []);
+      const specialReturnedTransactions = incomingTransactions.filter(isTransactionInSpecialReturnedGroup);
 
-    setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear));
+      return specialReturnedTransactions
+        .filter((tx: any) => {
+          if (!tx.transaction_date) return false;
+          const transactionDate = new Date(Number(tx.transaction_date));
+          const transactionMonth = String(transactionDate.getMonth() + 1).padStart(2, '0');
+          const transactionYear = transactionDate.getFullYear();
+          return quarter.includes(transactionMonth) && transactionYear === year;
+        })
+        .reduce((acc: number, tx: any) => {
+          if (!Array.isArray(tx.total_tokens) || !Array.isArray(tx.total_amounts)) {
+            return acc;
+          }
+          const agixIndex = tx.total_tokens.indexOf('AGIX');
+          if (agixIndex === -1) {
+            return acc;
+          }
+          return acc + (Number(tx.total_amounts[agixIndex]) || 0);
+        }, 0);
+    };
+
+    const currentQuarterSpecialReturned = calculateSpecialReturnedForQuarter(currentQuarter, currentYear);
+    setCurrentQuarterBalance(calculateBalance(currentQuarter, currentYear) + currentQuarterSpecialReturned);
     setPreviousQuarterBalance(calculateBalance(previousQuarter, previousYear));
   };
 
