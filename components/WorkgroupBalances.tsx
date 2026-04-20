@@ -1,5 +1,5 @@
 // ../components/WorkgroupBalances.tsx
-import React from 'react';
+import React, { useState } from 'react';
 import styles from '../styles/WorkgroupBalances.module.css';
 import * as WorkgroupUtils from '../utils/workgroupUtils';
 
@@ -20,14 +20,23 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
   allDistributions,
   selectedQuarterFilters,
 }) => {
+  const [archivedExpanded, setArchivedExpanded] = useState(false);
   const { quarters, years } = WorkgroupUtils.getQuartersAndYearsFromMonths(months);
 
   let workgroupsToRender: string[] = [];
   if (workgroupsBudgets) {
     workgroupsToRender = selectedWorkgroups.includes('All workgroups')
       ? workgroupsBudgets.map((wg: WorkgroupUtils.WorkgroupBudget) => wg.sub_group)
-      : selectedWorkgroups;
+      : selectedWorkgroups.filter((w) => w !== 'All workgroups');
     workgroupsToRender.sort((a, b) => a.localeCompare(b));
+  }
+
+  const activeWorkgroupNames: string[] = [];
+  const archivedWorkgroupNames: string[] = [];
+  for (const name of workgroupsToRender) {
+    const wg = workgroupsBudgets.find((w) => w.sub_group === name);
+    const isArchived = wg?.archived === true;
+    (isArchived ? archivedWorkgroupNames : activeWorkgroupNames).push(name);
   }
 
   const totalBudget = workgroupsToRender.reduce((sum, workgroupName) => {
@@ -59,6 +68,40 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
     return sum + (workgroup ? WorkgroupUtils.getCumulativeRemainingForWorkgroup(workgroup, months, data, selectedQuarterFilters) : 0);
   }, 0);
 
+  const renderWorkgroupRow = (workgroupName: string, rowKey: string) => {
+    const workgroup = workgroupsBudgets.find((wg) => wg.sub_group === workgroupName);
+    if (!workgroup) return null;
+
+    const budget = Math.round(WorkgroupUtils.getBudgetForWorkgroup(workgroup, quarters, years));
+    const spent = Math.round(WorkgroupUtils.getSpentForWorkgroup(workgroupName, months, data));
+    const incomingReallocation = Math.round(
+      WorkgroupUtils.getReallocationForWorkgroup(workgroup, quarters, years, 'incoming', selectedQuarterFilters)
+    );
+    const outgoingReallocation = Math.round(
+      WorkgroupUtils.getReallocationForWorkgroup(workgroup, quarters, years, 'outgoing', selectedQuarterFilters)
+    );
+    const remaining = budget - spent + incomingReallocation - outgoingReallocation;
+    const cumulativeReallocation = Math.round(
+      WorkgroupUtils.getCumulativeReallocationForWorkgroup(workgroup, quarters, years, selectedQuarterFilters)
+    );
+    const cumulativeRemaining = Math.round(
+      WorkgroupUtils.getCumulativeRemainingForWorkgroup(workgroup, months, data, selectedQuarterFilters)
+    );
+
+    return (
+      <tr key={rowKey}>
+        <td>{workgroupName}</td>
+        <td>{budget}</td>
+        <td>{spent}</td>
+        <td>{incomingReallocation}</td>
+        <td>{outgoingReallocation}</td>
+        <td>{remaining}</td>
+        <td>{cumulativeReallocation}</td>
+        <td>{cumulativeRemaining}</td>
+      </tr>
+    );
+  };
+
   return (
     <div className={styles.numbers}>
       <table>
@@ -75,31 +118,27 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
           </tr>
         </thead>
         <tbody>
-          {workgroupsToRender.map((workgroupName, rowIndex) => {
-            const workgroup = workgroupsBudgets.find(wg => wg.sub_group === workgroupName);
-            if (!workgroup) return null;
-
-            const budget = Math.round(WorkgroupUtils.getBudgetForWorkgroup(workgroup, quarters, years));
-            const spent = Math.round(WorkgroupUtils.getSpentForWorkgroup(workgroupName, months, data));
-            const incomingReallocation = Math.round(WorkgroupUtils.getReallocationForWorkgroup(workgroup, quarters, years, 'incoming', selectedQuarterFilters));
-            const outgoingReallocation = Math.round(WorkgroupUtils.getReallocationForWorkgroup(workgroup, quarters, years, 'outgoing', selectedQuarterFilters));
-            const remaining = budget - spent + incomingReallocation - outgoingReallocation;
-            const cumulativeReallocation = Math.round(WorkgroupUtils.getCumulativeReallocationForWorkgroup(workgroup, quarters, years, selectedQuarterFilters));
-            const cumulativeRemaining = Math.round(WorkgroupUtils.getCumulativeRemainingForWorkgroup(workgroup, months, data, selectedQuarterFilters));
-
-            return (
-              <tr key={rowIndex}>
-                <td>{workgroupName}</td>
-                <td>{budget}</td>
-                <td>{spent}</td>
-                <td>{incomingReallocation}</td>
-                <td>{outgoingReallocation}</td>
-                <td>{remaining}</td>
-                <td>{cumulativeReallocation}</td>
-                <td>{cumulativeRemaining}</td>
+          {activeWorkgroupNames.map((workgroupName) => renderWorkgroupRow(workgroupName, workgroupName))}
+          {archivedWorkgroupNames.length > 0 && (
+            <>
+              <tr className={styles.archivedToggleRow}>
+                <td colSpan={8}>
+                  <button
+                    type="button"
+                    className={styles.archivedToggle}
+                    onClick={() => setArchivedExpanded((open) => !open)}
+                    aria-expanded={archivedExpanded}
+                  >
+                    {archivedExpanded ? '▼' : '▶'} Archived workgroups ({archivedWorkgroupNames.length})
+                  </button>
+                </td>
               </tr>
-            );
-          })}
+              {archivedExpanded &&
+                archivedWorkgroupNames.map((workgroupName) =>
+                  renderWorkgroupRow(workgroupName, `archived-${workgroupName}`)
+                )}
+            </>
+          )}
           <tr>
             <td>Totals</td>
             <td>{Math.round(totalBudget)}</td>

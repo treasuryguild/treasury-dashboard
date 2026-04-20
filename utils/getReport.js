@@ -1,3 +1,5 @@
+import { canonicalWorkgroupName } from './workgroupUtils';
+
 export async function getReport(txs) {
   
   async function generateReport() {
@@ -13,7 +15,7 @@ export async function getReport(txs) {
     if (tx.tx_type === "Outgoing") {
       tx.contributions.forEach(contribution => {
         let workgroup = contribution.task_sub_group || "not-recorded";
-        workgroup = workgroup.replace(/ /g, '-').toLowerCase();
+        workgroup = canonicalWorkgroupName(workgroup);
         
         let taskDateStr = contribution.task_date || tx.transaction_date.toString();
         if(contribution.task_date) {

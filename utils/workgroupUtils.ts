@@ -1,5 +1,25 @@
 // ../utils/workgroupUtils.ts
 
+/**
+ * When a workgroup was renamed in metadata without a DB migration, list every **non-canonical**
+ * normalized name here → the **canonical** name to use in reports, filters, and merged budget rows.
+ *
+ * - Keys: normalized only (lowercase, hyphens for spaces) — same form as after `canonicalWorkgroupName`’s base normalization.
+ * - Values: the single canonical subgroup name you want to keep.
+ * - Do not add `-wg` vs `-workgroup` pairs globally; only entries here are merged.
+ *
+ * @example
+ * ```ts
+ * {
+ *   'ai-ethics-workgroup': 'ai-ethics-wg',
+ *   'some-wg-old-slug': 'some-wg',
+ * }
+ * ```
+ */
+export const WORKGROUP_NAME_ALIASES: Readonly<Record<string, string>> = {
+  'ai-ethics-workgroup': 'ai-ethics-wg',
+};
+
 export interface WorkgroupData {
   monthlyTotals: {
     totalMonthly: Record<string, Record<string, number>>;
@@ -9,6 +29,8 @@ export interface WorkgroupData {
 
 export interface WorkgroupBudget {
   sub_group: string;
+  /** When true, row is shown under the collapsible "Archived" section; totals still include this subgroup. */
+  archived?: boolean | null;
   sub_group_data: {
     budgets: Record<string, Record<string, {
       initial: { AGIX: number };
@@ -19,6 +41,80 @@ export interface WorkgroupBudget {
       };
     }>>;
   };
+}
+
+/**
+ * Normalizes workgroup strings from metadata (spaces → dashes, lowercased), then applies
+ * {@link WORKGROUP_NAME_ALIASES} so duplicate names collapse to the chosen canonical form.
+ */
+export function canonicalWorkgroupName(name: string | null | undefined): string {
+  if (name == null || name === '') return '';
+  let current = String(name).trim().replace(/ /g, '-').toLowerCase();
+  // Follow alias chains (e.g. old-a → old-b → canonical); cap depth to avoid misconfiguration loops.
+  for (let i = 0; i < 8; i++) {
+    const next = WORKGROUP_NAME_ALIASES[current];
+    if (next === undefined) break;
+    current = next;
+  }
+  return current;
+}
+
+/** True if this distribution belongs to any selected workgroup, after canonical names. */
+export function distributionMatchesWorkgroupSelection(
+  taskSubGroup: string | undefined,
+  selectedWorkgroups: string[]
+): boolean {
+  if (selectedWorkgroups.includes('All workgroups')) return true;
+  if (!taskSubGroup || taskSubGroup.trim() === '') return false;
+  const canon = canonicalWorkgroupName(taskSubGroup);
+  return selectedWorkgroups.some((s) => canonicalWorkgroupName(s) === canon);
+}
+
+type QuarterBudget = WorkgroupBudget['sub_group_data']['budgets'][string][string];
+
+function mergeQuarterBudget(a: QuarterBudget | undefined, b: QuarterBudget | undefined): QuarterBudget {
+  return {
+    initial: { AGIX: (a?.initial?.AGIX ?? 0) + (b?.initial?.AGIX ?? 0) },
+    final: { AGIX: (a?.final?.AGIX ?? 0) + (b?.final?.AGIX ?? 0) },
+    reallocations: {
+      incoming: { AGIX: (a?.reallocations?.incoming?.AGIX ?? 0) + (b?.reallocations?.incoming?.AGIX ?? 0) },
+      outgoing: { AGIX: (a?.reallocations?.outgoing?.AGIX ?? 0) + (b?.reallocations?.outgoing?.AGIX ?? 0) },
+    },
+  };
+}
+
+/** Merges subgroup rows that {@link canonicalWorkgroupName} maps to the same key (see {@link WORKGROUP_NAME_ALIASES}). */
+export function mergeSubgroupRowsByCanonicalName(rows: WorkgroupBudget[]): WorkgroupBudget[] {
+  const map = new Map<string, WorkgroupBudget>();
+  for (const row of rows) {
+    const key = canonicalWorkgroupName(row.sub_group);
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, { ...row, sub_group: key });
+      continue;
+    }
+    const mergedBudgets: WorkgroupBudget['sub_group_data']['budgets'] = existing.sub_group_data?.budgets
+      ? JSON.parse(JSON.stringify(existing.sub_group_data.budgets))
+      : {};
+    const bBudgets = row.sub_group_data?.budgets ?? {};
+    for (const [year, quarters] of Object.entries(bBudgets)) {
+      if (!mergedBudgets[year]) {
+        mergedBudgets[year] = JSON.parse(JSON.stringify(quarters));
+      } else {
+        for (const [q, qd] of Object.entries(quarters)) {
+          const prev = mergedBudgets[year][q];
+          mergedBudgets[year][q] = mergeQuarterBudget(prev, qd);
+        }
+      }
+    }
+    map.set(key, {
+      ...existing,
+      sub_group: key,
+      archived: Boolean(existing.archived && row.archived),
+      sub_group_data: { budgets: mergedBudgets },
+    });
+  }
+  return Array.from(map.values());
 }
 
 export const getQuartersAndYearsFromMonths = (months: string[]) => {

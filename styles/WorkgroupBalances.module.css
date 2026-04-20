@@ -98,6 +98,36 @@
     text-align: right;
 }
 
+/* Dark-theme friendly: avoid light gray (reads as white) with inherited light text */
+.archivedToggleRow td {
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.archivedToggle {
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    font: inherit;
+    font-size: 0.8rem;
+    text-align: left;
+    cursor: pointer;
+    color: rgb(255, 255, 255);
+}
+
+.archivedToggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+}
+
+.archivedToggle:focus-visible {
+    outline: 2px solid rgba(255, 255, 255, 0.6);
+    outline-offset: -2px;
+}
+
 .workgroupContainer {
     display: flex;
     flex-wrap: wrap;

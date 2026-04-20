@@ -1,3 +1,5 @@
+import { distributionMatchesWorkgroupSelection } from './workgroupUtils';
+
 export function processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distributionsArray, core_token) {
     //console.log(distributionsArray, core_token);
     const filteredDistributions = distributionsArray.filter(distribution => {
@@ -10,7 +12,7 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
         const isMonthMatch = selectedMonths.includes('All months') || selectedMonths.includes(formattedTaskDate);
 
         // Check if the distribution matches the selected workgroups
-        const isWorkgroupMatch = selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.includes(distribution.task_sub_group);
+        const isWorkgroupMatch = distributionMatchesWorkgroupSelection(distribution.task_sub_group, selectedWorkgroups);
 
         // Check if the distribution matches the selected tokens
         const isTokenMatch = selectedTokens.includes('All tokens') || distribution.tokens.some(token => selectedTokens.includes(token));

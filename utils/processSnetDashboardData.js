@@ -1,4 +1,6 @@
 // ../utils/processSnetDashboardData.js
+import { distributionMatchesWorkgroupSelection } from './workgroupUtils';
+
 export function processDashboardData(selectedMonths, selectedWorkgroups, selectedTokens, selectedLabels, distributionsArray, budgets) {
 
     const filteredDistributions = distributionsArray.filter(distribution => {
@@ -11,7 +13,7 @@ export function processDashboardData(selectedMonths, selectedWorkgroups, selecte
         const isMonthMatch = selectedMonths.includes('All months') || selectedMonths.includes(formattedTaskDate);
 
         // Check if the distribution matches the selected workgroups
-        const isWorkgroupMatch = selectedWorkgroups.includes('All workgroups') || selectedWorkgroups.includes(distribution.task_sub_group);
+        const isWorkgroupMatch = distributionMatchesWorkgroupSelection(distribution.task_sub_group, selectedWorkgroups);
 
         // Check if the distribution matches the selected tokens
         const isTokenMatch = selectedTokens.includes('All tokens') || distribution.tokens.some(token => selectedTokens.includes(token));
@@ -554,7 +556,7 @@ function createTable1Data(filteredDistributions) {
                         const amount = Number(distribution.amounts[index]);
                         monthlyTotals[month][token] = (Number(monthlyTotals[month][token]) || 0) + amount;
     
-                        if (workgroup && (selectedWorkgroups.includes(workgroup) || selectedWorkgroups.includes('All workgroups'))) {
+                        if (workgroup && distributionMatchesWorkgroupSelection(workgroup, selectedWorkgroups)) {
                             if (!workgroupTotals[workgroup]) {
                                 workgroupTotals[workgroup] = {};
                             }
