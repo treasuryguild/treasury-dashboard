@@ -26,6 +26,7 @@ import {
   filterIncomingTransactions,
   isTransactionInSpecialReturnedGroup
 } from '../utils/transactionUtils';
+import { mergeSubgroupRowsByCanonicalName } from '../utils/workgroupUtils';
 
 interface SnetDashboardProps {
   query: {
@@ -72,6 +73,7 @@ interface ProcessedDataType {
 
 interface WorkgroupBudget {
   sub_group: string;
+  archived?: boolean | null;
   sub_group_data: {
     budgets: Record<string, Record<string, {
       initial: { AGIX: number };
@@ -181,8 +183,7 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
               : item.sub_group_data
           };
         });
-        //console.log('Processed data:', processedData);
-        return processedData;
+        return mergeSubgroupRowsByCanonicalName(processedData);
       } else {
         console.error('Unexpected data format from getSubgroups:', data);
         return [];

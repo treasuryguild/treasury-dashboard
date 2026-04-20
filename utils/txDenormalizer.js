@@ -1,3 +1,5 @@
+import { canonicalWorkgroupName } from './workgroupUtils';
+
 export async function txDenormalizer(txs) {
     async function generateReport() {
         let distributionsArray = [];
@@ -29,7 +31,7 @@ export async function txDenormalizer(txs) {
                     let taskTransformedDate = task_date || transformedDate;
 
                     let formattedTaskSubGroup = task_sub_group
-                        ? task_sub_group.replace(/ /g, '-').toLowerCase()
+                        ? canonicalWorkgroupName(task_sub_group)
                         : '';
 
                     if (contribution.distributions) {

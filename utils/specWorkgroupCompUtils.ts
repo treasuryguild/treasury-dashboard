@@ -1,3 +1,5 @@
+import { canonicalWorkgroupName } from './workgroupUtils';
+
 export const formatNumberWithLeadingZero = (num: number): string => {
     return num < 10 ? `0${num}` : `${num}`;
   };
@@ -11,9 +13,9 @@ export const formatNumberWithLeadingZero = (num: number): string => {
   export const filterContributionsByWorkgroupAndMonth = (transactions: any[], workgroup: string, formattedSelectedMonth: string) => {
     const curatedContributions = transactions.flatMap((transaction: any) => 
       transaction.contributions ? transaction.contributions.filter((contribution: any) => {
-        // Check if the contribution belongs to the selected workgroup
+        // Check if the contribution belongs to the selected workgroup (see WORKGROUP_NAME_ALIASES)
         const isFromSelectedWorkgroup = contribution.task_sub_group && 
-          (contribution.task_sub_group.replace(/ /g, '-').toLowerCase()) === workgroup;
+          canonicalWorkgroupName(contribution.task_sub_group) === canonicalWorkgroupName(workgroup);
   
         if (formattedSelectedMonth === 'All months') {
           return isFromSelectedWorkgroup; // If "All months" is selected, only check workgroup
