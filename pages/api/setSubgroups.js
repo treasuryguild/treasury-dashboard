@@ -7,13 +7,19 @@ export default async function handler(req, res) {
     if (!inputSubGroups || !Array.isArray(inputSubGroups)) {
       return res.status(400).json({ error: "Invalid input data" });
     }
+    if (!project_id) {
+      return res.status(400).json({ error: "Project_id missing" });
+    }
 
     try {
       const status = await updateSubGroups(inputSubGroups, project_id);
       return res.status(200).json({ status });
     } catch (error) {
       console.error("Error updating SubGroups:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
+      return res.status(500).json({
+        error: "Internal Server Error",
+        details: process.env.NODE_ENV === "development" ? error.message : undefined
+      });
     }
   }
 
@@ -22,11 +28,18 @@ export default async function handler(req, res) {
 
 async function updateSubGroups(inputSubGroups , project_id) {
   let status = "started";
+  const normalizedSubGroups = Array.from(new Set(
+    inputSubGroups
+      .filter((sub_group) => typeof sub_group === "string")
+      .map((sub_group) => sub_group.trim())
+      .filter(Boolean)
+  ));
 
   // Fetch all existing SubGroups from the database
   const { data: existingSubGroups, error: fetchError } = await supabase
     .from("subgroups")
-    .select("sub_group");
+    .select("sub_group")
+    .eq("project_id", project_id);
 
   if (fetchError) throw fetchError;
 
@@ -36,7 +49,7 @@ async function updateSubGroups(inputSubGroups , project_id) {
   );
 
   // Filter out the SubGroups that already exist
-  const newSubGroups = inputSubGroups.filter(
+  const newSubGroups = normalizedSubGroups.filter(
     (sub_group) => !existingSubGroupsSet.has(sub_group)
   );
 

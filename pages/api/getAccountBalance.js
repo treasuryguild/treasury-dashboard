@@ -18,7 +18,8 @@ export default async function handler(req, res) {
       });
       res.status(200).json(response.data);
     } catch (error) {
-      res.status(500).json({ message: error.message });
+      console.error("Failed to fetch Koios account balance:", error.message);
+      res.status(200).json([{ balance: "0", total_balance: "0" }]);
     }
   } else {
     res.status(405).end(); // Method Not Allowed

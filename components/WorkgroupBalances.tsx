@@ -21,7 +21,7 @@ const WorkgroupBalances: React.FC<WorkgroupBalancesProps> = ({
   selectedQuarterFilters,
 }) => {
   const [archivedExpanded, setArchivedExpanded] = useState(false);
-  const { quarters, years } = WorkgroupUtils.getQuartersAndYearsFromMonths(months);
+  const { quarters, years } = WorkgroupUtils.getQuartersAndYearsFromMonths(months, workgroupsBudgets);
 
   let workgroupsToRender: string[] = [];
   if (workgroupsBudgets) {

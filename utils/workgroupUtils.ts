@@ -117,9 +117,18 @@ export function mergeSubgroupRowsByCanonicalName(rows: WorkgroupBudget[]): Workg
   return Array.from(map.values());
 }
 
-export const getQuartersAndYearsFromMonths = (months: string[]) => {
+export const getQuartersAndYearsFromMonths = (months: string[], workgroupsBudgets: WorkgroupBudget[] = []) => {
   if (months.includes('All months')) {
-    return { quarters: ['Q1', 'Q2', 'Q3', 'Q4'], years: ['2022','2023', '2024', '2025'] };
+    const budgetYears = Array.from(new Set(
+      workgroupsBudgets.flatMap((workgroup) =>
+        Object.keys(workgroup.sub_group_data?.budgets ?? {})
+      )
+    )).sort((a, b) => Number(a) - Number(b));
+
+    return {
+      quarters: ['Q1', 'Q2', 'Q3', 'Q4'],
+      years: budgetYears.length > 0 ? budgetYears : ['2022','2023', '2024', '2025'],
+    };
   }
   const quarters: string[] = [];
   const years: string[] = [];
@@ -218,20 +227,20 @@ export const getCumulativeRemainingForWorkgroup = (
   selectedQuarterFilters: string[]
 ) => {
   const workgroupData = data.monthlyTotals.workgroupMonthly[workgroup.sub_group];
-  if (workgroup.sub_group_data && workgroupData) {
+  if (workgroup.sub_group_data) {
     const latestMonth = getLatestSelectedMonth(selectedMonths, data);
     
     const totalBudget = Object.entries(workgroup.sub_group_data.budgets).reduce((total, [year, yearData]) => {
       return total + Object.entries(yearData).reduce((yearTotal, [quarter, quarterData]) => {
         const monthsInQuarter = getMonthsInQuarter(quarter, year);
         if (monthsInQuarter.some(month => isMonthBeforeOrEqual(month, latestMonth))) {
-          return yearTotal + (quarterData?.final.AGIX || 0);
+          return yearTotal + (quarterData?.initial.AGIX || 0);
         }
         return yearTotal;
       }, 0);
     }, 0);
 
-    const totalSpent = workgroupData.AGIX 
+    const totalSpent = workgroupData?.AGIX 
       ? Object.entries(workgroupData.AGIX).reduce((total, [month, amount]) => {
           if (isMonthBeforeOrEqual(month, latestMonth)) {
             return total + amount;

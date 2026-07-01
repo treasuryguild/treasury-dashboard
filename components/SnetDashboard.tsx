@@ -149,8 +149,12 @@ const SnetDashboard: React.FC<SnetDashboardProps> = ({ query }) => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to post workgroups to subgroups table');
+      const errorText = await response.text();
+      console.error('Failed to post workgroups to subgroups table:', errorText);
+      return false;
     }
+
+    return true;
   }
 
   async function getWorkgroups(projectId: string) {
