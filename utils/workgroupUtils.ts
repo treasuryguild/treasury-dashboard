@@ -119,6 +119,11 @@ export function mergeSubgroupRowsByCanonicalName(rows: WorkgroupBudget[]): Workg
 
 export const getQuartersAndYearsFromMonths = (months: string[], workgroupsBudgets: WorkgroupBudget[] = []) => {
   if (months.includes('All months')) {
+    const currentYear = new Date().getFullYear();
+    const fallbackYears = Array.from(
+      { length: currentYear - 2022 + 1 },
+      (_, index) => String(2022 + index)
+    );
     const budgetYears = Array.from(new Set(
       workgroupsBudgets.flatMap((workgroup) =>
         Object.keys(workgroup.sub_group_data?.budgets ?? {})
@@ -127,7 +132,7 @@ export const getQuartersAndYearsFromMonths = (months: string[], workgroupsBudget
 
     return {
       quarters: ['Q1', 'Q2', 'Q3', 'Q4'],
-      years: budgetYears.length > 0 ? budgetYears : ['2022','2023', '2024', '2025'],
+      years: budgetYears.length > 0 ? budgetYears : fallbackYears,
     };
   }
   const quarters: string[] = [];
