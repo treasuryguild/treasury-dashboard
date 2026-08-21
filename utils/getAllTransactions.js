@@ -2,14 +2,8 @@
 import { supabase } from "../lib/supabaseClient";
 import { parseContributions } from "./parseContributions";
 
-let testFaultyTxFilters;
-
-try {
-  testFaultyTxFilters = require('../public/testFaultyTxFilters.json');
-} catch (error) {
-  //console.warn("testFaultyTxFilters.json not found, using empty filters");
-  testFaultyTxFilters = [];
-}
+// Gitignored optional fixture; webpack cannot resolve a missing require() at compile time.
+const testFaultyTxFilters = [];
 
 export async function getAllTransactions(project_id, useTestData = false) {
   async function getAllTransactionsData(projectId, page, limit) {

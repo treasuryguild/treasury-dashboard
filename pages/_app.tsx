@@ -14,6 +14,11 @@ function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
   const { groupName, projectName, txid } = router.query;
   const [session, setSession] = useState<Session | null>(null)
+  const [isClient, setIsClient] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -67,7 +72,7 @@ function MyApp({ Component, pageProps }: AppProps) {
                   Sign Out
                 </button>
               )}
-              <CardanoWallet />
+              {isClient && <CardanoWallet />}
             </div>
           </div>
           <div className="component">
@@ -77,7 +82,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <div className="mesh-badge">
           <div className="mesh-badge-item">Powered by</div>
           <div className="mesh-badge-item">
-            <MeshBadge dark={true} />
+            {isClient && <MeshBadge dark={true} />}
           </div>
         </div>
       </MeshProvider>

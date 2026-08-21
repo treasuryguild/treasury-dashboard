@@ -13,7 +13,7 @@ type ProjectCardProps = {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ projectId, projectName, projectType, logoUrl, groupName }) => {
     return (
-        <Link href={`/${groupName}/${projectName}`} className={styles['project-card']}>
+        <Link href={`/${groupName}/${projectName}`} prefetch={false} className={styles['project-card']}>
             <div className={styles['project-card-content']}>
                 <img 
                     src={logoUrl}
