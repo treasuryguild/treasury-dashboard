@@ -25,23 +25,21 @@ const GroupPage = () => {
     const [groupData, setGroupData] = useState<Group | null>(null);
 
     useEffect(() => {
-        const fetchGroupData = async (groupName: string) => {
+        const fetchGroupData = async (name: string) => {
             let groupInfo = myVariable.groupInfo;
-            // If myVariable.groupInfo is empty, fetch the groupInfo
             if (!groupInfo || groupInfo.length === 0) {
                 groupInfo = await getOrgs();
-                setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo }));
+                setMyVariable(prevState => ({ ...prevState, groupInfo }));
             }
-    
-            // Find the group from the updated groupInfo
-            const foundGroup = groupInfo?.find(group => group.group_name === groupName);
+
+            const foundGroup = groupInfo?.find(group => group.group_name === name);
             setGroupData(foundGroup || null);
         };
-    
+
         if (groupName) {
             fetchGroupData(groupName as string);
         }
-    }, [groupName, myVariable, setMyVariable]);
+    }, [groupName]);
 
     const treasuryWalletProjects = groupData?.projects.filter(p => p.project_type === "Treasury Wallet") || [];
     const otherProjects = groupData?.projects.filter(p => p.project_type !== "Treasury Wallet") || [];
