@@ -1,9 +1,33 @@
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/router';
+import { useWallet } from '@meshsdk/react';
+import { getConnectedWalletAddresses, isAnyAddressAllowed } from '../utils/parseSpendingExportWallets';
 
 const Nav = () => {
-  const router = useRouter();
-  const { groupName, projectName, txid } = router.query;
+  const { connected, wallet } = useWallet();
+  const [showSpendingExport, setShowSpendingExport] = useState(false);
+  const walletReady = Boolean(wallet);
+
+  useEffect(() => {
+    if (!connected || !wallet) {
+      setShowSpendingExport(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    async function checkAccess() {
+      const addresses = await getConnectedWalletAddresses(wallet);
+      if (!cancelled) {
+        setShowSpendingExport(isAnyAddressAllowed(addresses));
+      }
+    }
+
+    checkAccess();
+    return () => {
+      cancelled = true;
+    };
+  }, [connected, walletReady]);
 
   return (
     <nav className="routes">
@@ -16,6 +40,11 @@ const Nav = () => {
       <Link href="/allTxs" className="navitems">
         View all your Txs
       </Link>
+      {showSpendingExport && (
+        <Link href="/spending-export" className="navitems">
+          Spending export
+        </Link>
+      )}
     </nav>
   );
 };

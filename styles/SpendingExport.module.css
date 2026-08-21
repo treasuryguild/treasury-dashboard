@@ -1,0 +1,93 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  min-height: 60vh;
+  font-family: Arial, sans-serif;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 1.4em;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.total {
+  font-weight: 600;
+}
+
+.downloadButton {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  color: white;
+  cursor: pointer;
+}
+
+.downloadButton:hover {
+  border-color: #646cff;
+}
+
+.downloadButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.message {
+  margin-top: 40px;
+  text-align: center;
+}
+
+.section {
+  width: 100%;
+  margin-top: 32px;
+}
+
+.sectionTitle {
+  font-size: 1.1em;
+  margin-bottom: 12px;
+}
+
+.tableWrap {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.table {
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.th, .td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+}
+
+.tdAmount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
