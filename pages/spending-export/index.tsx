@@ -297,6 +297,10 @@ const SpendingExport: NextPage = () => {
             Download balances CSV
           </button>
         </div>
+        <p className={styles.downloadNote}>
+          Large exports are split into multiple files. If your browser asks for permission to
+          download multiple files, please allow it so every part can finish downloading.
+        </p>
       </div>
 
       {isLoading && <div className={styles.message}>Loading valid outgoing payments...</div>}

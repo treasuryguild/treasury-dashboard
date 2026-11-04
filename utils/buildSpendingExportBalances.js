@@ -111,7 +111,8 @@ export function buildWorkgroupBalanceRows({
   return rows;
 }
 
-const MAX_CSV_PART_BYTES = 1024 * 1024;
+// Keep parts well under 1MB for platforms with stricter size limits.
+const MAX_CSV_PART_BYTES = 750 * 1024;
 
 function utf8ByteLength(value) {
   return new TextEncoder().encode(value).length;

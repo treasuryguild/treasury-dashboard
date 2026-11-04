@@ -90,7 +90,8 @@ function csvEscape(value) {
   return str;
 }
 
-const MAX_CSV_PART_BYTES = 1024 * 1024;
+// Keep parts well under 1MB for platforms with stricter size limits.
+const MAX_CSV_PART_BYTES = 750 * 1024;
 
 function buildCsvHeader() {
   const tokenColumns = getSpendingExportTokenColumns();
