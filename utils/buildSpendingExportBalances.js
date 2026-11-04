@@ -111,6 +111,12 @@ export function buildWorkgroupBalanceRows({
   return rows;
 }
 
+const MAX_CSV_PART_BYTES = 1024 * 1024;
+
+function utf8ByteLength(value) {
+  return new TextEncoder().encode(value).length;
+}
+
 export function spendingExportBalancesToCsv({
   paymentsAgixTotal,
   table1 = [],
@@ -165,4 +171,31 @@ export function spendingExportBalancesToCsv({
   }
 
   return lines.join('\n');
+}
+
+export function spendingExportBalancesToCsvParts(args, maxBytes = MAX_CSV_PART_BYTES) {
+  const lines = spendingExportBalancesToCsv(args).split('\n');
+  const parts = [];
+  let currentLines = [];
+  let currentBytes = 0;
+
+  for (const line of lines) {
+    const lineBytes = utf8ByteLength(currentLines.length === 0 ? line : `\n${line}`);
+
+    if (currentLines.length > 0 && currentBytes + lineBytes > maxBytes) {
+      parts.push(currentLines.join('\n'));
+      currentLines = [line];
+      currentBytes = utf8ByteLength(line);
+      continue;
+    }
+
+    currentLines.push(line);
+    currentBytes += lineBytes;
+  }
+
+  if (currentLines.length > 0) {
+    parts.push(currentLines.join('\n'));
+  }
+
+  return parts.length > 0 ? parts : [''];
 }

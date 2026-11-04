@@ -90,27 +90,67 @@ function csvEscape(value) {
   return str;
 }
 
+const MAX_CSV_PART_BYTES = 1024 * 1024;
+
+function buildCsvHeader() {
+  const tokenColumns = getSpendingExportTokenColumns();
+  return ['userId', ...tokenColumns, 'task', 'date', 'workgroup'];
+}
+
+function buildCsvLine(row, header, tokenColumns) {
+  return header
+    .map(key => {
+      if (tokenColumns.includes(key)) {
+        const value = row[key];
+        if (value === '' || value == null) {
+          return '';
+        }
+        return csvEscape(value);
+      }
+      return csvEscape(row[key]);
+    })
+    .join(',');
+}
+
+function utf8ByteLength(value) {
+  return new TextEncoder().encode(value).length;
+}
+
 export function spendingExportRowsToCsv(rows = []) {
   const tokenColumns = getSpendingExportTokenColumns();
-  const header = ['userId', ...tokenColumns, 'task', 'date', 'workgroup'];
+  const header = buildCsvHeader();
   const lines = [header.join(',')];
 
   for (const row of rows) {
-    lines.push(
-      header
-        .map(key => {
-          if (tokenColumns.includes(key)) {
-            const value = row[key];
-            if (value === '' || value == null) {
-              return '';
-            }
-            return csvEscape(value);
-          }
-          return csvEscape(row[key]);
-        })
-        .join(',')
-    );
+    lines.push(buildCsvLine(row, header, tokenColumns));
   }
 
   return lines.join('\n');
+}
+
+export function spendingExportRowsToCsvParts(rows = [], maxBytes = MAX_CSV_PART_BYTES) {
+  const tokenColumns = getSpendingExportTokenColumns();
+  const headerColumns = buildCsvHeader();
+  const headerLine = headerColumns.join(',');
+  const headerBytes = utf8ByteLength(headerLine);
+  const parts = [];
+  let currentLines = [headerLine];
+  let currentBytes = headerBytes;
+
+  for (const row of rows) {
+    const line = buildCsvLine(row, headerColumns, tokenColumns);
+    const lineBytes = utf8ByteLength(`\n${line}`);
+
+    if (currentLines.length > 1 && currentBytes + lineBytes > maxBytes) {
+      parts.push(currentLines.join('\n'));
+      currentLines = [headerLine];
+      currentBytes = headerBytes;
+    }
+
+    currentLines.push(line);
+    currentBytes += lineBytes;
+  }
+
+  parts.push(currentLines.join('\n'));
+  return parts;
 }

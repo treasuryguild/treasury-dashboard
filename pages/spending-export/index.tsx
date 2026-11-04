@@ -10,12 +10,12 @@ import { getConnectedWalletAddresses, isAnyAddressAllowed } from '../../utils/pa
 import {
   buildSpendingExportRows,
   getSpendingExportTokenColumns,
-  spendingExportRowsToCsv,
+  spendingExportRowsToCsvParts,
   sumSpendingExportAgix,
 } from '../../utils/buildSpendingExportRows';
 import {
   buildWorkgroupBalanceRows,
-  spendingExportBalancesToCsv,
+  spendingExportBalancesToCsvParts,
 } from '../../utils/buildSpendingExportBalances';
 import DynamicTable from '../../components/tables/DynamicTable';
 import WorkgroupBalances from '../../components/WorkgroupBalances';
@@ -89,6 +89,20 @@ function downloadFile(contents: string, filename: string) {
   link.click();
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
+}
+
+async function downloadCsvParts(parts: string[], baseFilename: string) {
+  if (parts.length === 1) {
+    downloadFile(parts[0], `${baseFilename}.csv`);
+    return;
+  }
+
+  for (let i = 0; i < parts.length; i += 1) {
+    downloadFile(parts[i], `${baseFilename}-part-${i + 1}.csv`);
+    if (i < parts.length - 1) {
+      await new Promise(resolve => setTimeout(resolve, 400));
+    }
+  }
 }
 
 const SpendingExport: NextPage = () => {
@@ -223,17 +237,17 @@ const SpendingExport: NextPage = () => {
 
   const tokenColumns = getSpendingExportTokenColumns();
 
-  function downloadPaymentsCsv() {
-    downloadFile(spendingExportRowsToCsv(rows), 'ambassador-wallet-spending.csv');
+  async function downloadPaymentsCsv() {
+    await downloadCsvParts(spendingExportRowsToCsvParts(rows), 'ambassador-wallet-spending');
   }
 
-  function downloadBalancesCsv() {
-    const csv = spendingExportBalancesToCsv({
+  async function downloadBalancesCsv() {
+    const parts = spendingExportBalancesToCsvParts({
       paymentsAgixTotal: totalAgix,
       table1,
       workgroupRows,
     });
-    downloadFile(csv, 'ambassador-wallet-agix-balances.csv');
+    await downloadCsvParts(parts, 'ambassador-wallet-agix-balances');
   }
 
   if (authState === 'checking') {
