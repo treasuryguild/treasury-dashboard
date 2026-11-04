@@ -9,6 +9,7 @@ import { mergeSubgroupRowsByCanonicalName } from '../../utils/workgroupUtils';
 import { getConnectedWalletAddresses, isAnyAddressAllowed } from '../../utils/parseSpendingExportWallets';
 import {
   buildSpendingExportRows,
+  getSpendingExportTokenColumns,
   spendingExportRowsToCsv,
   sumSpendingExportAgix,
 } from '../../utils/buildSpendingExportRows';
@@ -220,8 +221,10 @@ const SpendingExport: NextPage = () => {
       })
     : [];
 
+  const tokenColumns = getSpendingExportTokenColumns();
+
   function downloadPaymentsCsv() {
-    downloadFile(spendingExportRowsToCsv(rows), 'ambassador-wallet-agix-spending.csv');
+    downloadFile(spendingExportRowsToCsv(rows), 'ambassador-wallet-spending.csv');
   }
 
   function downloadBalancesCsv() {
@@ -282,7 +285,7 @@ const SpendingExport: NextPage = () => {
         </div>
       </div>
 
-      {isLoading && <div className={styles.message}>Loading valid outgoing AGIX payments...</div>}
+      {isLoading && <div className={styles.message}>Loading valid outgoing payments...</div>}
       {error && <div className={styles.message}>{error}</div>}
 
       {!isLoading && !error && (
@@ -309,13 +312,15 @@ const SpendingExport: NextPage = () => {
           )}
 
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>Outgoing AGIX payments</h2>
+            <h2 className={styles.sectionTitle}>Outgoing payments</h2>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
                   <tr>
                     <th className={styles.th}>userId</th>
-                    <th className={styles.th}>amount</th>
+                    {tokenColumns.map(token => (
+                      <th key={token} className={styles.th}>{token}</th>
+                    ))}
                     <th className={styles.th}>task</th>
                     <th className={styles.th}>date</th>
                     <th className={styles.th}>workgroup</th>
@@ -325,7 +330,11 @@ const SpendingExport: NextPage = () => {
                   {rows.map((row, index) => (
                     <tr key={`${row.userId}-${row.task}-${row.date}-${row.workgroup}-${index}`}>
                       <td className={styles.td}>{row.userId}</td>
-                      <td className={`${styles.td} ${styles.tdAmount}`}>{row.amount}</td>
+                      {tokenColumns.map(token => (
+                        <td key={token} className={`${styles.td} ${styles.tdAmount}`}>
+                          {row[token] == null || row[token] === '' ? '' : row[token]}
+                        </td>
+                      ))}
                       <td className={styles.td}>{row.task}</td>
                       <td className={styles.td}>{row.date}</td>
                       <td className={styles.td}>{row.workgroup}</td>
