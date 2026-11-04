@@ -56,6 +56,14 @@
   opacity: 0.5;
 }
 
+.downloadNote {
+  width: 100%;
+  margin: 0;
+  font-size: 0.9em;
+  line-height: 1.4;
+  opacity: 0.8;
+}
+
 .message {
   margin-top: 40px;
   text-align: center;
