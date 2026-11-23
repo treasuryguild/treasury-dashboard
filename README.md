@@ -4,9 +4,9 @@ This is the current dashboard where contributors can go to view their rewards an
 
 [https://treasuryguild.com](https://treasuryguild.com)
 
-## On-chain auto-capture (Netlify cron)
+## On-chain auto-capture (GitHub Actions)
 
-Hourly Netlify scheduled function `syncOnchainTransactions` scans all **non-archived** projects that have a wallet, classifies new transactions (incoming, staking, swaps, votes, smart contracts, etc.), writes Supabase rows (`transactions` / `contributions` / `distributions`), and commits metadata JSON to `treasuryguild/treasury-system-v4` (same layout the dashboard already links via `tx_json_url`).
+Hourly GitHub Actions workflow [`.github/workflows/sync-onchain.yml`](.github/workflows/sync-onchain.yml) runs `npm run sync:onchain`. It scans all **non-archived** projects that have a wallet, classifies new transactions (incoming, staking, swaps, votes, smart contracts, etc.), writes Supabase rows (`transactions` / `contributions` / `distributions`), and commits metadata JSON to `treasuryguild/treasury-system-v4` (same layout the dashboard already links via `tx_json_url`).
 
 It **skips**:
 - hashes already in `transactions`
@@ -14,23 +14,27 @@ It **skips**:
 
 Smart-contract txs get a `contractInfo` block in `tx_json` and a **Smart Contract** panel on the per-tx page (`/api/getTxContractInfo`).
 
-### Netlify environment variables
+### GitHub repository secrets
 
-| Variable | Required | Purpose |
-|----------|----------|---------|
-| `KOIOS_API_KEY` | Yes | Chain reads (already used for balances) |
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Client reads |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes (cron) | Inserts from the sync function |
-| `GITHUB_TOKEN` | Yes (cron) | Commit metadata to `treasury-system-v4` |
-| `CRON_SECRET` | Recommended | Required for manual HTTP invokes (`x-cron-secret` header or `?secret=`) |
-| `DRY_RUN` | No | `true` = classify/log only, no DB/GitHub writes |
+| Secret | Required | Purpose |
+|--------|----------|---------|
+| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Inserts from the sync job |
+| `KOIOS_API_KEY` | Yes | Chain reads |
+| `TREASURY_SYSTEM_GITHUB_TOKEN` | Yes | PAT with write access to `treasuryguild/treasury-system-v4` (mapped to `GITHUB_TOKEN` in the job) |
 | `BLOCKFROST_API_KEY_MAINNET` | No | Optional script JSON enrichment |
+| `DRY_RUN` | No | Set to `true` to classify/log only on scheduled runs |
+
+Also used by the Next.js app (Netlify / local): `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `KOIOS_API_KEY`.
 
 ### Manual trigger
 
+1. GitHub → **Actions** → **Sync on-chain transactions** → **Run workflow**
+2. Optionally enable **dry_run** to classify without DB/GitHub writes
+
+Or locally (with the same env vars set):
+
 ```bash
-curl -X POST "https://<your-site>/.netlify/functions/syncOnchainTransactions?secret=<CRON_SECRET>"
-# dry run:
-curl -X POST "https://<your-site>/.netlify/functions/syncOnchainTransactions?secret=<CRON_SECRET>&dryRun=true"
+npm run sync:onchain:dry
+npm run sync:onchain
 ```

@@ -22,10 +22,10 @@ import type {
   TokenTypeRow,
 } from "./types";
 
-const DEFAULT_TX_LIMIT = 40;
-const MAX_INSERTS_PER_PROJECT = 15;
+const DEFAULT_TX_LIMIT = 20;
+const MAX_INSERTS_PER_PROJECT = 5;
 const CONSECUTIVE_KNOWN_STOP = 8;
-const KOIOS_DELAY_MS = 350;
+const KOIOS_DELAY_MS = 200;
 
 export type SyncOptions = {
   dryRun?: boolean;
@@ -255,6 +255,7 @@ async function syncOneProject(
 export async function syncAllProjects(
   options: SyncOptions = {}
 ): Promise<SyncRunResult> {
+  const startedAt = Date.now();
   const dryRun =
     options.dryRun === true || process.env.DRY_RUN === "true";
   const tTypes = await loadTokenTypes();
@@ -294,6 +295,11 @@ export async function syncAllProjects(
       inserted: 0,
       errors: 0,
     }
+  );
+
+  const elapsedMs = Date.now() - startedAt;
+  console.log(
+    `On-chain sync finished in ${elapsedMs}ms (inserted=${totals.inserted}, errors=${totals.errors})`
   );
 
   return { dryRun, projects: projectResults, totals };
