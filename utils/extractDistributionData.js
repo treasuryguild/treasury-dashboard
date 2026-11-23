@@ -29,7 +29,20 @@ export function extractDistributionData(distributions) {
         if (distribution.task_label) {
             distribution.task_label.forEach(label => {
                 const trimmedLabel = label.trim();
-                if (trimmedLabel && trimmedLabel !== "incoming" && trimmedLabel !== "staking" && trimmedLabel !== "swap" && trimmedLabel !== "internal-transfer" && trimmedLabel !== "minting") {
+                const excludedLabels = new Set([
+                    "incoming",
+                    "staking",
+                    "swap",
+                    "internal-transfer",
+                    "minting",
+                    "vote-delegation",
+                    "smart-contract",
+                    "rewards-withdrawal",
+                    "drep-registration",
+                    "burning",
+                    "wallet-emptied",
+                ]);
+                if (trimmedLabel && !excludedLabels.has(trimmedLabel.toLowerCase().replace(/\s+/g, "-"))) {
                     labelsSet.add(trimmedLabel);
                 }
             });

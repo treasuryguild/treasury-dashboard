@@ -29,6 +29,25 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, group
     return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   };
 
+  const getRowClassName = (txType: string) => {
+    if (txType === 'Incoming' || txType === 'Incoming Reserve' || txType === 'Minting') {
+      return styles['incoming-row'];
+    }
+    if (txType === 'Swap' || txType === 'Swap Incoming') {
+      return styles['swap-row'];
+    }
+    if (txType === 'Smart Contract') {
+      return styles['contract-row'];
+    }
+    if (txType === 'Staking' || txType === 'Rewards Withdrawal' || txType === 'Internal Transfer') {
+      return styles['staking-row'];
+    }
+    if (txType === 'Vote Delegation' || txType === 'DRep Registration') {
+      return styles['vote-row'];
+    }
+    return '';
+  };
+
   const renderTableHeaders = () => {
     const baseHeaders = ['Date', 'Tx Type', 'Recipients', 'Metadata', 'txView', 'Fee', 'Wallet Balance', 'NFTs'];
     
@@ -105,7 +124,7 @@ const TransactionsTable: React.FC<TransactionsTableProps> = ({ myVariable, group
             .map((transaction: any, index: number) => {
               const { tokenColumns, nftCount } = renderTokenColumns(transaction);
               return (
-                <tr key={index} className={(transaction.tx_type === 'Incoming' || transaction.tx_type === 'Incoming Reserve' || transaction.tx_type === 'Minting') ? styles['incoming-row'] : ''}>
+                <tr key={index} className={getRowClassName(transaction.tx_type)}>
                   <td className={styles['align-left']}>{formatDate(transaction.transaction_date)}</td>
                   <td className={styles['align-center']}>{transaction.tx_type}</td>
                   <td className={styles['align-center']}>{transaction.recipients}</td>

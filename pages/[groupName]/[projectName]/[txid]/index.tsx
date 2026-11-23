@@ -4,6 +4,7 @@ import { useWallet } from '@meshsdk/react';
 import { useMyVariable } from '../../../../context/MyVariableContext'; 
 import { getOrgs } from '../../../../utils/getOrgs';
 import { getSingleTransaction } from '../../../../utils/getSingleTransaction';
+import SmartContractPanel from '../../../../components/SmartContractPanel';
 import styles from '../../../../styles/Txid.module.css';
 
 interface Project {
@@ -37,6 +38,7 @@ const TxidPage = () => {
     const [incomingTx, setIncomingTx] = useState<boolean>(false);
     const [projectData, setProjectData] = useState<Project | null>(null);
     const [txidData, setTxidData] = useState<Contribution[] | null>(null);
+    const [txMeta, setTxMeta] = useState<{ tx_type?: string; tx_json?: any } | null>(null);
     const [wallets, setWallets] = useState<string[]>([]);
     const [totalTokensReceived, setTotalTokensReceived] = useState({});
 
@@ -90,8 +92,10 @@ const TxidPage = () => {
                 transactions = await getSingleTransaction(txid, projectData.project_id);
                 setMyVariable(prevState => ({ ...prevState, projectInfo: projectData }));
                 //console.log("TEst", transactions[0].contributions)
-                setTxidData(transactions[0].contributions)
-                if (transactions[0].contributions[0].task_type == "Incoming") {
+                const txRow = transactions[0];
+                setTxidData(txRow.contributions)
+                setTxMeta({ tx_type: txRow.tx_type, tx_json: txRow.tx_json });
+                if (txRow.contributions?.[0]?.task_type == "Incoming" || txRow.tx_type == "Incoming") {
                   setIncomingTx(true);
                 }
                 setLoading(false);
@@ -180,6 +184,13 @@ function aggregateTokens(txidData: Contribution[] | null, walletIds: string[]) {
               <div>
                 {!loading && renderCards(filterContributions(wallets))} 
               </div>
+              {!loading && typeof txid === 'string' && (
+                <SmartContractPanel
+                  txHash={txid}
+                  txType={txMeta?.tx_type}
+                  storedContractInfo={txMeta?.tx_json?.contractInfo || null}
+                />
+              )}
             </div>
           </div>  
         </div>

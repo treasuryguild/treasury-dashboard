@@ -49,4 +49,33 @@
     flex-wrap: wrap;
 }
 
+.contractPanel {
+    text-align: left;
+    max-width: 720px;
+}
+
+.contractDetails ul {
+    margin: 0.25em 0 0.75em 1.25em;
+    padding: 0;
+    word-break: break-all;
+}
+
+.contractJson {
+    background: #111827;
+    color: #e5e7eb;
+    padding: 0.75em;
+    overflow-x: auto;
+    max-height: 240px;
+    font-size: 0.85em;
+}
+
+.contractLink {
+    color: rgb(0, 157, 255);
+    text-decoration: none;
+}
+
+.contractError {
+    color: #f87171;
+}
+
   

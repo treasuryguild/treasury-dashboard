@@ -17,6 +17,10 @@ import {
   buildWorkgroupBalanceRows,
   spendingExportBalancesToCsvParts,
 } from '../../utils/buildSpendingExportBalances';
+import {
+  buildIncomingTransactionsCsv,
+  getRegularIncomingTransactions,
+} from '../../utils/buildIncomingTransactionsExport';
 import DynamicTable from '../../components/tables/DynamicTable';
 import WorkgroupBalances from '../../components/WorkgroupBalances';
 import styles from '../../styles/SpendingExport.module.css';
@@ -110,6 +114,7 @@ const SpendingExport: NextPage = () => {
   const [authState, setAuthState] = useState<'checking' | 'disconnected' | 'unauthorized' | 'authorized'>('checking');
   const [rows, setRows] = useState<any[]>([]);
   const [distributions, setDistributions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
   const [table1, setTable1] = useState<any[]>([]);
   const [processedData, setProcessedData] = useState<any>(null);
   const [workgroupsBudgets, setWorkgroupsBudgets] = useState<any[]>([]);
@@ -122,6 +127,7 @@ const SpendingExport: NextPage = () => {
       setAuthState('disconnected');
       setRows([]);
       setDistributions([]);
+      setTransactions([]);
       setTable1([]);
       setProcessedData(null);
       setWorkgroupsBudgets([]);
@@ -144,6 +150,7 @@ const SpendingExport: NextPage = () => {
         if (!allowed) {
           setRows([]);
           setDistributions([]);
+          setTransactions([]);
           setTable1([]);
           setProcessedData(null);
           setWorkgroupsBudgets([]);
@@ -152,6 +159,7 @@ const SpendingExport: NextPage = () => {
         if (!cancelled) {
           setAuthState('unauthorized');
           setRows([]);
+          setTransactions([]);
         }
       }
     }
@@ -198,6 +206,7 @@ const SpendingExport: NextPage = () => {
         if (!cancelled) {
           setRows(exportRows);
           setDistributions(distributionsArray);
+          setTransactions(transactions);
           setTable1(dashboardData.table1 || []);
           setProcessedData(dashboardData);
           setWorkgroupsBudgets(subgroups);
@@ -207,6 +216,7 @@ const SpendingExport: NextPage = () => {
           setError(err?.message || 'Failed to load spending data');
           setRows([]);
           setDistributions([]);
+          setTransactions([]);
           setTable1([]);
           setProcessedData(null);
           setWorkgroupsBudgets([]);
@@ -249,6 +259,12 @@ const SpendingExport: NextPage = () => {
     });
     await downloadCsvParts(parts, 'ambassador-wallet-agix-balances');
   }
+
+  function downloadIncomingCsv() {
+    downloadFile(buildIncomingTransactionsCsv(transactions), 'ambassador-incoming-msge62.csv');
+  }
+
+  const hasIncomingRows = getRegularIncomingTransactions(transactions).length > 0;
 
   if (authState === 'checking') {
     return (
@@ -295,6 +311,13 @@ const SpendingExport: NextPage = () => {
             disabled={isLoading || (table1.length === 0 && workgroupRows.length === 0)}
           >
             Download balances CSV
+          </button>
+          <button
+            className={styles.downloadButton}
+            onClick={downloadIncomingCsv}
+            disabled={isLoading || !hasIncomingRows}
+          >
+            Download incoming CSV
           </button>
         </div>
         <p className={styles.downloadNote}>
