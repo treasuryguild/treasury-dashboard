@@ -1,2 +1,2 @@
 # Next.js build/publish remain configured in the Netlify UI.
-# On-chain sync cron runs via GitHub Actions (.github/workflows/sync-onchain.yml).
+# On-chain sync cron runs via GitHub Actions (.github/workflows/sync-onchain-hourly.yml).
