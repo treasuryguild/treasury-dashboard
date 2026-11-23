@@ -1,0 +1,42 @@
+name: Sync on-chain transactions
+
+on:
+  schedule:
+    # Hourly (UTC)
+    - cron: "0 * * * *"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Classify and log only (no DB/GitHub writes)"
+        required: false
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run on-chain sync
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          KOIOS_API_KEY: ${{ secrets.KOIOS_API_KEY }}
+          # Maps to process.env.GITHUB_TOKEN used by lib/onchain/githubCommit.ts
+          GITHUB_TOKEN: ${{ secrets.TREASURY_SYSTEM_GITHUB_TOKEN }}
+          BLOCKFROST_API_KEY_MAINNET: ${{ secrets.BLOCKFROST_API_KEY_MAINNET }}
+          # workflow_dispatch dry_run wins; otherwise optional repo secret DRY_RUN
+          DRY_RUN: ${{ inputs.dry_run == true && 'true' || secrets.DRY_RUN }}
+        run: npm run sync:onchain

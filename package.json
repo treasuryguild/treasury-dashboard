@@ -6,12 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sync:onchain": "npx tsx scripts/sync-onchain.ts",
+    "sync:onchain:dry": "npx tsx scripts/sync-onchain.ts --dry-run"
   },
   "dependencies": {
     "@meshsdk/core": "^1.5.11-beta.7",
     "@meshsdk/react": "^1.1.10-beta.4",
-    "@netlify/functions": "^6.1.1",
     "@supabase/supabase-js": "^2.31.0",
     "@types/node": "20.4.7",
     "@types/react": "18.2.18",
@@ -25,5 +26,8 @@
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "typescript": "^5.2.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.23.15"
   }
 }
