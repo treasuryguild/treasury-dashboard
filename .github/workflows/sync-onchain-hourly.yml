@@ -2,8 +2,8 @@ name: Sync on-chain transactions
 
 on:
   schedule:
-    # Hourly at :17 UTC (avoid :00 peak load drops)
-    - cron: "17 * * * *"
+    # Hourly at :23 UTC (off-peak; new workflow file to re-register schedule)
+    - cron: "23 * * * *"
   workflow_dispatch:
     inputs:
       dry_run:

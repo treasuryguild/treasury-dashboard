@@ -6,7 +6,7 @@ This is the current dashboard where contributors can go to view their rewards an
 
 ## On-chain auto-capture (GitHub Actions)
 
-Hourly GitHub Actions workflow [`.github/workflows/sync-onchain.yml`](.github/workflows/sync-onchain.yml) runs `npm run sync:onchain`. It scans all **non-archived** projects that have a wallet, classifies new transactions (incoming, staking, swaps, votes, smart contracts, etc.), writes Supabase rows (`transactions` / `contributions` / `distributions`), and commits metadata JSON to `treasuryguild/treasury-system-v4` (same layout the dashboard already links via `tx_json_url`).
+Hourly GitHub Actions workflow [`.github/workflows/sync-onchain-hourly.yml`](.github/workflows/sync-onchain-hourly.yml) runs `npm run sync:onchain`. It scans all **non-archived** projects that have a wallet, classifies new transactions (incoming, staking, swaps, votes, smart contracts, etc.), writes Supabase rows (`transactions` / `contributions` / `distributions`), and commits metadata JSON to `treasuryguild/treasury-system-v4` (same layout the dashboard already links via `tx_json_url`).
 
 It **skips**:
 - hashes already in `transactions`
