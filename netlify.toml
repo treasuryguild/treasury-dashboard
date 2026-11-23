@@ -1,0 +1,12 @@
+# Keep build command/publish configured in the Netlify UI (existing Next.js deploy).
+# This file only registers the scheduled on-chain sync function.
+
+[build]
+  functions = "netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+  external_node_modules = ["@supabase/supabase-js", "axios"]
+
+[functions."syncOnchainTransactions"]
+  schedule = "@hourly"

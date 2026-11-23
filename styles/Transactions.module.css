@@ -48,6 +48,22 @@
     background-color: #104715; 
 }
 
+.swap-row {
+    background-color: #1a3a4a;
+}
+
+.contract-row {
+    background-color: #2a2340;
+}
+
+.staking-row {
+    background-color: #1f3340;
+}
+
+.vote-row {
+    background-color: #2c2a1a;
+}
+
 .header-align-left {
     text-align: left;
 }
