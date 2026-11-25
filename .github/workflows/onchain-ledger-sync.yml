@@ -2,7 +2,7 @@ name: Sync on-chain transactions
 
 on:
   schedule:
-    # Hourly at :23 UTC (off-peak; new workflow file to re-register schedule)
+    # Hourly at :23 UTC
     - cron: "23 * * * *"
   workflow_dispatch:
     inputs:
