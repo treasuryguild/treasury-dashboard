@@ -2,30 +2,36 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
   width: 100%;
-  padding: 16px 12px;
-  font-family: 'Arial, sans-serif';
+  padding: 20px 16px 36px 16px;
+  font-family: inherit;
+  color: var(--text-secondary);
 }
 
 .projectContributions {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
 }
 
 .tableWrap {
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 6px;
+  box-shadow: var(--shadow-card);
 }
 
 .project-cards {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 20px;
-  padding: 20px;
+  gap: 16px;
+  padding: 16px;
 }
 
 .walletProjectCard {
@@ -33,28 +39,49 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex: 0 1 200px;
-  padding: 10px;
+  flex: 0 1 210px;
+  padding: 16px 12px;
   text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.walletProjectCard:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .table {
   border-collapse: collapse;
   width: 100%;
+  font-size: 13px;
 }
 
-.th, .td {
-  border: 1px solid #ccc;
-  padding: 8px;
+.th,
+.td {
+  border-bottom: 1px solid var(--border-row);
+  padding: 8px 10px;
   text-align: left;
 }
 
-.th:nth-child(n+5), .td:nth-child(n+5) {
+.th {
+  background: var(--surface-table-header);
+  color: var(--text-table-header);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-strong);
+}
+
+.th:nth-child(n+5),
+.td:nth-child(n+5) {
   text-align: center;
 }
 
 .td:nth-child(n+5) {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }

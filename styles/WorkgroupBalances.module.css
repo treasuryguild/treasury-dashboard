@@ -1,162 +1,192 @@
 .main {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .numbers {
-    width: 100%;
-    display: flex;
-    justify-content: center; /* Center the table horizontally */
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .numbers table {
-    width: 100%;
-    max-width: 1065px; /* Set a maximum width for the table */
-    border-collapse: collapse;
-    table-layout: fixed;
-    margin-left: -0px;
+  width: 100%;
+  max-width: 1088px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  margin-left: 0;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  overflow: hidden;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
 }
 
-.numbers th, .numbers td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-    font-size: 0.8rem;
+.numbers th,
+.numbers td {
+  border-bottom: 1px solid var(--border-row);
+  border-right: 1px solid var(--border-row);
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 0.8rem;
 }
 
 .numbers th {
-    text-align: left;
-    height: auto;
-    white-space: normal;
-    vertical-align: top;
-    min-height: 60px;
-    line-height: 1.2;
+  background: var(--surface-table-header);
+  color: var(--text-table-header);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-strong);
+  text-align: left;
+  height: auto;
+  white-space: normal;
+  vertical-align: top;
+  min-height: 60px;
+  line-height: 1.25;
 }
 
 .numbers td {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-/* Adjust these percentages to change column widths */
-.numbers th:nth-child(1), .numbers td:nth-child(1) { width: 25%; } /* Workgroup */
-.numbers th:nth-child(2), .numbers td:nth-child(2) { width: 10%; } /* Budget */
-.numbers th:nth-child(3), .numbers td:nth-child(3) { width: 10%; } /* Spent */
-.numbers th:nth-child(4), .numbers td:nth-child(4) { width: 10%; } /* Incoming Reallocation */
-.numbers th:nth-child(5), .numbers td:nth-child(5) { width: 10%; } /* Outgoing Reallocation */
-.numbers th:nth-child(6), .numbers td:nth-child(6) { width: 10%; } /* Remaining */
-.numbers th:nth-child(7), .numbers td:nth-child(7) { width: 10%; } /* Cumulative Reallocation */
-.numbers th:nth-child(8), .numbers td:nth-child(8) { width: 10%; } /* Cumulative Remaining */
+.numbers tbody tr:hover td {
+  background: var(--surface-row-hover);
+}
+
+/* Column widths preserved for SNET WorkgroupBalances */
+.numbers th:nth-child(1), .numbers td:nth-child(1) { width: 25%; }
+.numbers th:nth-child(2), .numbers td:nth-child(2) { width: 10%; }
+.numbers th:nth-child(3), .numbers td:nth-child(3) { width: 10%; }
+.numbers th:nth-child(4), .numbers td:nth-child(4) { width: 10%; }
+.numbers th:nth-child(5), .numbers td:nth-child(5) { width: 10%; }
+.numbers th:nth-child(6), .numbers td:nth-child(6) { width: 10%; }
+.numbers th:nth-child(7), .numbers td:nth-child(7) { width: 10%; }
+.numbers th:nth-child(8), .numbers td:nth-child(8) { width: 10%; }
 
 .numbers th:not(:first-child),
 .numbers td:not(:first-child) {
-    text-align: right;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .dropdownContainer {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .dropdown {
-    margin: 5px;
+  margin: 5px;
 }
 
 .dropdownSelect {
-    padding: 0.2em;
-    background-color: black;
-    color: white;
+  padding: 5px 8px;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--text-primary);
 }
 
 .workgroupTable {
-    border-collapse: collapse;
-    border: 1px solid white;
-    width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border-subtle);
+  width: 100%;
+  background: var(--surface-card);
+  color: var(--text-secondary);
 }
 
 .workgroupTable th,
 .workgroupTable td {
-    border: 1px solid white;
-    padding: 4px 8px; 
-    font-size: 0.9rem;
+  border-bottom: 1px solid var(--border-row);
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.workgroupTable th {
+  background: var(--surface-table-header);
+  color: var(--text-table-header);
+  font-weight: 600;
 }
 
 .workgroupTable th:first-child,
 .workgroupTable td:first-child {
-    text-align: left;
+  text-align: left;
 }
 
 .workgroupTable th:last-child,
 .workgroupTable td:last-child {
-    text-align: right;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .workgroupTable th:nth-child(2),
 .workgroupTable td:nth-child(2) {
-    text-align: right;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
-/* Dark-theme friendly: avoid light gray (reads as white) with inherited light text */
 .archivedToggleRow td {
-    padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.35);
-    background: rgba(255, 255, 255, 0.08);
+  padding: 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  background: var(--surface-elevated);
 }
 
 .archivedToggle {
-    display: block;
-    width: 100%;
-    margin: 0;
-    padding: 10px 8px;
-    border: none;
-    background: transparent;
-    font: inherit;
-    font-size: 0.8rem;
-    text-align: left;
-    cursor: pointer;
-    color: rgb(255, 255, 255);
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 10px 10px;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text-primary);
 }
 
 .archivedToggle:hover {
-    background: rgba(255, 255, 255, 0.12);
+  background: var(--surface-hover);
 }
 
 .archivedToggle:focus-visible {
-    outline: 2px solid rgba(255, 255, 255, 0.6);
-    outline-offset: -2px;
+  outline: 2px solid var(--accent-border);
+  outline-offset: -2px;
 }
 
 .workgroupContainer {
-    display: flex;
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .workgroupBox {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 768px) {
-    .numbers {
-        justify-content: flex-start;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 0 8px;
-    }
+  .numbers {
+    justify-content: flex-start;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0 8px;
+  }
 
-    .numbers table {
-        min-width: 680px;
-    }
+  .numbers table {
+    min-width: 680px;
+  }
 
-    .workgroupContainer {
-        width: 100%;
-        padding: 0 8px;
-    }
+  .workgroupContainer {
+    width: 100%;
+    padding: 0 8px;
+  }
 
-    .workgroupBox {
-        width: 100%;
-        overflow-x: auto;
-    }
+  .workgroupBox {
+    width: 100%;
+    overflow-x: auto;
+  }
 }

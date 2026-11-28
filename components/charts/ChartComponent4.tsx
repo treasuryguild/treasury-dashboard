@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Chart } from "chart.js/auto";
 import { Colors } from "chart.js";
+import { useTheme } from '../../context/ThemeContext';
 
 Chart.register(Colors);
 
@@ -9,6 +10,8 @@ interface ChartComponent4Props {
 }
 
 const ChartComponent4: React.FC<ChartComponent4Props> = ({ chartData }) => {
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === 'light';
     const labels = chartData.labels;
     const data = chartData.data;
     const chartRef = useRef<Chart | null>(null);
@@ -19,6 +22,9 @@ const ChartComponent4: React.FC<ChartComponent4Props> = ({ chartData }) => {
         if (chartRef.current) {
             chartRef.current.destroy();
         }
+
+        const tickColor = isLight ? '#334155' : 'rgba(255, 255, 255, 0.87)';
+        const gridColor = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.08)';
 
         const chartData = {
             labels,
@@ -38,13 +44,15 @@ const ChartComponent4: React.FC<ChartComponent4Props> = ({ chartData }) => {
             options: {
                 scales: {
                     y: {
+                        grid: { color: gridColor },
                         ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
+                            color: tickColor,
                         },
                     },
                     x: {
+                        grid: { color: gridColor },
                         ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
+                            color: tickColor,
                         },
                         display: false
                     },
@@ -61,7 +69,7 @@ const ChartComponent4: React.FC<ChartComponent4Props> = ({ chartData }) => {
         };
         const ctx: any = document.getElementById("myChart4");
         chartRef.current = new Chart(ctx, config);
-    }, [labels, data]);
+    }, [labels, data, isLight]);
 
     return (
         <div>

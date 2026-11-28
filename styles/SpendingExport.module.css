@@ -4,10 +4,11 @@
   align-items: center;
   padding: 20px;
   min-height: 60vh;
-  font-family: Arial, sans-serif;
+  font-family: inherit;
   width: 100%;
-  max-width: 1100px;
+  max-width: 1160px;
   margin: 0 auto;
+  color: var(--text-secondary);
 }
 
 .header {
@@ -18,10 +19,17 @@
   justify-content: space-between;
   gap: 16px;
   margin-bottom: 20px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 16px 18px;
+  box-shadow: var(--shadow-card);
 }
 
 .title {
-  font-size: 1.4em;
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-primary);
 }
 
 .summary {
@@ -33,22 +41,24 @@
 
 .total {
   font-weight: 600;
+  color: var(--text-primary);
 }
 
 .downloadButton {
   border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  border: 1px solid var(--accent-border);
+  padding: 0.55em 1.15em;
+  font-size: 0.92rem;
+  font-weight: 600;
   font-family: inherit;
-  background-color: #1a1a1a;
-  color: white;
+  background-color: var(--accent-primary);
+  color: #ffffff;
   cursor: pointer;
+  transition: background 0.15s ease;
 }
 
 .downloadButton:hover {
-  border-color: #646cff;
+  background-color: var(--accent-primary-hover);
 }
 
 .downloadButton:disabled {
@@ -59,23 +69,31 @@
 .downloadNote {
   width: 100%;
   margin: 0;
-  font-size: 0.9em;
-  line-height: 1.4;
-  opacity: 0.8;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-muted);
 }
 
 .message {
   margin-top: 40px;
   text-align: center;
+  color: var(--text-muted);
 }
 
 .section {
   width: 100%;
-  margin-top: 32px;
+  margin-top: 20px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 16px;
+  box-shadow: var(--shadow-card);
 }
 
 .sectionTitle {
-  font-size: 1.1em;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
@@ -87,12 +105,21 @@
 .table {
   border-collapse: collapse;
   width: 100%;
+  font-size: 13px;
 }
 
-.th, .td {
-  border: 1px solid #ccc;
-  padding: 8px;
+.th,
+.td {
+  border-bottom: 1px solid var(--border-row);
+  padding: 8px 10px;
   text-align: left;
+}
+
+.th {
+  background: var(--surface-table-header);
+  color: var(--text-table-header);
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .tdAmount {

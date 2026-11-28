@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { Chart } from "chart.js/auto";
 import { Colors } from "chart.js";
+import { useTheme } from '../../context/ThemeContext';
 
 Chart.register(Colors);
 
@@ -9,6 +10,8 @@ interface ChartComponent2Props {
 }
 
 const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === 'light';
     const labels = chartData.labels;
     const data = chartData.data;
     const chartRef = useRef<Chart | null>(null);
@@ -19,6 +22,10 @@ const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
         if (chartRef.current) {
             chartRef.current.destroy();
         }
+
+        const tickColor = isLight ? '#334155' : 'rgba(255, 255, 255, 0.87)';
+        const gridColor = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+        const datalabelColor = isLight ? '#0f172a' : 'white';
 
         const chartData = {
             labels,
@@ -38,13 +45,15 @@ const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
             options: {
                 scales: {
                     y: {
+                        grid: { color: gridColor },
                         ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
+                            color: tickColor,
                         },
                     },
                     x: {
+                        grid: { color: gridColor },
                         ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
+                            color: tickColor,
                         },
                     },
                 },
@@ -52,12 +61,15 @@ const ChartComponent2: React.FC<ChartComponent2Props> = ({ chartData }) => {
                     legend: {
                         display: false,
                     },
+                    datalabels: {
+                        color: datalabelColor,
+                    },
                 },
             },
         };
         const ctx: any = document.getElementById("myChart2");
         chartRef.current = new Chart(ctx, config);
-    }, [labels, data]);
+    }, [labels, data, isLight]);
 
     return (
         <div>

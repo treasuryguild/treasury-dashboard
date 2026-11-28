@@ -1,7 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import { Chart } from "chart.js/auto";
+import { useTheme } from '../../context/ThemeContext';
 
 const ChartComponentC: React.FC<{ chartData: any }> = ({ chartData }) => {
+    const { resolvedTheme } = useTheme();
+    const isLight = resolvedTheme === 'light';
     const chartRef = useRef<Chart | null>(null);
 
     useEffect(() => {
@@ -47,6 +50,11 @@ const ChartComponentC: React.FC<{ chartData: any }> = ({ chartData }) => {
             }
         });
 
+        const tickColor = isLight ? '#334155' : 'rgba(255, 255, 255, 0.87)';
+        const gridColor = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+        const legendColor = isLight ? '#1e293b' : 'rgba(255, 255, 255, 0.87)';
+        const datalabelColor = isLight ? '#0f172a' : 'white';
+
         const config: any = {
             type: 'bar',
             data: {
@@ -56,13 +64,15 @@ const ChartComponentC: React.FC<{ chartData: any }> = ({ chartData }) => {
             options: {
                 scales: {
                     y: {
+                        grid: { color: gridColor },
                         ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
+                            color: tickColor,
                         },
                     },
                     x: {
+                        grid: { color: gridColor },
                         ticks: {
-                            color: "rgba(255, 255, 255, 0.87)",
+                            color: tickColor,
                         },
                         display: false
                     },
@@ -70,9 +80,10 @@ const ChartComponentC: React.FC<{ chartData: any }> = ({ chartData }) => {
                 plugins: {
                     legend: {
                         display: true,
+                        labels: { color: legendColor },
                     },
                     datalabels: {
-                        color: 'white',
+                        color: datalabelColor,
                         display: false,
                         align: 'end',
                         anchor: 'end',
@@ -89,7 +100,7 @@ const ChartComponentC: React.FC<{ chartData: any }> = ({ chartData }) => {
         
         const ctx: any = document.getElementById("myChartC");
         chartRef.current = new Chart(ctx, config);
-    }, [chartData]);
+    }, [chartData, isLight]);
 
     return (
         <div>

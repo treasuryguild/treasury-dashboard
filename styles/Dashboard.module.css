@@ -1,158 +1,211 @@
 /* ../styles/Dashboard.module.css */
 .flex-column {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.flex-row{
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+.flex-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .flex-row-half {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    max-width: 530px;
-    max-height: 45px;
-    min-width: 200px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    flex-grow: 1;
-    transition: max-width 0.3s ease-in-out; /* Transition effect */
-    overflow: hidden;
-    margin: 0.2em;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: 540px;
+  max-height: 48px;
+  min-width: 200px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 12px;
+  border-radius: 10px;
+  flex-grow: 1;
+  transition: max-height 0.25s ease-in-out, border-color 0.15s ease;
+  overflow: hidden;
+  margin: 0.15em;
+  box-shadow: var(--shadow-card);
 }
 
 .flex-row-half:hover {
-    max-height: 200px;
-    min-height: 35px;
+  max-height: 220px;
+  min-height: 40px;
+  border-color: var(--border-strong);
+  overflow-y: auto;
 }
 
 .flex-row-half .filter-btn {
-    opacity: 0; /* Initially unselected buttons are transparent */
-    transition: opacity 0.7s ease; /* Transition for the fade-in effect */
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 .flex-row-half:hover .filter-btn {
-    opacity: 1; /* Unselected buttons become fully visible on hover */
+  opacity: 1;
 }
 
-/* Ensure that selected buttons always remain fully visible */
-.flex-row-half .selected, .flex-row-half:hover .selected {
-    opacity: 1;
+.flex-row-half .selected,
+.flex-row-half:hover .selected {
+  opacity: 1;
 }
 
 .flex-row-full {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    max-width: 1065px;
-    max-height: 45px;
-    min-width: 200px;
-    border: 1px solid #ccc;
-    padding: 10px;
-    border-radius: 5px;
-    flex-grow: 1;
-    transition: max-width 0.3s ease-in-out; /* Transition effect */
-    overflow: hidden;
-    margin: 0.2em;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  max-width: 1088px;
+  max-height: 48px;
+  min-width: 200px;
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  padding: 10px 12px;
+  border-radius: 10px;
+  flex-grow: 1;
+  transition: max-height 0.25s ease-in-out, border-color 0.15s ease;
+  overflow: hidden;
+  margin: 0.15em;
+  box-shadow: var(--shadow-card);
 }
 
 .flex-row-full:hover {
-    max-height: 200px;
-    min-height: 35px;
+  max-height: 220px;
+  min-height: 40px;
+  border-color: var(--border-strong);
+  overflow-y: auto;
 }
 
 .flex-row-full .filter-btn {
-    opacity: 0; /* Initially unselected buttons are transparent */
-    transition: opacity 0.7s ease; /* Transition for the fade-in effect */
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
 .flex-row-full:hover .filter-btn {
-    opacity: 1; /* Unselected buttons become fully visible on hover */
+  opacity: 1;
 }
 
-/* Ensure that selected buttons always remain fully visible */
-.flex-row-full .selected, .flex-row-half:hover .selected {
-    opacity: 1;
+.flex-row-full .selected,
+.flex-row-half:hover .selected {
+  opacity: 1;
 }
 
 .components-conatiner {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: flex-start;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px;
+  margin-top: 4px;
 }
 
-.filter-btn{
-    background-color: rgb(45, 62, 94);
-    color: white;
-    margin: 0.08em;
-    border-radius: 5px;
-    padding: 0.2em;
-    cursor: pointer;
+.filter-btn {
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 0.08em;
+  border-radius: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
-.filter-btn:hover{
-    background-color: rgb(99, 124, 171);
+
+.filter-btn:hover {
+  background-color: var(--surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
 }
+
 .selected {
-    background-color: #007bff; 
-    color: white; 
-    margin: 0.08em;   
-    border-radius: 5px; 
-    padding: 0.2em;
-    cursor: pointer;
+  background-color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  margin: 0.08em;
+  border-radius: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
 }
 
 .selection-label {
-    display: block;
-    font-size: 14px;
-    margin-top: 4px;
-    margin-right: 5px;
-    font-weight: bold;
-    color: white;
-  }
-  
+  display: block;
+  font-size: 13px;
+  margin-top: 2px;
+  margin-right: 6px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
 
 .chartX {
-    width: 100%;
-    max-width: 600px;
-    min-width: 0;
-    border: 1px solid #ccc;
-    padding: 5px;
-    border-radius: 5px;
-    margin: 3px;
+  width: 100%;
+  max-width: 600px;
+  min-width: 0;
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+  padding: 14px;
+  border-radius: 10px;
+  margin: 2px;
+  box-shadow: var(--shadow-card);
+}
+
+.chartX h2 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .tables {
-    width: 100%;
-    max-width: 500px;
-    margin: 3px;
-    margin-bottom: 12px;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  width: 100%;
+  max-width: 520px;
+  margin: 2px;
+  margin-bottom: 12px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.tables h3 {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
 }
 
 .quarter-btn {
-    background-color: rgb(45, 62, 94);
-    color: white;
-    margin: 0.08em;
-    border-radius: 5px;
-    padding: 0.2em;
-    cursor: pointer;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  font-size: 12px;
+  margin: 0.08em;
+  border-radius: 6px;
+  padding: 3px 9px;
+  cursor: pointer;
 }
 
 .quarter-btn:hover {
-    background-color: rgb(99, 124, 171);
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .filter-select {
-  padding: 5px;
+  padding: 5px 8px;
   margin-left: 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
+  border-radius: 6px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
 }
 
 @media (hover: none), (max-width: 768px) {
@@ -179,7 +232,7 @@
   .selected,
   .quarter-btn {
     padding: 0.4em 0.65em;
-    margin: 0.2em;
+    margin: 0.15em;
     min-height: 36px;
   }
 
