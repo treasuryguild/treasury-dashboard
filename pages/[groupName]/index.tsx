@@ -42,7 +42,8 @@ const GroupPage = () => {
     }, [groupName]);
 
     const treasuryWalletProjects = groupData?.projects.filter(p => p.project_type === "Treasury Wallet") || [];
-    const otherProjects = groupData?.projects.filter(p => p.project_type !== "Treasury Wallet") || [];
+    const smartContractProjects = groupData?.projects.filter(p => p.project_type === "Smart Contract") || [];
+    const otherProjects = groupData?.projects.filter(p => p.project_type !== "Treasury Wallet" && p.project_type !== "Smart Contract") || [];
     //console.log("myVariable", myVariable);
     if (!groupData) return <div>Loading...</div>;
     
@@ -51,6 +52,18 @@ const GroupPage = () => {
             <h1>{groupName}</h1>
             {treasuryWalletProjects.length > 0 && <h2>Treasury wallets</h2>} 
             {treasuryWalletProjects.map((project) => (
+                <ProjectCard 
+                    key={project.project_id}
+                    projectId={project.project_id}
+                    projectName={project.project_name}
+                    projectType={project.project_type}
+                    logoUrl={groupData.logo_url}
+                    groupName={groupName as string}
+                />
+            ))}
+
+            {smartContractProjects.length > 0 && <h2>Smart contract treasuries</h2>}
+            {smartContractProjects.map((project) => (
                 <ProjectCard 
                     key={project.project_id}
                     projectId={project.project_id}
