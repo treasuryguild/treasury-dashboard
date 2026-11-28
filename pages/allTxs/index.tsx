@@ -173,8 +173,9 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
             <div>Loading transactions...</div>
             ) : (
             selectedProject && (
-            <div className="project-contributions">
+            <div className={styles.projectContributions}>
               <h2>{selectedProject?.project_name}</h2>
+              <div className={styles.tableWrap}>
               <table className={styles.table}>
                 <thead>
                   <tr>
@@ -237,6 +238,7 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
                     ))}
                 </tbody>
               </table>
+              </div>
             </div>
           ))}
         </>

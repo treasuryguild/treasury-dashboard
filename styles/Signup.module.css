@@ -2,8 +2,10 @@
     display: flex;
     flex-direction: column;
     text-align: center;
-    margin: 5em;
-    padding-left: 17em;
+    max-width: 600px;
+    width: 100%;
+    margin: 2rem auto;
+    padding: 0 1rem;
 }
 
 .button {

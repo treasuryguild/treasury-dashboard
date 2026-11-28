@@ -42,4 +42,20 @@
   flex-wrap: wrap;
   justify-content: center;
   margin-top: 5px;
+  padding: 0 8px;
+}
+
+@media (max-width: 480px) {
+  .group-card {
+    width: calc(50% - 12px);
+    min-width: 135px;
+    height: 190px;
+    padding: 12px;
+    margin: 6px;
+  }
+
+  .group-logo {
+    width: 80px;
+    height: 80px;
+  }
 }

@@ -47,11 +47,14 @@
 .txWindow {
     display: flex;
     flex-wrap: wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
 }
 
 .contractPanel {
     text-align: left;
     max-width: 720px;
+    width: 100%;
 }
 
 .contractDetails ul {
@@ -76,6 +79,55 @@
 
 .contractError {
     color: #f87171;
+}
+
+@media (max-width: 768px) {
+    .main {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .main > div:first-child {
+        width: 100%;
+    }
+
+    .main > div:nth-child(2) {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .navbar {
+        position: static;
+        width: 100%;
+        flex-direction: row;
+        justify-content: flex-start;
+        padding: 8px 12px;
+    }
+
+    .backButton {
+        min-height: 36px;
+        padding: 6px 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 6px;
+    }
+
+    .txWindow {
+        padding: 0 12px;
+        width: 100%;
+    }
+
+    .txWindow > div {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .taskCard {
+        margin: 10px 0;
+    }
+
+    .contractPanel {
+        max-width: 100%;
+    }
 }
 
   

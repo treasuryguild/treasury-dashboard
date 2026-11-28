@@ -24,7 +24,9 @@
   padding: 0.8em;
   margin: 0.2em;
   max-height: 300px;
-  min-width: 520px;
+  width: 100%;
+  max-width: 560px;
+  min-width: 0;
 }
 
 .chart {
@@ -33,7 +35,15 @@
     margin: 0.2em;
     margin-bottom: 4em;
     max-height: 400px;
-    min-width: 600px;
+    width: 100%;
+    max-width: 600px;
+    min-width: 0;
+}
+
+.numbers {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .numbers table {
@@ -111,4 +121,21 @@
 .workgroupBox {
   display: flex;
   flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .chartsContainer {
+    width: 100%;
+  }
+
+  .chartType1,
+  .chartType2 {
+    width: 100%;
+    padding-left: 0;
+    margin-left: 0;
+  }
+
+  .chart {
+    margin-bottom: 1.5em;
+  }
 }

@@ -331,7 +331,7 @@ const ProjectPage = () => {
       </div>
       <div style={{ width: '100%' }}>
         {(parentProject || linkedProjects.length > 0) && (
-          <div style={{ margin: '12px 50px 0 50px', textAlign: 'left', fontSize: '0.95rem' }}>
+          <div className={styles.linkedProjectsBanner}>
             {parentProject && (
               <div>
                 <strong>Linked to: </strong>
