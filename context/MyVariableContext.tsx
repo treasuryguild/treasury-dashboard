@@ -9,6 +9,7 @@ interface Project {
   budgets: any;
   core_token: string;
   carry_over_amounts: any;
+  parent_project_id?: string | null;
 }
 
 interface Group {

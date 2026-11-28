@@ -1,5 +1,6 @@
 // ../pages/[groupName]/[projectName]/index.tsx
 import { useRouter } from 'next/router';
+import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useMyVariable } from '../../../context/MyVariableContext';
 import { getOrgs } from '../../../utils/getOrgs';
@@ -24,6 +25,7 @@ interface Project {
   project_type: string;
   wallet: string;
   core_token: string;
+  parent_project_id?: string | null;
 }
 
 interface TokenType {
@@ -49,6 +51,8 @@ const ProjectPage = () => {
   const { groupName, projectName } = router.query;
   const [loading, setLoading] = useState<boolean>(false);
   const [projectData, setProjectData] = useState<Project | null>(null);
+  const [parentProject, setParentProject] = useState<Project | null>(null);
+  const [linkedProjects, setLinkedProjects] = useState<Project[]>([]);
   const [previousTab, setPreviousTab] = useState<'transactions' | 'signup' | 'report'>('transactions');
   const [balance2, setBalance2] = useState<TokenBalance[]>([]);
   const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
@@ -105,6 +109,19 @@ const ProjectPage = () => {
       const foundGroup = groupInfo?.find(group => group.group_name === groupName);
       const foundProject = foundGroup?.projects.find(project => project.project_name === projectName);
       setProjectData(foundProject || null);
+      if (foundGroup && foundProject) {
+        const parent = foundProject.parent_project_id
+          ? foundGroup.projects.find(p => p.project_id === foundProject.parent_project_id) || null
+          : null;
+        const children = foundGroup.projects.filter(
+          p => p.parent_project_id === foundProject.project_id
+        );
+        setParentProject(parent);
+        setLinkedProjects(children);
+      } else {
+        setParentProject(null);
+        setLinkedProjects([]);
+      }
       //console.log("foundProject", foundProject?.core_token)
       const coreToken: any = foundProject?.core_token ? foundProject?.core_token : selectedTokens
       setSelectedTokens([coreToken]);
@@ -277,25 +294,58 @@ const ProjectPage = () => {
           )}
         </div>
       </div>
-      {loading && (
-        <div>
-          <div className={styles.loading}>Loading...</div>
-        </div>
-      )}
-      {!loading && (
-        activeTab === 'transactions' ? (
-          <TransactionsTable myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
-        ) : activeTab === 'signup' ? (
-          <Signup />
-        ) : activeTab === 'report' ? (
-          <>
-            {projectName === "Singularity Net Ambassador Wallet" && (<SnetDashboard query={router.query} />)}
-            {projectName != "Singularity Net Ambassador Wallet" && (<Dashboard query={router.query} />)}
-          </>
-        ) : (
-          <div>nothing selected</div>
-        )
-      )}
+      <div style={{ width: '100%' }}>
+        {(parentProject || linkedProjects.length > 0) && (
+          <div style={{ margin: '12px 50px 0 50px', textAlign: 'left', fontSize: '0.95rem' }}>
+            {parentProject && (
+              <div>
+                <strong>Linked to: </strong>
+                <Link
+                  href={`/${encodeURIComponent(groupName as string)}/${encodeURIComponent(parentProject.project_name)}`}
+                  className={styles['link-as-text']}
+                >
+                  {parentProject.project_name}
+                </Link>
+              </div>
+            )}
+            {linkedProjects.length > 0 && (
+              <div>
+                <strong>Linked Smart Contracts: </strong>
+                {linkedProjects.map((child, idx) => (
+                  <span key={child.project_id}>
+                    {idx > 0 && ', '}
+                    <Link
+                      href={`/${encodeURIComponent(groupName as string)}/${encodeURIComponent(child.project_name)}`}
+                      className={styles['link-as-text']}
+                    >
+                      {child.project_name}
+                    </Link>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+        {loading && (
+          <div>
+            <div className={styles.loading}>Loading...</div>
+          </div>
+        )}
+        {!loading && (
+          activeTab === 'transactions' ? (
+            <TransactionsTable myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
+          ) : activeTab === 'signup' ? (
+            <Signup />
+          ) : activeTab === 'report' ? (
+            <>
+              {projectName === "Singularity Net Ambassador Wallet" && (<SnetDashboard query={router.query} />)}
+              {projectName != "Singularity Net Ambassador Wallet" && (<Dashboard query={router.query} />)}
+            </>
+          ) : (
+            <div>nothing selected</div>
+          )
+        )}
+      </div>
     </div>
   );
 };

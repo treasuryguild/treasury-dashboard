@@ -71,6 +71,7 @@ export interface MyVariable {
         wallet: string;
         budgets: any;
         core_token: string;
+        parent_project_id?: string | null;
         carry_over_amounts?: {
             pre_treasury_system_spending?: {
                 AGIX: string;
