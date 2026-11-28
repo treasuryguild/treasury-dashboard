@@ -108,7 +108,7 @@ const Dashboard: React.FC<DashboardProps> = ({ query }) => {
     if (myVariable.transactions) {
       generateReport();
     }     
-  }, []);
+  }, [myVariable.loadedProjectId, myVariable.transactions]);
 
   useEffect(() => {
     if (myVariable.report && Object.keys(myVariable.report).length > 0) {
@@ -133,7 +133,8 @@ useEffect(() => {
     if (projectName === "Singularity Net Ambassador Wallet") {
       setSelectedTokens(tokens.length > 0 ? tokens : ['AGIX']);
     } else {
-      setSelectedTokens(tokens.length > 0 ? tokens : [myVariable.projectInfo.core_token]);
+      const defaultCoreToken = myVariable.projectInfo?.core_token;
+      setSelectedTokens(tokens.length > 0 ? tokens : (defaultCoreToken ? [defaultCoreToken] : ['All tokens']));
     }
     setSelectedLabels(labels.length > 0 ? labels : ['All labels']);
 

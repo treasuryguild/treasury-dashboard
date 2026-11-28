@@ -63,9 +63,7 @@ const ProjectPage = () => {
   useEffect(() => {
     const handleRouteChange = (url: string) => {
       const tab = new URLSearchParams(window.location.search).get('tab');
-      if (tab) {
-        setActiveTab(tab as 'transactions' | 'signup' | 'report');
-      }
+      setActiveTab((tab as 'transactions' | 'signup' | 'report') || 'transactions');
     };
     router.events.on('routeChangeComplete', handleRouteChange);
     return () => {
@@ -80,11 +78,9 @@ const ProjectPage = () => {
   }, [activeTab]);
   // Hook to set activeTab from URL parameters
   useEffect(() => {
-    const tab = new URLSearchParams(window.location.search).get('tab');
-    if (tab) {
-      setActiveTab(tab as 'transactions' | 'signup' | 'report');
-    }
     const queryParams = new URLSearchParams(window.location.search);
+    const tab = queryParams.get('tab');
+    setActiveTab((tab as 'transactions' | 'signup' | 'report') || 'transactions');
     const months: any = queryParams.get('months')?.split(',') || ['All months'];
     const workgroups: any = queryParams.get('workgroups')?.split(',') || ['All workgroups'];
     const tokens: any = queryParams.get('tokens')?.split(',') || (projectName === "Singularity Net Ambassador Wallet" ? ['AGIX'] : selectedTokens);
@@ -94,17 +90,22 @@ const ProjectPage = () => {
     setSelectedWorkgroup(workgroups);
     setSelectedTokens(tokens);
     setSelectedLabels(labels);
-  }, []);
+  }, [groupName, projectName]);
 
 
   // Hook to fetch group data
   useEffect(() => {
+    let isCancelled = false;
+
     const fetchGroupData = async () => {
       let groupInfo = myVariable.groupInfo;
       if (!groupInfo || groupInfo.length === 0) {
         groupInfo = await getOrgs();
+        if (isCancelled) return;
         setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo }));
       }
+
+      if (isCancelled) return;
 
       const foundGroup = groupInfo?.find(group => group.group_name === groupName);
       const foundProject = foundGroup?.projects.find(project => project.project_name === projectName);
@@ -122,37 +123,59 @@ const ProjectPage = () => {
         setParentProject(null);
         setLinkedProjects([]);
       }
-      //console.log("foundProject", foundProject?.core_token)
-      const coreToken: any = foundProject?.core_token ? foundProject?.core_token : selectedTokens
-      setSelectedTokens([coreToken]);
+      if (foundProject?.core_token) {
+        setSelectedTokens([foundProject.core_token]);
+      }
     };
 
     if (groupName && projectName) {
       fetchGroupData();
     }
+
+    return () => {
+      isCancelled = true;
+    };
   }, [groupName, projectName]);
 
   // Hook to fetch project data
   useEffect(() => {
-    const fetchProjectData = async () => {
-      let budgetInfo = myVariable.projectInfo;
+    let isCancelled = false;
 
-      if (projectData) {
-        setLoading(true);
-        budgetInfo = await getMonthlyBudget(projectData.project_id);
-        let { transactions, originalTransactions } = await getAllTransactions(projectData.project_id);
-        let balance = await getAssetList(projectData.wallet);
-        let toke_types = await getTokenTypes() as TokenType[];
+    const fetchProjectData = async () => {
+      if (!projectData) return;
+
+      setLoading(true);
+      setBalance2([]);
+      setMyVariable(prevState => ({
+        ...prevState,
+        loadedProjectId: undefined,
+        budgetInfo: undefined,
+        projectInfo: projectData,
+        transactions: [],
+        originalTransactions: [],
+        balance: [],
+        report: undefined,
+        snetTokenAllocation: [],
+      }));
+
+      try {
+        const budgetInfo = await getMonthlyBudget(projectData.project_id);
+        const { transactions, originalTransactions } = await getAllTransactions(projectData.project_id);
+        const balance = await getAssetList(projectData.wallet);
+        const toke_types = await getTokenTypes() as TokenType[];
 
         // Fetch snet token allocation data if it's the Singularity Net Ambassador Wallet
         let snetTokenAllocation: SnetTokenAllocation[] = [];
-        if (projectName === "Singularity Net Ambassador Wallet") {
+        if (projectData.project_name === "Singularity Net Ambassador Wallet") {
           snetTokenAllocation = await getSnetTokenAllocation();
         }
+
+        if (isCancelled) return;
 
         setBalance2(balance);
         setMyVariable(prevState => ({
           ...prevState,
+          loadedProjectId: projectData.project_id,
           budgetInfo,
           projectInfo: projectData,
           transactions,
@@ -161,13 +184,24 @@ const ProjectPage = () => {
           toke_types,
           snetTokenAllocation
         }));
-        setLoading(false);
+      } finally {
+        if (!isCancelled) {
+          setLoading(false);
+        }
       }
     };
 
-    if (projectData && (!myVariable.budgetInfo || myVariable.transactions.length == 0) && (activeTab === 'transactions' || activeTab === 'report')) {
+    if (
+      projectData &&
+      myVariable.loadedProjectId !== projectData.project_id &&
+      (activeTab === 'transactions' || activeTab === 'report')
+    ) {
       fetchProjectData();
     }
+
+    return () => {
+      isCancelled = true;
+    };
   }, [projectData, activeTab]);
 
   // Function to scroll to top
@@ -197,6 +231,7 @@ const ProjectPage = () => {
   };
 
   if (!projectData) return <div className={styles['main']}>Loading...</div>;
+  const isProjectDataReady = !loading && myVariable.loadedProjectId === projectData.project_id;
   //console.log(myVariable)
   return (
     <div className={styles['main']}>
@@ -231,7 +266,7 @@ const ProjectPage = () => {
               Dashboard
             </button>
           )}
-          {!loading && (activeTab === 'transactions' || activeTab === 'report') && (
+          {isProjectDataReady && (activeTab === 'transactions' || activeTab === 'report') && (
             <>
               {activeTab != 'report' && (<div>Table buttons</div>)}
               {activeTab === 'report' && (<div>Dashboard buttons</div>)}
@@ -326,24 +361,24 @@ const ProjectPage = () => {
             )}
           </div>
         )}
-        {loading && (
+        {(loading || ((activeTab === 'transactions' || activeTab === 'report') && !isProjectDataReady)) && (
           <div>
             <div className={styles.loading}>Loading...</div>
           </div>
         )}
         {!loading && (
-          activeTab === 'transactions' ? (
-            <TransactionsTable myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
-          ) : activeTab === 'signup' ? (
+          activeTab === 'signup' ? (
             <Signup />
-          ) : activeTab === 'report' ? (
+          ) : isProjectDataReady && activeTab === 'transactions' ? (
+            <TransactionsTable key={projectData.project_id} myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
+          ) : isProjectDataReady && activeTab === 'report' ? (
             <>
-              {projectName === "Singularity Net Ambassador Wallet" && (<SnetDashboard query={router.query} />)}
-              {projectName != "Singularity Net Ambassador Wallet" && (<Dashboard query={router.query} />)}
+              {projectName === "Singularity Net Ambassador Wallet" && (<SnetDashboard key={projectData.project_id} query={router.query} />)}
+              {projectName != "Singularity Net Ambassador Wallet" && (<Dashboard key={projectData.project_id} query={router.query} />)}
             </>
-          ) : (
+          ) : activeTab !== 'transactions' && activeTab !== 'report' ? (
             <div>nothing selected</div>
-          )
+          ) : null
         )}
       </div>
     </div>

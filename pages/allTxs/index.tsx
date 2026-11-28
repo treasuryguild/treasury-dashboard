@@ -113,7 +113,7 @@ const AllTxs: NextPage<AllTxsProps> = ({ groupInfo }) => {
   }
 
   useEffect(() => {
-    setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo, transactions: [] }));
+    setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo, transactions: [], originalTransactions: [], loadedProjectId: undefined }));
     console.log("Please connect wallet", groupInfo);
   }, [groupInfo, setMyVariable]);
 

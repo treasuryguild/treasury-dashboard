@@ -15,7 +15,7 @@ function mapAssetData(assetDetails, assetList) {
     let displayname;
 
     if (tokenType === 'nft') {
-      const nameFromMetadata = asset.minting_tx_metadata['721']?.[asset.policy_id]?.[asset.asset_name]?.name;
+      const nameFromMetadata = asset.minting_tx_metadata?.['721']?.[asset.policy_id]?.[asset.asset_name]?.name;
       if (nameFromMetadata) {
         name = nameFromMetadata;
         displayname = nameFromMetadata;
