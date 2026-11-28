@@ -1,5 +1,6 @@
 import "../styles/globals.css";
 import type { AppProps } from "next/app";
+import Head from "next/head";
 import { MeshProvider } from "@meshsdk/react";
 import { CardanoWallet } from '@meshsdk/react';
 import Nav from '../components/nav'
@@ -49,19 +50,22 @@ function MyApp({ Component, pageProps }: AppProps) {
 
   return (
     <MyVariableProvider>
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <MeshProvider>
         <div className="main">
           <div className="nav">
-            <div>
+            <div className="nav-left">
               <Nav />
             </div>
-            <div>
+            <div className="nav-title">
               {projectName && (
                 <h2 className="page">{projectName}</h2>)}
               {!projectName && (
                 <h2 className="page">{groupName}</h2>)}
             </div>
-            <div className="walletbutton" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div className="walletbutton">
               {!session && router.asPath.startsWith('/Singularity%20Net/Singularity%20Net%20Ambassador%20Wallet?tab=signup') && (
                 <button onClick={signInWithDiscord} className="navitems">
                   Sign In with Discord

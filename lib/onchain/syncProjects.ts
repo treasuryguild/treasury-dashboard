@@ -7,6 +7,7 @@ import {
 import { buildContractInfo, classifyTransaction } from "./classifyTx";
 import { isDappBuiltTx } from "./isDappBuiltTx";
 import {
+  enrichUnknownTxAssets,
   fetchAdaUsdRate,
   fetchAddressInfo,
   fetchAddressTxs,
@@ -165,11 +166,13 @@ async function syncOneProject(
           txData,
           project.wallet
         );
+        const resolvedAssets = await enrichUnknownTxAssets(txData, tTypes);
         const classified = classifyTransaction({
           usedAddresses: [project.wallet],
           stakeAddress,
           txData,
           tTypes,
+          assets: resolvedAssets,
         });
 
         const { txamounts, totalAmounts } = buildTxAmounts(

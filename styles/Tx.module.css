@@ -4,19 +4,27 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  padding: 16px;
   font-family: 'Arial, sans-serif';
 }
 
 .inputSection {
   margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 440px;
 }
 
 .input {
   padding: 10px;
   border-radius: 5px;
   border: 1px solid #ccc;
-  width: 300px;
-  margin-right: 10px;
+  width: 100%;
+  max-width: 300px;
+  flex: 1 1 200px;
 }
 
 .button {

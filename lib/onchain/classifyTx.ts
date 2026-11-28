@@ -2,17 +2,89 @@ import type {
   AddressAssetToken,
   ClassifyResult,
   ContractInfo,
+  ResolvedAssetInfo,
   TokenTypeRow,
 } from "./types";
 
 type AddressAssets = Record<string, AddressAssetToken[]>;
 
-function getAssetNameFromTTypes(
-  fingerprint: string,
-  tTypes: TokenTypeRow[]
-): string {
-  const typeEntry = tTypes.find((t) => t.fingerprint === fingerprint);
-  return typeEntry ? typeEntry.asset_name : "Unknown";
+const CIP67_LABEL_PREFIXES = new Set([
+  "000643b0", // (100) reference NFT
+  "000de140", // (222) NFT
+  "0014df10", // (333) FT
+  "001bc280", // (444) RFT
+]);
+
+export function decodeHexAssetName(hex?: string | null): string | null {
+  if (!hex || typeof hex !== "string") return null;
+  const trimmed = hex.trim();
+  if (trimmed.length === 0 || trimmed.length % 2 !== 0) return null;
+  if (!/^[0-9a-fA-F]+$/.test(trimmed)) return null;
+
+  let payloadHex = trimmed;
+  if (
+    payloadHex.length > 8 &&
+    CIP67_LABEL_PREFIXES.has(payloadHex.slice(0, 8).toLowerCase())
+  ) {
+    payloadHex = payloadHex.slice(8);
+  }
+
+  try {
+    const decoded = Buffer.from(payloadHex, "hex").toString("utf8").trim();
+    if (!decoded) return null;
+    if (/[\x00-\x1f\x7f\ufffd]/.test(decoded)) return null;
+    return decoded;
+  } catch {
+    return null;
+  }
+}
+
+function resolveAssetNameAndDecimals(
+  asset: {
+    fingerprint?: string;
+    asset_name?: string;
+    decimals?: number | null;
+  },
+  tTypes: TokenTypeRow[],
+  resolvedAssets: ResolvedAssetInfo[] = []
+): { name: string; decimals: number } {
+  let name: string | null = null;
+  let decimals = Number(asset.decimals) || 0;
+
+  const typeEntry = asset.fingerprint
+    ? tTypes.find((t) => t.fingerprint === asset.fingerprint)
+    : undefined;
+  if (typeEntry?.asset_name) {
+    name = typeEntry.asset_name;
+    if (typeEntry.decimals != null) decimals = Number(typeEntry.decimals) || 0;
+  }
+
+  if (!name && asset.fingerprint && resolvedAssets.length > 0) {
+    const resolved = resolvedAssets.find(
+      (a) => a.fingerprint === asset.fingerprint
+    );
+    const resolvedName = resolved?.assetName || resolved?.name;
+    if (resolvedName) {
+      name = resolvedName;
+    }
+    if (resolved?.decimals != null) {
+      decimals = Number(resolved.decimals) || 0;
+    }
+  }
+
+  if (!name) {
+    name = decodeHexAssetName(asset.asset_name);
+  }
+
+  if (!name && asset.fingerprint) {
+    name = asset.fingerprint;
+  }
+
+  const normalized = normalizeAssetName(name || "Unknown");
+  return {
+    name: normalized.name,
+    decimals: normalized.decimals != null ? normalized.decimals : decimals,
+  };
 }
 
 function normalizeAssetName(name: string): { name: string; decimals?: number } {
@@ -40,7 +112,8 @@ const detailsHelpers = {
     output: any,
     assetIdCounter: number,
     tTypes: TokenTypeRow[],
-    includeAda = true
+    includeAda = true,
+    resolvedAssets: ResolvedAssetInfo[] = []
   ) => {
     const assets: AddressAssetToken[] = [];
     if (includeAda) {
@@ -58,11 +131,11 @@ const detailsHelpers = {
 
     if (output.asset_list?.length > 0) {
       output.asset_list.forEach((asset: any) => {
-        let name = getAssetNameFromTTypes(asset.fingerprint, tTypes);
-        let decimals = asset.decimals || 0;
-        const normalized = normalizeAssetName(name);
-        name = normalized.name;
-        if (normalized.decimals != null) decimals = normalized.decimals;
+        const { name, decimals } = resolveAssetNameAndDecimals(
+          asset,
+          tTypes,
+          resolvedAssets
+        );
         const amount = parseInt(asset.quantity, 10) / Math.pow(10, decimals);
         assets.push({
           amount: amount.toFixed(decimals),
@@ -83,7 +156,8 @@ const detailsHelpers = {
     output: any,
     assetsMinted: any[],
     tTypes: TokenTypeRow[],
-    assetIdCounter: number
+    assetIdCounter: number,
+    resolvedAssets: ResolvedAssetInfo[] = []
   ) => {
     const assets: AddressAssetToken[] = [];
     output.asset_list?.forEach((asset: any) => {
@@ -98,7 +172,8 @@ const detailsHelpers = {
             { asset_list: [asset] },
             assetIdCounter,
             tTypes,
-            false
+            false,
+            resolvedAssets
           );
         assets.push(...newAssets);
         assetIdCounter = newCounter;
@@ -110,7 +185,8 @@ const detailsHelpers = {
   processBurnedAssets: (
     txData: any,
     tTypes: TokenTypeRow[],
-    assetIdCounter: number
+    assetIdCounter: number,
+    resolvedAssets: ResolvedAssetInfo[] = []
   ) => {
     const assets: AddressAssetToken[] = [];
     txData.assets_minted.forEach((asset: any) => {
@@ -127,7 +203,8 @@ const detailsHelpers = {
             },
             assetIdCounter,
             tTypes,
-            false
+            false,
+            resolvedAssets
           );
         assets.push(...newAssets);
         assetIdCounter = newCounter;
@@ -203,7 +280,8 @@ const detailTransactionTypes: Record<
       txData: any,
       rewardAddress: string,
       tTypes: TokenTypeRow[],
-      assetIdCounter?: number
+      assetIdCounter?: number,
+      resolvedAssets?: ResolvedAssetInfo[]
     ) => { addressAssets: AddressAssets; assetIdCounter: number };
   }
 > = {
@@ -215,7 +293,13 @@ const detailTransactionTypes: Record<
       detailsHelpers.hasAssetsMinted(txData) &&
       txData.inputs.some((input: any) => input.stake_addr === rewardAddress) &&
       !!detailsHelpers.findMatchingOutput(txData.outputs, rewardAddress),
-    process: (txData, rewardAddress, tTypes, assetIdCounter = 1) => {
+    process: (
+      txData,
+      rewardAddress,
+      tTypes,
+      assetIdCounter = 1,
+      resolvedAssets = []
+    ) => {
       let addressAssets: AddressAssets = {};
       const matchingOutput = detailsHelpers.findMatchingOutput(
         txData.outputs,
@@ -223,7 +307,13 @@ const detailTransactionTypes: Record<
       );
       if (matchingOutput) {
         const { assets, assetIdCounter: newAssetIdCounter } =
-          detailsHelpers.processAssets(matchingOutput, assetIdCounter, tTypes, false);
+          detailsHelpers.processAssets(
+            matchingOutput,
+            assetIdCounter,
+            tTypes,
+            false,
+            resolvedAssets
+          );
         if (assets.length > 0) {
           addressAssets[matchingOutput.payment_addr.bech32] = assets;
           assetIdCounter = newAssetIdCounter;
@@ -232,7 +322,13 @@ const detailTransactionTypes: Record<
       txData.outputs.forEach((output: any) => {
         if (output.stake_addr !== rewardAddress) {
           const { assets, assetIdCounter: newAssetIdCounter } =
-            detailsHelpers.processAssets(output, assetIdCounter, tTypes);
+            detailsHelpers.processAssets(
+              output,
+              assetIdCounter,
+              tTypes,
+              true,
+              resolvedAssets
+            );
           if (assets.length > 0) {
             addressAssets[output.payment_addr.bech32] = assets;
             assetIdCounter = newAssetIdCounter;
@@ -263,7 +359,13 @@ const detailTransactionTypes: Record<
       );
       return allInputsMatchRewardAddress && !!swapOutput && noVoteDelegation;
     },
-    process: (txData, rewardAddress, tTypes, assetIdCounter = 1) => {
+    process: (
+      txData,
+      rewardAddress,
+      tTypes,
+      assetIdCounter = 1,
+      resolvedAssets = []
+    ) => {
       const inputAddresses = new Set(
         txData.inputs.map((input: any) => input.payment_addr.bech32)
       );
@@ -271,7 +373,13 @@ const detailTransactionTypes: Record<
       txData.outputs.forEach((output: any) => {
         if (!inputAddresses.has(output.payment_addr.bech32)) {
           const { assets, assetIdCounter: newAssetIdCounter } =
-            detailsHelpers.processAssets(output, assetIdCounter, tTypes);
+            detailsHelpers.processAssets(
+              output,
+              assetIdCounter,
+              tTypes,
+              true,
+              resolvedAssets
+            );
           addressAssets[output.payment_addr.bech32] = assets;
           assetIdCounter = newAssetIdCounter;
         }
@@ -290,7 +398,13 @@ const detailTransactionTypes: Record<
       detailsHelpers.isPlutusContractPresent(txData) &&
       !!detailsHelpers.findMatchingOutput(txData.outputs, rewardAddress) &&
       detailsHelpers.hasCollateral(txData),
-    process: (txData, rewardAddress, tTypes, assetIdCounter = 1) => {
+    process: (
+      txData,
+      rewardAddress,
+      tTypes,
+      assetIdCounter = 1,
+      resolvedAssets = []
+    ) => {
       let addressAssets: AddressAssets = {};
       const matchingOutput = detailsHelpers.findMatchingOutput(
         txData.outputs,
@@ -298,7 +412,13 @@ const detailTransactionTypes: Record<
       );
       if (matchingOutput) {
         const { assets, assetIdCounter: newAssetIdCounter } =
-          detailsHelpers.processAssets(matchingOutput, assetIdCounter, tTypes);
+          detailsHelpers.processAssets(
+            matchingOutput,
+            assetIdCounter,
+            tTypes,
+            true,
+            resolvedAssets
+          );
         addressAssets[matchingOutput.payment_addr.bech32] = assets;
         assetIdCounter = newAssetIdCounter;
       }
@@ -317,12 +437,24 @@ const detailTransactionTypes: Record<
       txData.outputs.some((output: any) => output.stake_addr !== rewardAddress) &&
       !detailsHelpers.isPlutusContractPresent(txData) &&
       !detailsHelpers.hasCollateral(txData),
-    process: (txData, rewardAddress, tTypes, assetIdCounter = 1) => {
+    process: (
+      txData,
+      rewardAddress,
+      tTypes,
+      assetIdCounter = 1,
+      resolvedAssets = []
+    ) => {
       let addressAssets: AddressAssets = {};
       txData.outputs.forEach((output: any) => {
         if (output.stake_addr !== rewardAddress) {
           const { assets, assetIdCounter: newAssetIdCounter } =
-            detailsHelpers.processAssets(output, assetIdCounter, tTypes);
+            detailsHelpers.processAssets(
+              output,
+              assetIdCounter,
+              tTypes,
+              true,
+              resolvedAssets
+            );
           addressAssets[output.payment_addr.bech32] = assets;
           assetIdCounter = newAssetIdCounter;
         }
@@ -342,7 +474,13 @@ const detailTransactionTypes: Record<
       txData.outputs.some((output: any) => output.stake_addr === rewardAddress) &&
       !detailsHelpers.isPlutusContractPresent(txData) &&
       !detailsHelpers.hasCollateral(txData),
-    process: (txData, rewardAddress, tTypes, assetIdCounter = 1) => {
+    process: (
+      txData,
+      rewardAddress,
+      tTypes,
+      assetIdCounter = 1,
+      resolvedAssets = []
+    ) => {
       let addressAssets: AddressAssets = {};
       const matchingOutput = detailsHelpers.findMatchingOutput(
         txData.outputs,
@@ -350,7 +488,13 @@ const detailTransactionTypes: Record<
       );
       if (matchingOutput) {
         const { assets, assetIdCounter: newAssetIdCounter } =
-          detailsHelpers.processAssets(matchingOutput, assetIdCounter, tTypes);
+          detailsHelpers.processAssets(
+            matchingOutput,
+            assetIdCounter,
+            tTypes,
+            true,
+            resolvedAssets
+          );
         addressAssets[matchingOutput.payment_addr.bech32] = assets;
         assetIdCounter = newAssetIdCounter;
       }
@@ -370,7 +514,13 @@ const detailTransactionTypes: Record<
       !detailsHelpers.hasCollateral(txData) &&
       txData.inputs.some((input: any) => input.stake_addr === rewardAddress) &&
       !!detailsHelpers.findMatchingOutput(txData.outputs, rewardAddress),
-    process: (txData, rewardAddress, tTypes, assetIdCounter = 1) => {
+    process: (
+      txData,
+      rewardAddress,
+      tTypes,
+      assetIdCounter = 1,
+      resolvedAssets = []
+    ) => {
       let addressAssets: AddressAssets = {};
       const matchingOutputs = txData.outputs.filter(
         (output: any) => output.stake_addr === rewardAddress
@@ -381,7 +531,8 @@ const detailTransactionTypes: Record<
             output,
             txData.assets_minted,
             tTypes,
-            assetIdCounter
+            assetIdCounter,
+            resolvedAssets
           );
         if (assets.length > 0) {
           addressAssets[output.payment_addr.bech32] = assets;
@@ -400,9 +551,20 @@ const detailTransactionTypes: Record<
       !detailsHelpers.isPlutusContractPresent(txData) &&
       !detailsHelpers.hasCollateral(txData) &&
       !detailsHelpers.hasNativeScriptMint(txData),
-    process: (txData, _rewardAddress, tTypes, assetIdCounter = 1) => {
+    process: (
+      txData,
+      _rewardAddress,
+      tTypes,
+      assetIdCounter = 1,
+      resolvedAssets = []
+    ) => {
       const { assets, assetIdCounter: newAssetIdCounter } =
-        detailsHelpers.processBurnedAssets(txData, tTypes, assetIdCounter);
+        detailsHelpers.processBurnedAssets(
+          txData,
+          tTypes,
+          assetIdCounter,
+          resolvedAssets
+        );
       const addressAssets =
         assets.length > 0
           ? { [txData.outputs[0].payment_addr.bech32]: assets }
@@ -481,14 +643,21 @@ const detailTransactionTypes: Record<
 function classifyWithDetails(
   rewardAddress: string | null,
   txData: any,
-  tTypes: TokenTypeRow[]
+  tTypes: TokenTypeRow[],
+  resolvedAssets: ResolvedAssetInfo[] = []
 ): ClassifyResult | null {
   if (!rewardAddress) return null;
 
   for (const handler of Object.values(detailTransactionTypes)) {
     try {
       if (handler.identify(txData, rewardAddress)) {
-        const result = handler.process(txData, rewardAddress, tTypes, 1);
+        const result = handler.process(
+          txData,
+          rewardAddress,
+          tTypes,
+          1,
+          resolvedAssets
+        );
         return {
           addressAssets: result.addressAssets || {},
           transactionType: handler.name,
@@ -673,28 +842,16 @@ function classifyWithTxInfo(
       const mintedAddress = Object.keys(addressAssets)[0];
       if (mintedAddress) {
         const assetList = txData.assets_minted.map((assetItem: any) => {
-          let assetName: string;
-          const assetFoundInAssets = assets.find(
-            (a: any) => a.fingerprint === assetItem.fingerprint
+          const { name: assetName, decimals } = resolveAssetNameAndDecimals(
+            assetItem,
+            tTypes,
+            assets
           );
-          if (
-            assetFoundInAssets &&
-            (assetFoundInAssets.assetName || assetFoundInAssets.name)
-          ) {
-            assetName =
-              assetFoundInAssets.assetName || assetFoundInAssets.name;
-          } else {
-            assetName = getAssetNameFromTTypes(assetItem.fingerprint, tTypes);
-          }
-          let decimals = assetItem.decimals || 0;
-          const normalized = normalizeAssetName(assetName);
-          assetName = normalized.name;
-          if (normalized.decimals != null) decimals = normalized.decimals;
           const mapped = {
             id: idCounter.toString(),
             name: assetName,
             amount: parseFloat(assetItem.quantity),
-            unit: assetItem.unit || "",
+            unit: assetItem.unit || `${assetItem.policy_id || ""}.${assetItem.asset_name || ""}`,
             fingerprint: assetItem.fingerprint || "",
             decimals,
           };
@@ -709,28 +866,16 @@ function classifyWithTxInfo(
     for (const output of outputs) {
       if (!usedAddresses.includes(output.payment_addr.bech32)) {
         const assetList = (output.asset_list || []).map((assetItem: any) => {
-          let assetName: string;
-          const assetFoundInAssets = assets.find(
-            (a: any) => a.fingerprint === assetItem.fingerprint
+          const { name: assetName, decimals } = resolveAssetNameAndDecimals(
+            assetItem,
+            tTypes,
+            assets
           );
-          if (
-            assetFoundInAssets &&
-            (assetFoundInAssets.assetName || assetFoundInAssets.name)
-          ) {
-            assetName =
-              assetFoundInAssets.assetName || assetFoundInAssets.name;
-          } else {
-            assetName = getAssetNameFromTTypes(assetItem.fingerprint, tTypes);
-          }
-          let decimals = assetItem.decimals || 0;
-          const normalized = normalizeAssetName(assetName);
-          assetName = normalized.name;
-          if (normalized.decimals != null) decimals = normalized.decimals;
           const mapped = {
             id: idCounter.toString(),
             name: assetName,
             amount: parseFloat(assetItem.quantity),
-            unit: assetItem.unit || "",
+            unit: assetItem.unit || `${assetItem.policy_id || ""}.${assetItem.asset_name || ""}`,
             fingerprint: assetItem.fingerprint || "",
             decimals,
           };
@@ -758,28 +903,16 @@ function classifyWithTxInfo(
     for (const output of outputs) {
       if (usedAddresses.includes(output.payment_addr.bech32)) {
         const assetList = (output.asset_list || []).map((assetItem: any) => {
-          let assetName: string;
-          const assetFoundInAssets = assets.find(
-            (a: any) => a.fingerprint === assetItem.fingerprint
+          const { name: assetName, decimals } = resolveAssetNameAndDecimals(
+            assetItem,
+            tTypes,
+            assets
           );
-          if (
-            assetFoundInAssets &&
-            (assetFoundInAssets.assetName || assetFoundInAssets.name)
-          ) {
-            assetName =
-              assetFoundInAssets.assetName || assetFoundInAssets.name;
-          } else {
-            assetName = getAssetNameFromTTypes(assetItem.fingerprint, tTypes);
-          }
-          let decimals = assetItem.decimals || 0;
-          const normalized = normalizeAssetName(assetName);
-          assetName = normalized.name;
-          if (normalized.decimals != null) decimals = normalized.decimals;
           const mapped = {
             id: idCounter.toString(),
             name: assetName,
             amount: parseFloat(assetItem.quantity),
-            unit: assetItem.unit || "",
+            unit: assetItem.unit || `${assetItem.policy_id || ""}.${assetItem.asset_name || ""}`,
             fingerprint: assetItem.fingerprint || "",
             decimals,
           };
@@ -852,11 +985,11 @@ export function classifyTransaction(args: {
   stakeAddress: string | null;
   txData: any;
   tTypes: TokenTypeRow[];
-  assets?: any[];
+  assets?: ResolvedAssetInfo[];
 }): ClassifyResult {
   const { usedAddresses, stakeAddress, txData, tTypes, assets = [] } = args;
 
-  const details = classifyWithDetails(stakeAddress, txData, tTypes);
+  const details = classifyWithDetails(stakeAddress, txData, tTypes, assets);
   if (details && details.transactionType !== "Unknown") {
     return {
       ...details,

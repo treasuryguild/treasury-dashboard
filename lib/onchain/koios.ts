@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { ResolvedAssetInfo, TokenTypeRow } from "./types";
 
 const KOIOS_BASE = "https://api.koios.rest/api/v1";
 
@@ -56,6 +57,101 @@ export async function fetchAddressInfo(wallet: string): Promise<any | null> {
     _addresses: [wallet],
   });
   return data?.[0] || null;
+}
+
+export async function fetchAssetInfo(
+  assetPairs: [string, string][]
+): Promise<any[]> {
+  if (!assetPairs.length) return [];
+  const data = await koiosPost<any[]>("/asset_info", {
+    _asset_list: assetPairs,
+  });
+  return data || [];
+}
+
+function isPrintableName(value: unknown): value is string {
+  return (
+    typeof value === "string" &&
+    value.trim().length > 0 &&
+    !/[\x00-\x1f\x7f\ufffd]/.test(value)
+  );
+}
+
+export function mapKoiosAssetInfo(info: any): ResolvedAssetInfo {
+  const isNft = Number(info?.total_supply) === 1;
+  const cip25Policy = info?.minting_tx_metadata?.["721"]?.[info?.policy_id];
+  const cip25Entry =
+    cip25Policy?.[info?.asset_name] || cip25Policy?.[info?.asset_name_ascii];
+  const cip25Name = cip25Entry?.name;
+  const registryTicker = info?.token_registry_metadata?.ticker;
+  const registryName = info?.token_registry_metadata?.name;
+  const asciiName = info?.asset_name_ascii;
+
+  let name: string | undefined;
+  if (isNft) {
+    if (isPrintableName(cip25Name)) name = cip25Name.trim();
+    else if (isPrintableName(asciiName)) name = asciiName.trim();
+  } else {
+    if (isPrintableName(registryTicker)) name = registryTicker.trim();
+    else if (isPrintableName(registryName)) name = registryName.trim();
+    else if (isPrintableName(asciiName)) name = asciiName.trim();
+  }
+
+  const rawDecimals = info?.token_registry_metadata?.decimals;
+  const decimals =
+    rawDecimals != null && Number.isFinite(Number(rawDecimals))
+      ? Number(rawDecimals)
+      : null;
+
+  return {
+    fingerprint: info?.fingerprint || "",
+    policy_id: info?.policy_id,
+    asset_name: info?.asset_name,
+    name,
+    decimals,
+  };
+}
+
+export async function enrichUnknownTxAssets(
+  txData: any,
+  tTypes: TokenTypeRow[]
+): Promise<ResolvedAssetInfo[]> {
+  const knownFingerprints = new Set(
+    tTypes.map((t) => t.fingerprint).filter(Boolean)
+  );
+  const pairMap = new Map<string, [string, string]>();
+
+  const collect = (list: any[] | undefined) => {
+    for (const asset of list || []) {
+      if (!asset?.policy_id || asset.asset_name == null) continue;
+      if (asset.fingerprint && knownFingerprints.has(asset.fingerprint)) {
+        continue;
+      }
+      const key = `${asset.policy_id}.${asset.asset_name}`;
+      if (!pairMap.has(key)) {
+        pairMap.set(key, [asset.policy_id, asset.asset_name]);
+      }
+    }
+  };
+
+  for (const output of txData?.outputs || []) {
+    collect(output.asset_list);
+  }
+  collect(txData?.assets_minted);
+
+  const pairs = Array.from(pairMap.values());
+  if (pairs.length === 0) return [];
+
+  try {
+    const details = await fetchAssetInfo(pairs);
+    return details.map(mapKoiosAssetInfo).filter((a) => a.fingerprint);
+  } catch (err: any) {
+    console.warn(
+      "Koios /asset_info lookup failed (falling back to hex decode):",
+      err?.message || err
+    );
+    return [];
+  }
 }
 
 export function sleep(ms: number): Promise<void> {

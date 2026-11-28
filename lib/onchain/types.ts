@@ -8,6 +8,15 @@ export type TokenTypeRow = {
   decimals?: number;
 };
 
+export type ResolvedAssetInfo = {
+  fingerprint: string;
+  policy_id?: string;
+  asset_name?: string;
+  name?: string;
+  assetName?: string;
+  decimals?: number | null;
+};
+
 export type AddressAssetToken = {
   id: string;
   name: string;
