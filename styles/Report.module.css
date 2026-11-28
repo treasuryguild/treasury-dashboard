@@ -1,26 +1,28 @@
 .main {
-    display: flex;
-    flex-direction: column;
+  display: flex;
+  flex-direction: column;
 }
 
 .chartsContainer {
-    display: flex;
-    flex-wrap: wrap;
+  display: flex;
+  flex-wrap: wrap;
 }
 
 .chartType1 {
-    padding: 0.1em;
+  padding: 0.1em;
 }
 
 .chartType2 {
-    padding: 0.1em;
-    padding-left: 1em;
-    margin-top: 0.5em;
-    margin-left: 0.5em;
+  padding: 0.1em;
+  padding-left: 1em;
+  margin-top: 0.5em;
+  margin-left: 0.5em;
 }
 
 .chart1 {
-  border-radius: 8px;
+  background: var(--surface-card, rgba(15, 23, 42, 0.85));
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border-radius: 10px;
   padding: 0.8em;
   margin: 0.2em;
   max-height: 300px;
@@ -30,14 +32,16 @@
 }
 
 .chart {
-    border-radius: 8px;
-    padding: 0.8em;
-    margin: 0.2em;
-    margin-bottom: 4em;
-    max-height: 400px;
-    width: 100%;
-    max-width: 600px;
-    min-width: 0;
+  background: var(--surface-card, rgba(15, 23, 42, 0.85));
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border-radius: 10px;
+  padding: 0.8em;
+  margin: 0.2em;
+  margin-bottom: 4em;
+  max-height: 400px;
+  width: 100%;
+  max-width: 600px;
+  min-width: 0;
 }
 
 .numbers {
@@ -49,16 +53,22 @@
 .numbers table {
   width: 100%;
   border-collapse: collapse;
+  color: var(--text-secondary, #e2e8f0);
 }
 
-.numbers th, .numbers td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.numbers th,
+.numbers td {
+  border-bottom: 1px solid var(--border-row, rgba(148, 163, 184, 0.14));
+  padding: 8px 10px;
   text-align: left;
-  font-size: 0.8rem; /* Adjust the value as needed */
+  font-size: 0.8rem;
 }
 
 .numbers th {
+  background: var(--surface-card-solid, #0f172a);
+  color: #cbd5e1;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
   text-align: left;
 }
 
@@ -68,6 +78,11 @@
 
 .numbers td:nth-child(n+2) {
   text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.numbers tbody tr:hover td {
+  background: rgba(51, 65, 85, 0.35);
 }
 
 .dropdownContainer {
@@ -77,25 +92,36 @@
 }
 
 .dropdown {
-    margin: 5px;
+  margin: 5px;
 }
+
 .dropdownSelect {
-    padding: 0.2em;
-    background-color: black;
-    color: white;
+  padding: 5px 8px;
+  background-color: var(--surface-elevated, rgba(30, 41, 59, 0.9));
+  border: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
+  border-radius: 6px;
+  color: var(--text-primary, #f8fafc);
 }
 
 .workgroupTable {
-  border-collapse: collapse;  /* Ensures borders between cells collapse into a single border */
-  border: 1px solid white;    /* Border around the entire table */
-  width: 100%;                /* Optional: Makes the table span the entire width of its container */
+  border-collapse: collapse;
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border-radius: 8px;
+  width: 100%;
+  color: var(--text-secondary, #e2e8f0);
 }
 
 .workgroupTable th,
 .workgroupTable td {
-  border: 1px solid white;    /* Border for each cell */
-  padding: 4px 8px; 
-  font-size: 0.9rem;         /* Padding inside each cell */
+  border-bottom: 1px solid var(--border-row, rgba(148, 163, 184, 0.14));
+  padding: 6px 10px;
+  font-size: 0.85rem;
+}
+
+.workgroupTable th {
+  background: var(--surface-card-solid, #0f172a);
+  color: #cbd5e1;
+  font-weight: 600;
 }
 
 .workgroupTable th:first-child,
@@ -106,11 +132,13 @@
 .workgroupTable th:last-child,
 .workgroupTable td:last-child {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .workgroupTable th:nth-child(2),
 .workgroupTable td:nth-child(2) {
   text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .workgroupContainer {

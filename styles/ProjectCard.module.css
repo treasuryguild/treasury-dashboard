@@ -1,53 +1,92 @@
-/* GroupCard.module.css */
+/* ProjectCard.module.css */
+
+.groupPageContainer {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 18px 20px 36px 20px;
+}
+
+.groupPageTitle {
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--text-primary, #f8fafc);
+  margin: 0 0 18px 0;
+}
+
+.sectionHeading {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 22px 0 10px 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+}
+
+.cardGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 
 .project-card {
-  border: 1px solid #ccc;
-  padding: 20px;
-  margin: 10px;
+  background: var(--surface-card, rgba(15, 23, 42, 0.85));
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  padding: 18px 14px;
+  margin: 4px;
   display: inline-block;
-  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
-  border-radius: 5px;
-  transition: transform 0.3s ease;
-  width: 150px;   /* Set a fixed width */
-  height: 220px; /* Set a fixed height */
-  position: relative;  /* For the inner positioning */
-  overflow: hidden;  /* To handle overflow content */
-  text-align: center; 
+  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.45);
+  border-radius: 10px;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  width: 185px;
+  height: 230px;
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  color: var(--text-primary, #f8fafc);
 }
 
 .project-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
+  border-color: var(--accent-border, #60a5fa);
+  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.65);
 }
 
 .project-logo {
-  width: 100px;
-  height: 100px;
+  width: 92px;
+  height: 92px;
   object-fit: contain;
-  margin-bottom: 10px;
-  display: block;   /* Ensure the image takes up full width */
+  margin-bottom: 12px;
+  display: block;
   margin-left: auto;
   margin-right: auto;
+  border-radius: 8px;
 }
 
-/* Optional: You can add this to ensure the content is centered vertically */
 .project-card-content {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+  width: calc(100% - 20px);
 }
 
 @media (max-width: 480px) {
+  .groupPageContainer {
+    padding: 12px 10px 28px 10px;
+  }
+
   .project-card {
     width: calc(50% - 12px);
     min-width: 135px;
-    height: 190px;
+    height: 195px;
     padding: 12px;
-    margin: 6px;
+    margin: 4px;
   }
 
   .project-logo {
-    width: 80px;
-    height: 80px;
+    width: 74px;
+    height: 74px;
   }
 }

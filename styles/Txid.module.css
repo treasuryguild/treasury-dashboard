@@ -1,133 +1,159 @@
 .main {
-    display: flex; 
-    align-items: flex-start; 
-    text-align: center;
+  display: flex;
+  align-items: flex-start;
+  text-align: center;
 }
 
-.main > div:nth-child(2) { 
-    margin-left: 185px; 
+.main > div:nth-child(2) {
+  margin-left: 196px;
+  padding: 14px 20px 32px 12px;
 }
 
 .navbar {
-    display: flex;
-    flex-direction: column; 
-    justify-content: center;
-    padding: 10px;
-    position: fixed; 
-    top: 80px; 
-    z-index: 1000; 
-    width: 180px; 
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 6px;
+  padding: 12px 10px;
+  position: fixed;
+  top: 72px;
+  left: 8px;
+  z-index: 1000;
+  width: 182px;
+  background: var(--surface-card, rgba(15, 23, 42, 0.88));
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border-radius: 10px;
 }
 
 .backButton {
-    padding: 5px;
-    margin: 5px;
-    cursor: pointer;
-    background-color: black;
-    color: white;
+  padding: 7px 10px;
+  margin: 0;
+  cursor: pointer;
+  background-color: transparent;
+  border: 1px solid var(--border-strong, rgba(148, 163, 184, 0.35));
+  border-radius: 6px;
+  color: #cbd5e1;
+  font-size: 12px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .backButton:hover {
-    background-color: rgb(41, 20, 91);
+  background-color: rgba(148, 163, 184, 0.15);
+  color: #ffffff;
 }
 
 .highlight {
-    color: rgb(157, 247, 249); /* or any other highlight color */
+  color: #7dd3fc;
 }
 
-.taskCard{
-    border: 1px solid #ccc;
-    margin: 10px;
-    padding: 10px;
+.taskCard {
+  background: var(--surface-card, rgba(15, 23, 42, 0.85));
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border-radius: 10px;
+  margin: 10px 0;
+  padding: 14px 16px;
+  text-align: left;
+  color: var(--text-secondary, #e2e8f0);
 }
+
 .taskName {
-    color: rgb(217, 240, 250);
+  color: var(--text-primary, #f8fafc);
+  font-weight: 600;
 }
 
 .txWindow {
-    display: flex;
-    flex-wrap: wrap;
-    overflow-wrap: anywhere;
-    word-break: break-word;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  text-align: left;
 }
 
 .contractPanel {
-    text-align: left;
-    max-width: 720px;
-    width: 100%;
+  text-align: left;
+  max-width: 720px;
+  width: 100%;
 }
 
 .contractDetails ul {
-    margin: 0.25em 0 0.75em 1.25em;
-    padding: 0;
-    word-break: break-all;
+  margin: 0.25em 0 0.75em 1.25em;
+  padding: 0;
+  word-break: break-all;
 }
 
 .contractJson {
-    background: #111827;
-    color: #e5e7eb;
-    padding: 0.75em;
-    overflow-x: auto;
-    max-height: 240px;
-    font-size: 0.85em;
+  background: var(--surface-card-solid, #0f172a);
+  color: var(--text-secondary, #e2e8f0);
+  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border-radius: 8px;
+  padding: 0.85em;
+  overflow-x: auto;
+  max-height: 260px;
+  font-size: 0.85em;
+  font-family: var(--font-mono);
 }
 
 .contractLink {
-    color: rgb(0, 157, 255);
-    text-decoration: none;
+  color: var(--accent-link, #60a5fa);
+  text-decoration: underline;
+}
+
+.contractLink:hover {
+  color: #93c5fd;
 }
 
 .contractError {
-    color: #f87171;
+  color: #f87171;
 }
 
 @media (max-width: 768px) {
-    .main {
-        flex-direction: column;
-        width: 100%;
-    }
+  .main {
+    flex-direction: column;
+    width: 100%;
+  }
 
-    .main > div:first-child {
-        width: 100%;
-    }
+  .main > div:first-child {
+    width: 100%;
+  }
 
-    .main > div:nth-child(2) {
-        margin-left: 0;
-        width: 100%;
-    }
+  .main > div:nth-child(2) {
+    margin-left: 0;
+    width: 100%;
+    padding: 8px 12px 24px 12px;
+  }
 
-    .navbar {
-        position: static;
-        width: 100%;
-        flex-direction: row;
-        justify-content: flex-start;
-        padding: 8px 12px;
-    }
+  .navbar {
+    position: static;
+    width: 100%;
+    left: auto;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 8px 12px;
+  }
 
-    .backButton {
-        min-height: 36px;
-        padding: 6px 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 6px;
-    }
+  .backButton {
+    min-height: 36px;
+    padding: 6px 12px;
+  }
 
-    .txWindow {
-        padding: 0 12px;
-        width: 100%;
-    }
+  .txWindow {
+    width: 100%;
+  }
 
-    .txWindow > div {
-        width: 100%;
-        max-width: 100%;
-    }
+  .txWindow > div {
+    width: 100%;
+    max-width: 100%;
+  }
 
-    .taskCard {
-        margin: 10px 0;
-    }
+  .taskCard {
+    margin: 10px 0;
+  }
 
-    .contractPanel {
-        max-width: 100%;
-    }
+  .contractPanel {
+    max-width: 100%;
+  }
 }
-
-  
