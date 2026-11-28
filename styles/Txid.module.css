@@ -20,9 +20,10 @@
   left: 8px;
   z-index: 1000;
   width: 182px;
-  background: var(--surface-card, rgba(15, 23, 42, 0.88));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
+  box-shadow: var(--shadow-card);
 }
 
 .backButton {
@@ -30,34 +31,35 @@
   margin: 0;
   cursor: pointer;
   background-color: transparent;
-  border: 1px solid var(--border-strong, rgba(148, 163, 184, 0.35));
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 12px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .backButton:hover {
-  background-color: rgba(148, 163, 184, 0.15);
-  color: #ffffff;
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .highlight {
-  color: #7dd3fc;
+  color: var(--accent-link);
 }
 
 .taskCard {
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   margin: 10px 0;
   padding: 14px 16px;
   text-align: left;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
 }
 
 .taskName {
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -83,9 +85,9 @@
 }
 
 .contractJson {
-  background: var(--surface-card-solid, #0f172a);
-  color: var(--text-secondary, #e2e8f0);
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-elevated);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   padding: 0.85em;
   overflow-x: auto;
@@ -95,16 +97,16 @@
 }
 
 .contractLink {
-  color: var(--accent-link, #60a5fa);
+  color: var(--accent-link);
   text-decoration: underline;
 }
 
 .contractLink:hover {
-  color: #93c5fd;
+  color: var(--accent-link-hover);
 }
 
 .contractError {
-  color: #f87171;
+  color: #ef4444;
 }
 
 @media (max-width: 768px) {

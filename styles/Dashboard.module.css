@@ -21,20 +21,21 @@
   max-width: 540px;
   max-height: 48px;
   min-width: 200px;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   padding: 10px 12px;
   border-radius: 10px;
   flex-grow: 1;
   transition: max-height 0.25s ease-in-out, border-color 0.15s ease;
   overflow: hidden;
   margin: 0.15em;
+  box-shadow: var(--shadow-card);
 }
 
 .flex-row-half:hover {
   max-height: 220px;
   min-height: 40px;
-  border-color: var(--border-strong, rgba(148, 163, 184, 0.4));
+  border-color: var(--border-strong);
   overflow-y: auto;
 }
 
@@ -61,20 +62,21 @@
   max-width: 1088px;
   max-height: 48px;
   min-width: 200px;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   padding: 10px 12px;
   border-radius: 10px;
   flex-grow: 1;
   transition: max-height 0.25s ease-in-out, border-color 0.15s ease;
   overflow: hidden;
   margin: 0.15em;
+  box-shadow: var(--shadow-card);
 }
 
 .flex-row-full:hover {
   max-height: 220px;
   min-height: 40px;
-  border-color: var(--border-strong, rgba(148, 163, 184, 0.4));
+  border-color: var(--border-strong);
   overflow-y: auto;
 }
 
@@ -101,9 +103,9 @@
 }
 
 .filter-btn {
-  background-color: var(--surface-elevated, rgba(30, 41, 59, 0.9));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.25));
-  color: #cbd5e1;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   font-size: 12px;
   margin: 0.08em;
   border-radius: 6px;
@@ -113,14 +115,14 @@
 }
 
 .filter-btn:hover {
-  background-color: rgba(51, 65, 85, 0.95);
-  border-color: rgba(148, 163, 184, 0.5);
-  color: #ffffff;
+  background-color: var(--surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
 }
 
 .selected {
-  background-color: var(--accent-primary, #2563eb);
-  border: 1px solid var(--accent-border, #60a5fa);
+  background-color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
   color: #ffffff;
   font-size: 12px;
   font-weight: 600;
@@ -136,18 +138,27 @@
   margin-top: 2px;
   margin-right: 6px;
   font-weight: 600;
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-primary);
 }
 
 .chartX {
   width: 100%;
   max-width: 600px;
   min-width: 0;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
   padding: 14px;
   border-radius: 10px;
   margin: 2px;
+  box-shadow: var(--shadow-card);
+}
+
+.chartX h2 {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 10px;
 }
 
 .tables {
@@ -157,16 +168,25 @@
   margin-bottom: 12px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 12px;
+  box-shadow: var(--shadow-card);
+}
+
+.tables h3 {
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 10px 0;
 }
 
 .quarter-btn {
-  background-color: var(--surface-elevated, rgba(30, 41, 59, 0.9));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.25));
-  color: #cbd5e1;
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
   font-size: 12px;
   margin: 0.08em;
   border-radius: 6px;
@@ -175,17 +195,17 @@
 }
 
 .quarter-btn:hover {
-  background-color: rgba(51, 65, 85, 0.95);
-  color: #ffffff;
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .filter-select {
   padding: 5px 8px;
   margin-left: 10px;
   border-radius: 6px;
-  border: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
-  background: var(--surface-elevated, rgba(30, 41, 59, 0.9));
-  color: var(--text-primary, #f8fafc);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
 }
 
 @media (hover: none), (max-width: 768px) {

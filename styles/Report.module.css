@@ -20,8 +20,8 @@
 }
 
 .chart1 {
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 0.8em;
   margin: 0.2em;
@@ -29,11 +29,12 @@
   width: 100%;
   max-width: 560px;
   min-width: 0;
+  box-shadow: var(--shadow-card);
 }
 
 .chart {
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 0.8em;
   margin: 0.2em;
@@ -42,6 +43,7 @@
   width: 100%;
   max-width: 600px;
   min-width: 0;
+  box-shadow: var(--shadow-card);
 }
 
 .numbers {
@@ -53,22 +55,22 @@
 .numbers table {
   width: 100%;
   border-collapse: collapse;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .numbers th,
 .numbers td {
-  border-bottom: 1px solid var(--border-row, rgba(148, 163, 184, 0.14));
+  border-bottom: 1px solid var(--border-row);
   padding: 8px 10px;
   text-align: left;
   font-size: 0.8rem;
 }
 
 .numbers th {
-  background: var(--surface-card-solid, #0f172a);
-  color: #cbd5e1;
+  background: var(--surface-table-header);
+  color: var(--text-table-header);
   font-weight: 600;
-  border-bottom: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
+  border-bottom: 1px solid var(--border-strong);
   text-align: left;
 }
 
@@ -82,7 +84,7 @@
 }
 
 .numbers tbody tr:hover td {
-  background: rgba(51, 65, 85, 0.35);
+  background: var(--surface-row-hover);
 }
 
 .dropdownContainer {
@@ -97,30 +99,30 @@
 
 .dropdownSelect {
   padding: 5px 8px;
-  background-color: var(--surface-elevated, rgba(30, 41, 59, 0.9));
-  border: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-primary);
 }
 
 .workgroupTable {
   border-collapse: collapse;
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border: 1px solid var(--border-subtle);
   border-radius: 8px;
   width: 100%;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .workgroupTable th,
 .workgroupTable td {
-  border-bottom: 1px solid var(--border-row, rgba(148, 163, 184, 0.14));
+  border-bottom: 1px solid var(--border-row);
   padding: 6px 10px;
   font-size: 0.85rem;
 }
 
 .workgroupTable th {
-  background: var(--surface-card-solid, #0f172a);
-  color: #cbd5e1;
+  background: var(--surface-table-header);
+  color: var(--text-table-header);
   font-weight: 600;
 }
 

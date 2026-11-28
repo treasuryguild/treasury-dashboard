@@ -7,7 +7,7 @@
   width: 100%;
   padding: 20px 16px 36px 16px;
   font-family: inherit;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .projectContributions {
@@ -19,10 +19,11 @@
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 6px;
+  box-shadow: var(--shadow-card);
 }
 
 .project-cards {
@@ -41,16 +42,18 @@
   flex: 0 1 210px;
   padding: 16px 12px;
   text-align: center;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  color: var(--text-primary, #f8fafc);
-  transition: transform 0.2s ease, border-color 0.2s ease;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .walletProjectCard:hover {
   transform: translateY(-3px);
-  border-color: var(--accent-border, #60a5fa);
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .table {
@@ -61,16 +64,16 @@
 
 .th,
 .td {
-  border-bottom: 1px solid var(--border-row, rgba(148, 163, 184, 0.14));
+  border-bottom: 1px solid var(--border-row);
   padding: 8px 10px;
   text-align: left;
 }
 
 .th {
-  background: var(--surface-card-solid, #0f172a);
-  color: #cbd5e1;
+  background: var(--surface-table-header);
+  color: var(--text-table-header);
   font-weight: 600;
-  border-bottom: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
+  border-bottom: 1px solid var(--border-strong);
 }
 
 .th:nth-child(n+5),

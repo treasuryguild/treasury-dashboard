@@ -1022,9 +1022,9 @@ const Dashboard: React.FC<DashboardProps> = () => {
                         </span>
                       </td>
                       <td style={{ maxWidth: '340px' }}>
-                        <div style={{ fontWeight: 500, color: '#f8fafc' }}>{row.title}</div>
+                        <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{row.title}</div>
                         {row.description && (
-                          <div style={{ fontSize: '11px', color: '#94a3b8', marginTop: '2px' }}>
+                          <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>
                             {row.description}
                           </div>
                         )}

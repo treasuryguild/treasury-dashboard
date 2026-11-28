@@ -13,10 +13,11 @@
   overflow-x: auto;
   width: calc(100% - 40px);
   text-align: center;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 6px;
+  box-shadow: var(--shadow-card);
 }
 
 .styled-table {
@@ -26,25 +27,25 @@
   font-family: inherit;
   font-size: 13px;
   min-width: 800px;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .styled-table th,
 .styled-table td {
   padding: 9px 10px;
-  border-bottom: 1px solid var(--border-row, rgba(148, 163, 184, 0.12));
+  border-bottom: 1px solid var(--border-row);
 }
 
 .styled-table th {
-  background-color: var(--surface-card-solid, #0f172a);
-  color: #cbd5e1;
+  background-color: var(--surface-table-header);
+  color: var(--text-table-header);
   font-weight: 600;
-  border-bottom: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
+  border-bottom: 1px solid var(--border-strong);
   white-space: nowrap;
 }
 
 .styled-table tbody tr:hover {
-  background-color: rgba(51, 65, 85, 0.4);
+  background-color: var(--surface-row-hover);
 }
 
 .align-left {
@@ -61,23 +62,23 @@
 }
 
 .incoming-row {
-  background-color: rgba(16, 185, 129, 0.14);
+  background-color: var(--row-incoming);
 }
 
 .swap-row {
-  background-color: rgba(56, 189, 248, 0.14);
+  background-color: var(--row-swap);
 }
 
 .contract-row {
-  background-color: rgba(167, 139, 250, 0.15);
+  background-color: var(--row-contract);
 }
 
 .staking-row {
-  background-color: rgba(100, 116, 139, 0.18);
+  background-color: var(--row-staking);
 }
 
 .vote-row {
-  background-color: rgba(250, 204, 21, 0.12);
+  background-color: var(--row-vote);
 }
 
 .header-align-left {
@@ -94,12 +95,12 @@
 
 .link-as-text {
   text-decoration: underline;
-  color: var(--accent-link, #60a5fa);
+  color: var(--accent-link);
   cursor: pointer;
 }
 
 .link-as-text:hover {
-  color: #93c5fd;
+  color: var(--accent-link-hover);
 }
 
 @keyframes fade-in-out {
@@ -111,7 +112,7 @@
 .loading {
   margin: 1.5em;
   font-size: 1.15em;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
   animation: fade-in-out 1.8s ease-in-out infinite;
 }
 
@@ -126,11 +127,12 @@
   left: 8px;
   z-index: 1000;
   width: 182px;
-  background: var(--surface-card, rgba(15, 23, 42, 0.88));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   font-size: 12px;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-card);
 }
 
 .active {
@@ -138,8 +140,8 @@
   padding: 7px 10px;
   margin: 0;
   cursor: pointer;
-  background-color: var(--accent-primary, #2563eb);
-  border: 1px solid var(--accent-border, #60a5fa);
+  background-color: var(--accent-primary);
+  border: 1px solid var(--accent-border);
   border-radius: 6px;
   color: #ffffff;
   font-size: 12px;
@@ -150,22 +152,22 @@
   padding: 7px 10px;
   margin: 0;
   cursor: pointer;
-  background-color: var(--surface-elevated, rgba(30, 41, 59, 0.9));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.25));
+  background-color: var(--surface-elevated);
+  border: 1px solid var(--border-subtle);
   border-radius: 6px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 12px;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 
 .notactive:hover {
-  background-color: var(--surface-hover, rgba(51, 65, 85, 0.95));
-  border-color: var(--border-strong, rgba(148, 163, 184, 0.5));
-  color: #ffffff;
+  background-color: var(--surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-primary);
 }
 
 .active:hover {
-  background-color: #1d4ed8;
+  background-color: var(--accent-primary-hover);
 }
 
 .backButton {
@@ -173,29 +175,29 @@
   margin: 0 0 4px 0;
   cursor: pointer;
   background-color: transparent;
-  border: 1px solid var(--border-strong, rgba(148, 163, 184, 0.35));
+  border: 1px solid var(--border-strong);
   border-radius: 6px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 12px;
   transition: background 0.15s ease, color 0.15s ease;
 }
 
 .backButton:hover {
-  background-color: rgba(148, 163, 184, 0.15);
-  color: #ffffff;
+  background-color: var(--surface-hover);
+  color: var(--text-primary);
 }
 
 .walletDetails {
   margin: 10px 0 0 0;
   padding-top: 10px;
-  border-top: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.2));
+  border-top: 1px solid var(--border-subtle);
   text-align: left;
   display: flex;
   flex-direction: column;
   align-items: stretch;
   gap: 6px;
   width: 100%;
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-primary);
   font-size: 12px;
 }
 
@@ -208,15 +210,15 @@
 .tokenTable th {
   text-align: left;
   padding: 5px 4px;
-  color: var(--text-muted, #94a3b8);
-  border-bottom: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
   font-weight: 600;
 }
 
 .tokenTable td {
-  border-bottom: 1px solid var(--border-row, rgba(148, 163, 184, 0.12));
+  border-bottom: 1px solid var(--border-row);
   padding: 4px;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -225,10 +227,11 @@
   padding: 10px 14px;
   text-align: left;
   font-size: 0.9rem;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-card);
 }
 
 @media (max-width: 768px) {

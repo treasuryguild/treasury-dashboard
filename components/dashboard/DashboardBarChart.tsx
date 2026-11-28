@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { Chart, ChartConfiguration } from 'chart.js/auto';
+import { useTheme } from '../../context/ThemeContext';
 
 export interface BarDataset {
   label: string;
@@ -41,6 +42,8 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
   valueSuffix = '',
   emptyMessage = 'No data for the current filter selection.',
 }) => {
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === 'light';
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const chartInstanceRef = useRef<Chart | null>(null);
 
@@ -61,6 +64,10 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
     if (chartInstanceRef.current) {
       chartInstanceRef.current.destroy();
     }
+
+    const tickColor = isLight ? '#475569' : 'rgba(255, 255, 255, 0.8)';
+    const gridColor = isLight ? 'rgba(15, 23, 42, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+    const legendColor = isLight ? '#1e293b' : 'rgba(255, 255, 255, 0.88)';
 
     const styledDatasets = datasets.map((ds, idx) => {
       const palette = DEFAULT_PALETTE[idx % DEFAULT_PALETTE.length];
@@ -92,10 +99,10 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
           x: {
             stacked,
             grid: {
-              color: 'rgba(255, 255, 255, 0.08)',
+              color: gridColor,
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.8)',
+              color: tickColor,
               font: { size: 11 },
               maxRotation: horizontal ? 0 : 45,
               autoSkip: true,
@@ -105,10 +112,10 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
             stacked,
             beginAtZero: true,
             grid: {
-              color: 'rgba(255, 255, 255, 0.08)',
+              color: gridColor,
             },
             ticks: {
-              color: 'rgba(255, 255, 255, 0.8)',
+              color: tickColor,
               font: { size: 11 },
             },
           },
@@ -117,13 +124,13 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
           legend: {
             display: datasets.length > 1,
             labels: {
-              color: 'rgba(255, 255, 255, 0.88)',
+              color: legendColor,
               boxWidth: 12,
               font: { size: 11 },
             },
           },
           tooltip: {
-            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            backgroundColor: isLight ? 'rgba(15, 23, 42, 0.94)' : 'rgba(15, 23, 42, 0.95)',
             titleColor: '#f8fafc',
             bodyColor: '#e2e8f0',
             borderColor: 'rgba(148, 163, 184, 0.35)',
@@ -155,7 +162,7 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
         chartInstanceRef.current = null;
       }
     };
-  }, [labels, datasets, horizontal, stacked, valueSuffix, hasData]);
+  }, [labels, datasets, horizontal, stacked, valueSuffix, hasData, isLight]);
 
   const computedHeight = horizontal
     ? Math.max(height, Math.min(540, labels.length * 30 + 60))
@@ -164,11 +171,11 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
   return (
     <div style={{ width: '100%' }}>
       <div style={{ marginBottom: '10px' }}>
-        <h3 style={{ fontSize: '15px', fontWeight: 600, color: '#f8fafc', margin: 0 }}>
+        <h3 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--text-primary)', margin: 0 }}>
           {title}
         </h3>
         {subtitle && (
-          <p style={{ fontSize: '12px', color: '#94a3b8', margin: '3px 0 0 0' }}>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', margin: '3px 0 0 0' }}>
             {subtitle}
           </p>
         )}
@@ -184,7 +191,7 @@ const DashboardBarChart: React.FC<DashboardBarChartProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: '#94a3b8',
+            color: 'var(--text-muted)',
             fontSize: '13px',
           }}
         >

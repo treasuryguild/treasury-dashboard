@@ -6,7 +6,7 @@
   min-height: 80vh;
   padding: 20px;
   font-family: inherit;
-  color: var(--text-secondary, #e2e8f0);
+  color: var(--text-secondary);
 }
 
 .inputSection {
@@ -17,18 +17,19 @@
   gap: 10px;
   width: 100%;
   max-width: 480px;
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   border-radius: 10px;
   padding: 16px;
+  box-shadow: var(--shadow-card);
 }
 
 .input {
   padding: 10px 12px;
   border-radius: 6px;
-  border: 1px solid var(--border-strong, rgba(148, 163, 184, 0.3));
-  background: var(--surface-elevated, rgba(30, 41, 59, 0.9));
-  color: var(--text-primary, #f8fafc);
+  border: 1px solid var(--border-strong);
+  background: var(--surface-elevated);
+  color: var(--text-primary);
   width: 100%;
   max-width: 320px;
   flex: 1 1 200px;
@@ -36,14 +37,14 @@
 }
 
 .input::placeholder {
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .button {
   padding: 10px 16px;
-  border: 1px solid var(--accent-border, #60a5fa);
+  border: 1px solid var(--accent-border);
   border-radius: 6px;
-  background-color: var(--accent-primary, #2563eb);
+  background-color: var(--accent-primary);
   color: #ffffff;
   cursor: pointer;
   font-size: 14px;
@@ -52,7 +53,7 @@
 }
 
 .button:hover {
-  background-color: #1d4ed8;
+  background-color: var(--accent-primary-hover);
 }
 
 .projectOptions {
@@ -65,16 +66,16 @@
 .projectButton {
   margin: 2px;
   padding: 10px 16px;
-  border: 1px solid rgba(52, 211, 153, 0.45);
+  border: 1px solid var(--pill-in-text);
   border-radius: 8px;
-  background-color: rgba(16, 185, 129, 0.2);
-  color: #6ee7b7;
+  background-color: var(--pill-in-bg);
+  color: var(--pill-in-text);
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  transition: background 0.15s ease;
+  transition: opacity 0.15s ease;
 }
 
 .projectButton:hover {
-  background-color: rgba(16, 185, 129, 0.32);
+  opacity: 0.85;
 }

@@ -9,19 +9,19 @@
 .groupPageTitle {
   font-size: 1.65rem;
   font-weight: 700;
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-primary);
   margin: 0 0 18px 0;
 }
 
 .sectionHeading {
   font-size: 1rem;
   font-weight: 600;
-  color: var(--text-muted, #94a3b8);
+  color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin: 22px 0 10px 0;
   padding-bottom: 6px;
-  border-bottom: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .cardGrid {
@@ -31,12 +31,12 @@
 }
 
 .project-card {
-  background: var(--surface-card, rgba(15, 23, 42, 0.85));
-  border: 1px solid var(--border-subtle, rgba(148, 163, 184, 0.22));
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
   padding: 18px 14px;
   margin: 4px;
   display: inline-block;
-  box-shadow: 0 4px 16px rgba(2, 6, 23, 0.45);
+  box-shadow: var(--shadow-card);
   border-radius: 10px;
   transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   width: 185px;
@@ -44,13 +44,13 @@
   position: relative;
   overflow: hidden;
   text-align: center;
-  color: var(--text-primary, #f8fafc);
+  color: var(--text-primary);
 }
 
 .project-card:hover {
   transform: translateY(-4px);
-  border-color: var(--accent-border, #60a5fa);
-  box-shadow: 0 10px 24px rgba(2, 6, 23, 0.65);
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .project-logo {
