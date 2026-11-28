@@ -1,7 +1,8 @@
 import { supabase } from "../lib/supabaseClient";
-  let monthly_budget = {}
+
 export async function getMonthlyBudget(project_id) {
-    
+    let monthly_budget = {};
+
     async function getBudget() {
       try {
         const { data, error, status } = await supabase
@@ -12,8 +13,10 @@ export async function getMonthlyBudget(project_id) {
         .limit(1);
         
         if (error && status !== 406) throw error
-        if (data) {
+        if (data && data.length > 0) {
             monthly_budget = data[0].monthly_budget_balance
+        } else {
+            monthly_budget = {"ADA": 0}
         }
       } catch (error) {
         if (error) {

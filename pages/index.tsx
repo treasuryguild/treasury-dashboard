@@ -13,7 +13,7 @@ const Home: NextPage<HomeProps> = ({ groupInfo }) => {
   const { myVariable, setMyVariable } = useMyVariable();
 
   useEffect(() => {
-    setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo, transactions: [] }));
+    setMyVariable(prevState => ({ ...prevState, groupInfo: groupInfo, transactions: [], originalTransactions: [], loadedProjectId: undefined }));
   }, [groupInfo, setMyVariable]);
 
   return (
